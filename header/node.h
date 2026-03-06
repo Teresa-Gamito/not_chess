@@ -1,17 +1,28 @@
-#include <stdbool.h>
-
 typedef enum NodeType {
-    
+    test,
+    // TODO define types 
 } NodeType;
 
-typedef struct Node {
-    NodeType type; // id
-    Node **next_nodes; // array of pointers to other nodes
-    bool is_locked; // verifies if the node is unlocked
-    bool is_purchased;
-} Node;
+typedef struct Node Node; 
 
-Node create_node(NodeType type, Node **next_nodes, bool is_locked, bool is_purchased);
-void destroy_node(Node *node);
+//create
+Node *node_create(NodeType type);
+void node_destroy(Node* node);
 
+// set
+void node_set_type(Node* node, NodeType node_type);
+
+void node_set_locked(Node* node);
+void node_set_unlocked(Node* node);
+
+void node_set_purchased(Node* node);
+void node_set_unpurchased(Node* node);
+
+void node_add_next(Node* node, Node* next_node);
+void node_add_previous(Node* node, Node* prev_node);
+
+// get
+int node_is_locked(Node node);
+int node_is_purchased(Node node);
+NodeType node_get_type(Node node);
 

@@ -1,27 +1,31 @@
-typedef struct Window {
-    int width;
-    int height;
-    int pos_x;
-    int pos_y;
-
-} Window;
-
-typedef enum WindowContent
-{
+typedef enum WindowContent {
     BOARD,
+    TREE,
     PROPERTIES,
+    RULES,
     HISTORY,
-    TECH_TREE,
+    INFO_TAB,
     PLAYER_1,
     PLAYER_2,
 } WindowContent;
 
-int window_get_width();
-int window_get_height();
+typedef struct Window Window;
 
-int window_get_pos_x();
-int window_get_pos_y();
+// create / destroy
+Window* window_create();
+void window_destroy(Window* window);
 
-WindowContent window_get_content();
+// set
+void window_set_size(Window* window, double width, double height);
+void window_set_posistion(Window* window, double pos_x, double pos_y);
+
+// get
+int window_get_width(Window* window);
+int window_get_height(Window* window);
+
+int window_get_pos_x(Window* window);
+int window_get_pos_y(Window* window);
+
+WindowContent window_get_content(Window* window);
 
 void window_print(Window window);
