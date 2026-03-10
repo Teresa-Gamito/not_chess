@@ -2,8 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct Node
-{
+struct Node {
     // array of pointers to nodes
     // nodes that require this node
     Node** next_nodes;
@@ -21,6 +20,10 @@ struct Node
     int is_purchased;
     // cost to buy this node
     int cost;
+    // name of the node
+    char* name;
+    // description of the node
+    char* description;
     // which player bought this node
     // Player player
 };
@@ -33,12 +36,15 @@ Node* node_create(NodeType type)
         perror("Could not create node: malloc");
         exit(1);
     }
-
     return node;
 }
 
 void node_destroy(Node* node)
 {
+    free(node->name);
+    free(node->description);
+    free(node->next_nodes);
+    free(node->prev_nodes);
     free(node);
 }
 
@@ -65,6 +71,16 @@ void node_set_purchased(Node* node)
 void node_set_unpurchased(Node* node)
 {
     node->is_purchased = 0;
+}
+
+void node_set_name(Node* node, char* name)
+{
+    node->name = name;
+}
+
+void node_set_description(Node* node, char* description)
+{
+    node->description = description;
 }
 
 void node_add_next(Node* node, Node* next_node)
