@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 typedef enum NodeType {
     test,
     // TODO define types 

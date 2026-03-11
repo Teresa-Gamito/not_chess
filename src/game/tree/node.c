@@ -1,6 +1,4 @@
 #include "../../../include/game/tree/node.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 struct Node {
     // array of pointers to nodes
