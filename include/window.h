@@ -1,10 +1,14 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "util/util.h"
+
 typedef enum WindowContent {
     BOARD,
     TREE,
     PROPERTIES,
     RULES,
     HISTORY,
-    INFO_TAB,
+    OPTIONS,
     PLAYER_1,
     PLAYER_2,
 } WindowContent;
@@ -12,20 +16,21 @@ typedef enum WindowContent {
 typedef struct Window Window;
 
 // create / destroy
-Window* window_create();
-void window_destroy(Window* window);
+Window *window_create(Position *pos, Size *size, WindowContent content);
+void window_destroy(Window *window);
 
 // set
-void window_set_size(Window* window, double width, double height);
-void window_set_posistion(Window* window, double pos_x, double pos_y);
+void window_set_posistion(Window *window, Position *pos);
+void window_set_size(Window *window, Size *size);
+void window_set_content(Window *window, WindowContent content);
 
 // get
-int window_get_width(Window* window);
-int window_get_height(Window* window);
+Size *window_get_size(Window *window);
+Position *window_get_position(Window *window);
 
-int window_get_pos_x(Window* window);
-int window_get_pos_y(Window* window);
+WindowContent window_get_content(Window *window);
 
-WindowContent window_get_content(Window* window);
+void window_draw(Window window);
 
-void window_print(Window window);
+// testing
+void window_draw_test(Window window);

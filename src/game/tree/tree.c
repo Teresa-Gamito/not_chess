@@ -1,4 +1,4 @@
-#include "../header/tree.h"
+#include "../../../include/game/tree/tree.h"
 #include <stdio.h>
 #include <stdlib.h>
 

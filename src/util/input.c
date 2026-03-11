@@ -1,4 +1,4 @@
-#include "../include/utils/input.h"
+#include "../../include/util/input.h"
 
 struct InputState {
     /* mouse */

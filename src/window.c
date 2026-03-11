@@ -1,21 +1,14 @@
-#include "../header/window.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "../include/window.h"
 
 // Windows defined within the game
 // Window != SDL_Window, SDL_Window is a desktop window while Window is a in-game window as the screen is devided into multiple sections
 struct Window {
-    // dimentions
-    int width;
-    int height;
-    // position
-    int pos_x;
-    int pos_y;
-    // content id
+    Position *pos;
+    Size *size;
     WindowContent content;
 };
 
-Window* window_create()
+Window *window_create(Position *pos, Size *size, WindowContent content)
 {
     Window* window = (Window*)malloc(sizeof(Window));
     if (!window)
@@ -23,6 +16,9 @@ Window* window_create()
         perror("Could not create window: malloc");
         exit(1);
     }
+    window_set_posistion(window, pos);
+    window_set_size(window, size);
+    window_set_content(window, content);
     return window;
 }
 
@@ -35,36 +31,30 @@ void window_destroy(Window *window)
     free(window);
 }
 
-void window_set_size(Window *window, double width, double height)
+void window_set_position(Window *window, Position *pos)
 {
-    window->width = width;
-    window->height = height;
+    window->pos = pos;
 }
 
-void window_set_position(Window *window, double pos_x, double pos_y)
+void window_set_size(Window *window, Size *size)
 {
-    window->pos_x = pos_x;
-    window->pos_y = pos_y;
+    window->size = size;
 }
 
-int window_get_width(Window *window)
+void window_set_content(Window *window, WindowContent content)
 {
-    return window->width;
+    window->content = content;
 }
 
-int window_get_height(Window *window)
+
+Position *window_get_position(Window *window)
 {
-    return window->height;
+    return window->pos;
 }
 
-int window_get_pos_x(Window *window)
+Size *window_get_size(Window *window)
 {
-    return window->pos_x;
-}
-
-int window_get_pos_y(Window *window)
-{
-    return window->pos_y;
+    return window->size;
 }
 
 WindowContent window_get_content(Window *window)
@@ -72,7 +62,7 @@ WindowContent window_get_content(Window *window)
     return window->content;
 }
 
-void window_print(Window window)
+void window_draw(Window window)
 {
     // TODO
 }

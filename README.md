@@ -14,7 +14,7 @@ TODO
     - expandable board
     - rules interactions
 
-- tech tree basics
+- tree basics
     - basic structure
     - buttons
     - properties of each button
@@ -29,6 +29,12 @@ TODO
 - properties tab
     - individual printing for each type
     - tab structure
+
+- rules tab
+
+- options tab
+
+- player info tab
 
 - menus
     - buttons
