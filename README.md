@@ -1,6 +1,15 @@
 # Project-2nd_Semester
 
+
+add const to gets arguments (not sets)
+always give pointers to structs
+add const to gets functions
+add static to implementation only function
+replace mallocs with sdl functions
+
 TODO
+
+remove commented #-Wpedantic from makefile
 
 - chess game basics
     - individual piece mechanics

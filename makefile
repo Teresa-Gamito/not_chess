@@ -11,7 +11,7 @@
 BUILD_DIR := build
 
 # FOLDERS TO INCLUDE IN THE BUILD PATH
-ASSET_DIRS := maps assets assets/sounds assets/sprites
+ASSET_DIRS := assets assets/sounds assets/sprites
 
 # INDIVIDUAL FILES TO INCLUDE IN THE BUILD PATH
 ASSET_FILES :=
@@ -52,7 +52,7 @@ endif
 
 # ---------------- Common flags ----------------
 CSTD := -std=c17
-WARN := -Wall -Wextra -Wpedantic
+WARN := -Wall -Wextra #-Wpedantic
 DEPS := -MMD -MP
 INC  := -Isource -Iutils
 

@@ -1,69 +1,99 @@
 #include "../include/window.h"
 
-// Windows defined within the game
-// Window != SDL_Window, SDL_Window is a desktop window while Window is a in-game window as the screen is devided into multiple sections
 struct Window {
-    Position *pos;
-    Size *size;
+    SDL_FRect* frect;
     WindowContent content;
 };
 
-Window *window_create(Position *pos, Size *size, WindowContent content)
+Window* window_create(
+    const double x, 
+    const double y, 
+    const double width, 
+    const double height, 
+    const WindowContent content)
 {
-    Window* window = (Window*)malloc(sizeof(Window));
-    if (!window)
+    Window* window = (Window*)SDL_malloc(sizeof(Window));
+    SDL_FRect* frect = (SDL_FRect*)SDL_malloc(sizeof(SDL_FRect));
+    if (!window || !frect)
     {
-        perror("Could not create window: malloc");
-        exit(1);
+        // TODO throw error
     }
-    window_set_posistion(window, pos);
-    window_set_size(window, size);
+    window_set_frect(window, frect);
+    window_set_position(window, x, y);
+    window_set_size(window, width, height);
     window_set_content(window, content);
     return window;
 }
 
-void window_destroy(Window *window)
+void window_destroy(Window* window)
 {
     if (!window) 
     {
-        return;
+        // TODO throw error
     }
-    free(window);
+    SDL_free(window);
 }
 
-void window_set_position(Window *window, Position *pos)
+
+
+void window_set_position(Window* window, const double x, const double y)
 {
-    window->pos = pos;
+    window->frect->x = x;
+    window->frect->y = y;
 }
 
-void window_set_size(Window *window, Size *size)
+void window_set_size(Window* window, const double width, const double height)
 {
-    window->size = size;
+    window->frect->w = width;
+    window->frect->h = height;
 }
 
-void window_set_content(Window *window, WindowContent content)
+void window_set_content(Window* window, const WindowContent content)
 {
     window->content = content;
 }
 
-
-Position *window_get_position(Window *window)
+void window_set_frect(Window* window, SDL_FRect* frect)
 {
-    return window->pos;
+    window->frect = frect;
 }
 
-Size *window_get_size(Window *window)
+
+
+double window_get_x(const Window* window)
 {
-    return window->size;
+    return window->frect->x;
 }
 
-WindowContent window_get_content(Window *window)
+double window_get_y(const Window* window)
+{
+    return window->frect->y;
+}
+
+double window_get_width(const Window* window)
+{
+    return window->frect->w;
+}
+
+double window_get_height(const Window* window)
+{
+    return window->frect->h;
+}
+
+SDL_FRect* window_get_frect(const Window* window)
+{
+    return window->frect;
+}
+
+WindowContent window_get_content(const Window* window)
 {
     return window->content;
 }
 
-void window_draw(Window window)
-{
-    // TODO
-}
 
+
+void window_draw(SDL_Renderer* renderer, Window* window)
+{
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderRect(renderer, window_get_frect(window));
+}

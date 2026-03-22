@@ -1,3 +1,5 @@
+#pragma once
+
 #include "node.h"
 
 typedef struct Tree Tree;
