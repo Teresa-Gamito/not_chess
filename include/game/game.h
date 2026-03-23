@@ -1,6 +1,7 @@
 #pragma once
 
-#include <stdlib.h>
+#include <SDL3/SDL_stdinc.h>
+#include "../window.h"
 
 typedef struct GameState GameState;
 typedef struct UIState UIState;

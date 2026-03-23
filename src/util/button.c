@@ -1,10 +1,14 @@
 #include "../../include/util/button.h"
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_stdinc.h>
 
 struct Button
 {
     SDL_FRect* frect;
     bool is_hovered;
     
+
+    // TODO:
     // execute this command when pressed
     // void (*execute) ();
 };
@@ -14,21 +18,21 @@ Button* button_create(double x, double y, double width, double height)
     Button* button = (Button*)SDL_malloc(sizeof(Button));
     if (!button)
     {
-        // throw error
+        // TODO: throw error
     }
-    button_set_position(button, x, y);
-    button_set_size(button, width, height);
-    button_set_is_hovered(button, false);
-    return button;
-}
-
-void button_set_frect(Button* button, SDL_FRect* frect)
-{
+    SDL_FRect *frect = (SDL_FRect*)SDL_malloc(sizeof(SDL_FRect));
+    frect->x = x;
+    frect->y = y;
+    frect->w = width;
+    frect->h = height;
     button->frect = frect;
+    button->is_hovered = false;
+    return button;
 }
 
 void button_destroy(Button* button)
 {
+    if (button->frect) SDL_free(button->frect);
     SDL_free(button);
 }
 
@@ -44,17 +48,13 @@ void button_set_size(Button* button, double width, double height)
     button->frect->h = height;
 }
 
-void button_set_is_hovered(Button* button, bool state)
+void button_set_frect(Button* button, SDL_FRect* frect)
 {
-    button->is_hovered = state;
+    if (button->frect) SDL_free(button->frect);
+    button->frect = frect;
 }
 
 
-
-SDL_FRect* button_get_frect(Button* button)
-{
-    return button->frect;
-}
 
 const double button_get_x(const Button* button)
 {
@@ -76,7 +76,16 @@ const double button_get_height(const Button* button)
     return button->frect->h;
 }
 
-const bool button_get_is_hovered(const Button* button)
+SDL_FRect* button_get_frect(Button* button)
 {
-    return button->is_hovered;
+    return button->frect;
+}
+
+const bool button_is_hovered(const Button *button, double x, double y)
+{
+    if (x < button->frect->x) return false;
+    if (x > button->frect->x + button->frect->w) return false;
+    if (y < button->frect->y) return false;
+    if (y > button->frect->y + button->frect->h) return false;
+    return true;
 }

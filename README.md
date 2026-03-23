@@ -1,6 +1,23 @@
 # Project-2nd_Semester
 
 
+AppState
+    -MenuState
+        -Windows
+            -Buttons
+            -Objects
+            -Textboxes
+    -GameState
+        -BoardState
+        -TreeState
+        -UIState
+        -Windows (board, tree, properties, rules, history, options, players)
+            -Buttons
+            -Objects
+            -Textboxes
+
+
+
 add const to gets arguments (not sets)
 always give pointers to structs
 add const to gets functions
