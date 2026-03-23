@@ -52,14 +52,14 @@ endif
 
 # ---------------- Common flags ----------------
 CSTD := -std=c17
-WARN := -Wall -Wextra #-Wpedantic
+WARN := -Wall -Wextra -Wpedantic
 DEPS := -MMD -MP
 INC  := -Isource -Iutils
 
 DBG := -g -O0 -fno-omit-frame-pointer
 REL := -O2 -DNDEBUG
 
-SRC := $(wildcard *.c) $(wildcard **/*.c)
+SRC := $(wildcard src/*.c) $(wildcard src/**/*.c) $(wildcard src/**/**/*.c)
 OBJ := $(SRC:.c=.o)
 DEP := $(OBJ:.o=.d)
 

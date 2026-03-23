@@ -24,4 +24,5 @@ const double button_get_x(const Button* button);
 const double button_get_y(const Button* button);
 const double button_get_width(const Button* button);
 const double button_get_height(const Button* button);
-const bool button_get_is_hovered(const Button* button);
+
+const bool button_is_hovered(const Button *button, double x, double y);

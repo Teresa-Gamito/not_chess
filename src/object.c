@@ -1,7 +1,5 @@
 #include "../include/object.h"
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_surface.h>
 
 struct Object {
     SDL_Texture* texture;
@@ -9,8 +7,7 @@ struct Object {
 };
 
 
-// ========== create / destroy ==========
-
+// ========== create ==========
 Object* object_create(
     SDL_Renderer* renderer,
     const double x,
@@ -20,7 +17,7 @@ Object* object_create(
     Object* object = (Object*)SDL_malloc(sizeof(Object));
     // set texture
     object->texture = NULL;
-    object_update_texture(renderer, object, texture_file_name);
+    object_set_texture(renderer, object, texture_file_name);
     // set frect position and size
     object->frect = (SDL_FRect*)SDL_malloc(sizeof(SDL_FRect));
     object->frect->x = x;
@@ -29,6 +26,8 @@ Object* object_create(
     return object;
 }
 
+
+// ========== destroy ==========
 void object_destroy(Object* object)
 {
     SDL_DestroyTexture(object->texture);
@@ -36,10 +35,18 @@ void object_destroy(Object* object)
     SDL_free(object);
 }
 
+void object_render(SDL_Renderer* renderer, Object* object)
+{
+    SDL_RenderTexture(
+        renderer,
+        object->texture,
+        NULL,
+        object->frect
+    );
+}
 
 
 // ========== set ==========
-
 void object_set_position(Object* object, const double x, const double y)
 {
     object->frect->x = x;
@@ -58,9 +65,10 @@ void object_set_scale(Object* object, const double scale_factor)
 }
 void object_set_frect(Object* object, SDL_FRect* frect)
 {
+    if (object->frect) SDL_free(object->frect);
     object->frect = frect;
 }
-void object_update_texture(SDL_Renderer* renderer, Object* object, const char* image_file)
+void object_set_texture(SDL_Renderer* renderer, Object* object, const char* image_file)
 {
     if (object->texture) SDL_DestroyTexture(object->texture);
     SDL_Surface* surface = SDL_LoadPNG(image_file);
@@ -69,7 +77,7 @@ void object_update_texture(SDL_Renderer* renderer, Object* object, const char* i
 }
 
 
-// get
+// ========== set ==========
 float object_get_x(const Object* object)
 {
     return object->frect->x;
@@ -93,4 +101,13 @@ SDL_FRect* object_get_frect(const Object* object)
 SDL_Texture* object_get_texture(const Object* object)
 {
     return object->texture;
+}
+
+bool objects_intersect(Object* object1, Object* object2)
+{
+    if (object1->frect->x > object2->frect->x + object2->frect->w) return false;
+    if (object1->frect->x + object1->frect->w < object2->frect->x) return false;
+    if (object1->frect->y > object2->frect->y + object2->frect->h) return false;
+    if (object1->frect->y + object1->frect->h < object2->frect->y) return false;
+    return true;
 }

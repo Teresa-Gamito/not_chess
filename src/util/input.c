@@ -1,28 +1,28 @@
 #include "../../include/util/input.h"
-#include <SDL3/SDL_events.h>
-#include <SDL3/SDL_mouse.h>
-#include <SDL3/SDL_oldnames.h>
+// PERF:
 
-struct MouseState
+typedef struct MouseState
 {
+    // position
     double x;
     double y;
-
+    // left button
     bool left_down;
     bool left_pressed;
     bool left_released;
-
+    // right button
     bool right_down;
     bool right_pressed;
     bool right_released;
-};
+} MouseState;
 
-struct KeyboardState
+typedef struct KeyboardState
 {
+    // keyboard
     bool down[SDL_SCANCODE_COUNT];
     bool pressed[SDL_SCANCODE_COUNT];
     bool released[SDL_SCANCODE_COUNT];
-};
+} KeyboardState;
 
 struct InputState {
     MouseState* mouse;
@@ -31,29 +31,26 @@ struct InputState {
 
 
 
-// ========== create / destroy ==========
-
+// ========== create ==========
 InputState* input_state_create()
 {
-    InputState* input_state = (InputState*)SDL_malloc(sizeof(InputState));
-    return input_state;
+    InputState* input = (InputState*)SDL_malloc(sizeof(InputState));
+    input->mouse = (MouseState*)SDL_malloc(sizeof(MouseState));
+    input->key = (KeyboardState*)SDL_malloc(sizeof(KeyboardState));
+    input_begin_frame(input);
+    return input;
 }
 
-void input_state_destroy(InputState *input_state)
+
+// ========== destroy ==========
+void input_state_destroy(InputState* input)
 {
-    SDL_free(input_state);
-}
-
-void input_begin_frame(InputState* input)
-{
-    mouse_clear_state(input->mouse);
-    keyboard_clear_state(input->key);
+    SDL_free(input);
 }
 
 
-// ========== mouse ==========
-
-void mouse_clear_state(MouseState* mouse)
+// ========== clear state ==========
+static void mouse_clear_state(MouseState* mouse)
 {
     mouse->x = 0.0;
     mouse->y = 0.0;
@@ -64,41 +61,74 @@ void mouse_clear_state(MouseState* mouse)
     mouse->right_pressed = false;
     mouse->right_released = false;
 }
-
-// set
-void mouse_set_pos(MouseState* mouse, double x, double y)
+static void keyboard_clear_state(KeyboardState* key)
 {
-    mouse->x = x;
-    mouse->y = y;
+    for (int i = 0; i < SDL_SCANCODE_COUNT + 1; i++)
+    {
+        key->down[i] = false;
+        key->pressed[i] = false;
+        key->released[i] = false;
+    }
+}
+void input_begin_frame(InputState* input)
+{
+    mouse_clear_state(input->mouse);
+    keyboard_clear_state(input->key);
 }
 
-void mouse_set_left_down(MouseState* mouse, bool state)
+
+// ========== update ==========
+static void mouse_update(MouseState* mouse, const SDL_Event* event)
 {
-    mouse->left_down = state;
+    if (event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        mouse->x = event->motion.x;
+        mouse->y = event->motion.y;
+    }
+
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
+    {
+        if (event->button.button == SDL_BUTTON_LEFT)
+        {
+            if (!mouse->left_down) mouse->left_pressed = true;
+            mouse->left_down = true;
+        }
+    }
+    
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        if (event->button.button == SDL_BUTTON_LEFT)
+        {
+            mouse->left_down = false;
+            mouse->left_released = true;
+        }
+    }
 }
-void mouse_set_left_pressed(MouseState* mouse, bool state)
+static void keyboard_update(KeyboardState* key, const SDL_Event* event)
 {
-    mouse->left_pressed = state;
+    if (event->type == SDL_EVENT_KEY_DOWN)
+    {
+        if (!event->key.repeat && !key->down[event->key.scancode])
+        {
+            key->pressed[event->key.scancode] = true;
+        }
+        key->down[event->key.scancode] = true;
+    }
+
+    if (event->type == SDL_EVENT_KEY_UP)
+    {
+        key->down[event->key.scancode] = false;
+        key->released[event->key.scancode] = true;
+    }
 }
-void mouse_set_left_released(MouseState* mouse, bool state)
+void input_update(InputState* input, const SDL_Event* event)
 {
-    mouse->left_released = state;
+    keyboard_update(input->key, event);
+    mouse_update(input->mouse, event);
 }
 
-void mouse_set_right_down(MouseState* mouse, bool state)
-{
-    mouse->right_down = state;
-}
-void mouse_set_right_pressed(MouseState* mouse, bool state)
-{
-    mouse->right_pressed = state;
-}
-void mouse_set_right_released(MouseState* mouse, bool state)
-{
-    mouse->right_released = state;
-}
 
-// get
+// ========== mouse ==========
 const double mouse_get_pos_x(const MouseState* mouse)
 {
     return mouse->x;
@@ -135,89 +165,16 @@ const bool mouse_get_right_released(const MouseState* mouse)
 }
 
 
-// sdl event
-void mouse_event(MouseState* mouse, SDL_Event* event)
-{
-    if (event->type == SDL_EVENT_MOUSE_MOTION)
-    {
-        mouse->x = event->motion.x;
-        mouse->y = event->motion.y;
-    }
-
-    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-    {
-        if (event->button.button == SDL_BUTTON_LEFT)
-        {
-            if (!mouse->left_down) mouse->left_pressed = true;
-            mouse->left_down = true;
-        }
-    }
-    
-    if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
-    {
-        if (event->button.button == SDL_BUTTON_LEFT)
-        {
-            mouse->left_down = false;
-            mouse->left_released = true;
-        }
-    }
-}
-
 // ========== keyboard ==========
-
-void keyboard_clear_state(KeyboardState* key)
+const bool input_get_key_down(const InputState* input, const SDL_Scancode scancode)
 {
-    for (int i = 0; i < SDL_SCANCODE_COUNT + 1; i++)
-    {
-        key->down[i] = false;
-        key->pressed[i] = false;
-        key->released[i] = false;
-    }
+    return input->key->down[scancode];
 }
-
-// set
-void keyboard_set_key_down(KeyboardState* key, SDL_Scancode scancode, bool state)
+const bool input_get_key_pressed(const InputState* input, const SDL_Scancode scancode)
 {
-    key->down[scancode] = state;
+    return input->key->pressed[scancode];
 }
-void keyboard_set_key_pressed(KeyboardState* key, SDL_Scancode scancode, bool state)
+const bool input_get_key_released(const InputState* input, const SDL_Scancode scancode)
 {
-    key->pressed[scancode] = state;
-}
-void keyboard_set_key_released(KeyboardState* key, SDL_Scancode scancode, bool state)
-{
-    key->released[scancode] = state;
-}
-
-// get
-const bool keyboard_get_key_down(const KeyboardState* key, SDL_Scancode scancode)
-{
-    return key->down[scancode];
-}
-const bool keyboard_get_key_pressed(const KeyboardState* key, SDL_Scancode scancode)
-{
-    return key->pressed[scancode];
-}
-const bool keyboard_get_key_released(const KeyboardState* key, SDL_Scancode scancode)
-{
-    return key->released[scancode];
-}
-
-// sdl event
-void keyboard_event(KeyboardState* key, SDL_Event* event)
-{
-    if (event->type == SDL_EVENT_KEY_DOWN)
-    {
-        if (!event->key.repeat && !key->down[event->key.scancode])
-        {
-            key->pressed[event->key.scancode] = true;
-        }
-        key->down[event->key.scancode] = true;
-    }
-
-    if (event->type == SDL_EVENT_KEY_UP)
-    {
-        key->down[event->key.scancode] = false;
-        key->released[event->key.scancode] = true;
-    }
+    return input->key->released[scancode];
 }
