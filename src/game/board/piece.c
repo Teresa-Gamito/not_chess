@@ -14,11 +14,11 @@ Piece *piece_create (PieceType type, PieceColour colour) {
     piece->type = type;
     piece->colour = colour;
     return piece;
-};
+}
 
 void piece_destroy (Piece *piece) {
     free(piece);
-};
+}
 
 
 

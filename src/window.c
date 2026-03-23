@@ -1,12 +1,8 @@
 #include "../include/window.h"
 
 struct Window {
-    Object *window;
+    SDL_FRect* frect;
     WindowContent content;
-    Object **objects;
-    Button **buttons;
-    Textbox **textboxes;
-    //TODO: keep working
 };
 
 Window* window_create(

@@ -7,9 +7,6 @@
 #include <SDL3/SDL_render.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "object.h"
-#include "util/button.h"
-#include "textbox.h"
 
 typedef enum WindowContent {
     NONE,

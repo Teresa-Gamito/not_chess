@@ -1,4 +1,4 @@
-#include "../../include/game/gamestate.h"
+#include "../../include/game/game.h"
 
 struct GameState {
     // BoardState boardstate;
