@@ -3,48 +3,65 @@
 struct Piece 
 {
     PieceType type;
-    PieceColour colour;
+    PieceColor color;
 };
 
 //struct PieceProperties
 
+
+
 // ========== create ==========
-Piece *piece_create (PieceType type, PieceColour colour) 
+Piece* piece_create (PieceType type, PieceColor color) 
 {
-    Piece *piece = malloc(sizeof(Piece));
+    Piece* piece = (Piece*)SDL_malloc(sizeof(Piece));
     piece->type = type;
-    piece->colour = colour;
+    piece->color = color;
     return piece;
 }
+
+
 
 // ========== destroy ==========
 void piece_destroy (Piece *piece) 
 {
-    free(piece);
+    SDL_free(piece);
 }
+
+
 
 // ========== set ==========
 void piece_set_type(Piece* piece, PieceType type) 
 {
     piece->type = type;
 }
-void piece_set_colour(Piece* piece, PieceColour colour)
+void piece_set_colour(Piece* piece, PieceColor color)
 {
-    piece->colour = colour;
+    piece->color = color;
 }
 
+
+
 // ========== get ==========
-PieceColour piece_get_colour(const Piece* piece)
-{
-    return piece->colour;
-}
 PieceType piece_get_type(const Piece* piece)
 {
     return piece->type;
 }
+PieceColor piece_get_color(const Piece* piece)
+{
+    return piece->color;
+}
 
 
 
+bool piece_can_capture(const Piece* piece1, const Piece* piece2)
+{
+    return piece1->color != piece2->color;
+}
+
+bool piece_exists(const Piece* piece)
+{
+    return piece != NULL;
+}
 
 
 

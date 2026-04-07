@@ -1,10 +1,20 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
-#include "../window.h"
+#include "../util/window.h"
+#include "board/board.h"
 
 typedef struct GameState GameState;
-typedef struct UIState UIState;
 
-GameState* game_state_create();
-void game_state_destroy(GameState* game_state);
+// create
+GameState* game_create();
+
+// destroy
+void game_destroy(GameState* game);
+
+
+// windows
+void game_add_window(GameState* game, Window* window);
+
+// render
+void game_render(GameState* game);

@@ -1,4 +1,4 @@
-#include "../include/window.h"
+#include "../../include/util/window.h"
 
 struct Window {
     SDL_FRect* frect;

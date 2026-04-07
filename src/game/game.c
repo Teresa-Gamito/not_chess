@@ -1,24 +1,37 @@
 #include "../../include/game/game.h"
 
 struct GameState {
-    // BoardState boardstate;
-    Window *windows;
-    // TODO:
+    Window** windows; /* array of pointers to windows */
+    int window_count; /* number of windows */
+
+    BoardState* board;
 };
 
-GameState* game_state_create()
+GameState* game_create()
 {
-    GameState* game_state = SDL_malloc(sizeof(GameState));
-    if (!game_state)
-    {
-        // TODO: throw error
-    }
-    // TODO: create structure contents
-    return game_state;
+    GameState* game = SDL_malloc(sizeof(GameState));
+
+    game->windows = NULL;
+    game->window_count = 0;
+
+    game->board = board_create();
+
+    return game;
 }
 
-void game_state_destroy(GameState* game_state)
+void game_destroy(GameState* game)
 {
-    // TODO: free structure contents
-    SDL_free(game_state);
+    board_destroy(game->board);
+    for (int i = 0; i < game->window_count; i++)
+    {
+        window_destroy(game->windows[i]);
+    }
+    SDL_free(game);
+}
+
+void game_add_window(GameState* game, Window* window)
+{
+    game->windows = SDL_realloc(game->windows, (game->window_count + 1) * sizeof(Window*));
+    (game->window_count)++;
+    game->windows[game->window_count] = window;
 }

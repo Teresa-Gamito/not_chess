@@ -1,4 +1,4 @@
-#include "../include/textbox.h"
+#include "../../include/util/textbox.h"
 
 // TODO:
 // replace frect and texture with Object*
@@ -69,7 +69,6 @@ void text_render(SDL_Renderer* renderer, Textbox* textbox)
 }
 
 
-
 // ========== set ==========
 void textbox_set_position(Textbox* textbox, double x, double y)
 {
@@ -108,7 +107,6 @@ void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
     textbox->texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_DestroySurface(surface);
 }
-
 
 
 // ========== get ==========

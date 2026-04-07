@@ -16,6 +16,7 @@ typedef struct Textbox Textbox;
 /**
     * @brief creates a textbox
     * 
+    * @param renderer the SDL_Renderer in which to render the textbox
     * @param x the x position in pixels
     * @param y the y position in pixels
     * @param max_width the maximum width in pixels in which the text is set to wrap
@@ -36,7 +37,6 @@ Textbox* textbox_create(
 );
 
 
-
 // ========== destroy ==========
 
 /**
@@ -48,6 +48,7 @@ void textbox_destroy(Textbox* textbox);
 
 
 // ========== render ==========
+
 /**
     * @brief render the textbox on the selected SDL_Renderer
     *
@@ -63,8 +64,8 @@ void text_render(SDL_Renderer* renderer, Textbox* textbox);
     * @brief sets the position of the textbox
     * 
     * @param textbox a pointer to the textbox to change the position
-    * @param x the new x position
-    * @param y the new y position
+    * @param x the new x position in pixels
+    * @param y the new y position in pixels
     */
 void textbox_set_position(Textbox* textbox, const double x, const double y);
 

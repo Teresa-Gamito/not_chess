@@ -39,4 +39,4 @@ float object_get_height(const Object* object);
 SDL_FRect* object_get_frect(const Object* object);
 SDL_Texture* object_get_texture(const Object* object);
 
-bool objects_intersect(Object* object1, Object* object2);
+bool objects_intersect(const Object* object1, const Object* object2);

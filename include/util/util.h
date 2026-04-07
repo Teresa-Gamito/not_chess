@@ -1,4 +1,0 @@
-// deprecated
-
-#pragma once
-

@@ -1,5 +1,4 @@
-#include "../include/object.h"
-#include <SDL3/SDL_render.h>
+#include "../../include/util/object.h"
 
 struct Object {
     SDL_Texture* texture;
@@ -35,6 +34,8 @@ void object_destroy(Object* object)
     SDL_free(object);
 }
 
+
+// ========== render ==========
 void object_render(SDL_Renderer* renderer, Object* object)
 {
     SDL_RenderTexture(
@@ -103,7 +104,7 @@ SDL_Texture* object_get_texture(const Object* object)
     return object->texture;
 }
 
-bool objects_intersect(Object* object1, Object* object2)
+bool objects_intersect(const Object* object1, const Object* object2)
 {
     if (object1->frect->x > object2->frect->x + object2->frect->w) return false;
     if (object1->frect->x + object1->frect->w < object2->frect->x) return false;

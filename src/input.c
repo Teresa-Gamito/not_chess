@@ -1,4 +1,4 @@
-#include "../../include/util/input.h"
+#include "../include/input.h"
 // PERF:
 
 typedef struct MouseState
