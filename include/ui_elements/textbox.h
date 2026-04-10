@@ -1,46 +1,56 @@
 #pragma once
 
+#include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL_rect.h>
-#include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_render.h>
+#include "../helper_functions/helper_functions.h"
 #include "object.h"
 
 typedef struct Textbox Textbox;
 
+typedef enum TextAlignment {
+    TEXT_CENTERED,
+    TEXT_RIGHT_ALIGNED,
+    TEXT_LEFT_ALIGNED 
+} TextAlignment;
+
+
 
 // ========== create ==========
 
-/**
+/** TODO: update comment
     * @brief creates a textbox
     * 
     * @param renderer the SDL_Renderer in which to render the textbox
     * @param x the x position in pixels
     * @param y the y position in pixels
-    * @param max_width the maximum width in pixels in which the text is set to wrap
-    * @param text the text for the textbox to display
-    * @param font the font of the text
-    * @param color the color of the text
+    * @param max_width the maximum width in pixels in which the text is set to wrap, set as 0 to wrap only on a new line character
+    * @param text the text for the textbox to display (needs to end with a null terminated characrter)
+    * @param font the font of the text (created externaly)
+    * @param color the color of the text (created externaly)
     *
     * @return a pointer to the created textbox
     */
 Textbox* textbox_create(
     SDL_Renderer* renderer,
-    const double x, 
-    const double y, 
-    const double max_width,
-    const char* text,
     TTF_Font* font,
-    SDL_Color* color
+    SDL_Color* color,
+    const char* text,
+    const double max_width,
+    TextAlignment alignment,
+    const double x,
+    const double y
 );
+
 
 
 // ========== destroy ==========
 
 /**
-    * @brief destroy the allocated textbox
+    * @brief destroy a textbox
     * 
     * @param textbox the pointer to the textbox
     */
@@ -48,14 +58,14 @@ void textbox_destroy(Textbox* textbox);
 
 
 // ========== render ==========
-
 /**
     * @brief render the textbox on the selected SDL_Renderer
     *
     * @param renderer the destination renderer
     * @param textbox the textbox to render
+    * @param alignment where to align the text
     */
-void text_render(SDL_Renderer* renderer, Textbox* textbox);
+void textbox_render(SDL_Renderer* renderer, Textbox* textbox);
 
 
 // ========== set ==========
@@ -64,8 +74,8 @@ void text_render(SDL_Renderer* renderer, Textbox* textbox);
     * @brief sets the position of the textbox
     * 
     * @param textbox a pointer to the textbox to change the position
-    * @param x the new x position in pixels
-    * @param y the new y position in pixels
+    * @param x the new x position
+    * @param y the new y position
     */
 void textbox_set_position(Textbox* textbox, const double x, const double y);
 
@@ -78,23 +88,14 @@ void textbox_set_position(Textbox* textbox, const double x, const double y);
     */
 void textbox_set_size(Textbox* textbox, const double width, const double height);
 
-/**
-    * @brief scales the size of the textbox relative to the original size of the image
-    * 
-    * @param textbox a pointer to the textbox to scale the size
-    * @param scale_factor the factor to scale the size of the textbox
-    */
-// TODO: void textbox_set_scale(Textbox* textbox, const double scale_factor);
+// TODO: add comments
+// TODO: void textbox_set_scale();
 
-/**
-    * @brief sets the SDL_FRect of the textbox
-    * 
-    * the frect is a container for the position and size of the textbox
-    * 
-    * @param textbox a pointer to the textbox to change the content
-    * @param frect the new SDL_FRect
-    */
-// TODO: void textbox_set_frect(Textbox* textbox, SDL_FRect* frect);
+// TODO: add comments
+void textbox_set_max_width(Textbox* textbox, int max_width);
+
+// TODO: add comments
+void textbox_set_alignment(Textbox* textbox, TextAlignment alignment);
 
 /**
     * @brief sets the pointer to SDL_Color of the textbox
@@ -122,14 +123,6 @@ void textbox_set_font(Textbox* textbox, TTF_Font* font);
     * @param text the new text to display
     */
 void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text);
-
-/**
-    * @brief updates the texture of the textbox
-    * 
-    * @param renderer the pointer to the SDL_Renderer used
-    * @param textbox a pointer to the textbox to content
-    */
-void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox);
 
 
 
@@ -170,6 +163,12 @@ float textbox_get_width(const Textbox* textbox);
     * @return returns the height of the textbox
     */
 float textbox_get_height(const Textbox* textbox);
+
+// TODO: add comments
+int textbox_get_max_width(Textbox* textbox);
+
+// TODO: add comments
+TextAlignment textbox_get_alignment(Textbox* textbox);
 
 /**
     * @brief gets the SDL_FRect of the textbox

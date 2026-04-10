@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
+#include "../../helper_functions/error_handling.h"
 
 typedef struct Piece Piece;
 
@@ -41,11 +42,3 @@ void piece_set_color(Piece* piece, PieceColor color);
 // ========== get ==========
 PieceType piece_get_type(const Piece* piece); 
 PieceColor piece_get_color(const Piece* piece);
-
-//bool piece_move_valid (Piece* piece, int x, )
-bool piece_can_capture(const Piece* piece1, const Piece* piece2);
-bool piece_exists(const Piece* piece);
-
-
-
-

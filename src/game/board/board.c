@@ -1,7 +1,6 @@
 #include "../../../include/game/board/board.h"
-#include <SDL3/SDL_stdinc.h>
 
-struct BoardState
+struct Board
 {
     // size
     int width;
@@ -17,12 +16,14 @@ struct BoardState
 
 
 // ========== create ==========
-BoardState* board_create()
+Board* board_create(int width, int height)
 {
-    BoardState* board = (BoardState*)SDL_malloc(sizeof(BoardState));
+    verify(width <= 0 || height <= 0, "Width and height must be positive");
 
-    board->width = BOARD_STARTING_WIDTH;
-    board->height = BOARD_STARTING_HEIGHT;
+    Board* board = (Board*)SDL_malloc(sizeof(Board));
+
+    board->width = width;
+    board->height = height;
 
     board->tiles = SDL_malloc(sizeof(Tile*) * board->width * board->height);
     board->pieces = SDL_malloc(sizeof(Piece*) * board->width * board->height);
@@ -36,12 +37,13 @@ BoardState* board_create()
         }
     }
 
-    board_set_starting_layout(board);
-
     return board;
 }
-void board_set_starting_layout(BoardState* board)
+
+void board_set_default(Board* board)
 {
+    verify(board == NULL, "Board does not exist");
+
     // TODO: replace with map
     board_add_piece_at(board, piece_create(KING, PIECE_WHITE), 4, 0);
     board_add_piece_at(board, piece_create(QUEEN, PIECE_WHITE), 3, 0);
@@ -60,38 +62,40 @@ void board_set_starting_layout(BoardState* board)
     board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 6, 1);
     board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 7, 1);
 
-    board_add_piece_at(board, piece_create(KING, PIECE_WHITE), 4, 7);
-    board_add_piece_at(board, piece_create(QUEEN, PIECE_WHITE), 3, 7);
-    board_add_piece_at(board, piece_create(BISHOP, PIECE_WHITE), 2, 7);
-    board_add_piece_at(board, piece_create(BISHOP, PIECE_WHITE), 5, 7);
-    board_add_piece_at(board, piece_create(KNIGHT, PIECE_WHITE), 1, 7);
-    board_add_piece_at(board, piece_create(KNIGHT, PIECE_WHITE), 6, 7);
-    board_add_piece_at(board, piece_create(ROOK, PIECE_WHITE), 0, 7);
-    board_add_piece_at(board, piece_create(ROOK, PIECE_WHITE), 7, 7);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 0, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 1, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 2, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 3, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 4, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 5, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 6, 6);
-    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 7, 6);
+    board_add_piece_at(board, piece_create(KING, PIECE_BLACK), 4, 7);
+    board_add_piece_at(board, piece_create(QUEEN, PIECE_BLACK), 3, 7);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_BLACK), 2, 7);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_BLACK), 5, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_BLACK), 1, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_BLACK), 6, 7);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_BLACK), 0, 7);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_BLACK), 7, 7);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 0, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 1, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 2, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 3, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 4, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 5, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 6, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 7, 6);
 }
 
 
 
 // ========== destroy ==========
-void board_destroy(BoardState* board)
+void board_destroy(Board* board)
 {
-    for (int i = 0; i < board->width; i++)
-    {
-        for (int j = 0; j < board->height; j++)
-        {
-            tile_destroy(board->tiles[i + j * board->width]);
+    verify(board == NULL, "Board does not exist");
 
-            if (board->pieces[i + j * board->width])
+    for (int x = 0; x < board->width; x++)
+    {
+        for (int y = 0; y < board->height; y++)
+        {
+            tile_destroy(board_get_tile_at(board, x, y));
+
+            if (board_has_piece_at(board, x, y))
             {
-                piece_destroy(board->pieces[i + j * board->width]);
+                piece_destroy(board_get_piece_at(board, x, y));
             }
         }
     }
@@ -101,76 +105,114 @@ void board_destroy(BoardState* board)
 
 
 // ========== get ==========
-int board_get_width(BoardState* board)
+int board_get_width(const Board* board)
 {
+    verify(board == NULL, "Board does not exist");
+
     return board->width;
 }
-int board_get_height(BoardState* board)
+int board_get_height(const Board* board)
 {
+    verify(board == NULL, "Board does not exist");
+
     return board->height;
 }
 
 
 
 // ========== pieces ==========
-void board_add_piece_at(BoardState* board, Piece* piece, int x, int y)
+static void board_set_piece_at(Board* board, Piece* piece, int x, int y)
 {
+    verify(board == NULL, "Board does not exist");
+    verify(piece == NULL, "Piece does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+
     board->pieces[x + y * board->width] = piece;
 }
-void board_destroy_piece_at(BoardState* board, int x, int y)
+
+void board_add_piece_at(Board* board, Piece* piece, int x, int y)
 {
-    if (board->pieces[x + y * board->width])
-    {
-        piece_destroy(board->pieces[x + y * board->width]);
-        board->pieces[x + y * board->width] = NULL;
-    }
+    verify(board == NULL, "Board does not exist");
+    verify(piece == NULL, "Piece does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+    verify(board_has_piece_at(board, x, y), "Piece already at position, could not add");
+
+    board_set_piece_at(board, piece, x, y);
 }
-Piece* board_get_piece_at(BoardState* board, int x, int y)
+
+static Piece* board_pop_piece_at(Board* board, int x, int y)
 {
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+    verify(!board_has_piece_at(board, x, y), "No piece at position, could not pop");
+
+    Piece* piece = board_get_piece_at(board, x, y);
+    board->pieces[x + y * board->width] = NULL;
+    return piece;
+}
+
+void board_destroy_piece_at(Board* board, int x, int y)
+{
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+    verify(!board_has_piece_at(board, x, y), "Piece does not exist, could not be destroyed");
+
+    piece_destroy(board_pop_piece_at(board, x, y));
+}
+
+Piece* board_get_piece_at(Board* board, int x, int y)
+{
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+
     return board->pieces[x + y * board->width];
 }
 
-static void move_piece(BoardState* board, int src_x, int src_y, int dst_x, int dst_y)
+bool board_has_piece_at(Board* board, int x, int y)
 {
-    board->pieces[dst_x + dst_y * board->width] = board->pieces[src_x + src_y * board->width];
-    board->pieces[src_x + src_y * board->width] = NULL;
-}
-void board_move_piece(BoardState* board, int src_x, int src_y, int dst_x, int dst_y)
-{
-    const Piece* src = board_get_piece_at(board, src_x, src_y);
-    const Piece* dst = board_get_piece_at(board, dst_x, dst_y);
-    if (!piece_exists(src))
-    {
-        move_piece(board, src_x, src_y, dst_x, dst_y);
-        return;
-    }
-    else if (piece_can_capture(src, dst))
-    {
-        move_piece(board, src_x, src_y, dst_x, dst_y);
-        return;
-    }
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+
+    return board_get_piece_at(board, x, y) != NULL;
 }
 
-bool board_can_move_piece(BoardState* board, int src_x, int src_y, int dst_x, int dst_y)
+void board_move_piece(Board* board, int src_x, int src_y, int dst_x, int dst_y)
 {
-    const Piece* src = board_get_piece_at(board, src_x, src_y);
-    const Piece* dst = board_get_piece_at(board, dst_x, dst_y);
-    if (!piece_exists(src))
-    {
-        return true;
-    }
-    else if (piece_can_capture(src, dst))
-    {
-        return true;
-    }
-    return false;
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(src_x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(src_y, 0, board_get_height(board) - 1), "Invalid position");
+    verify(!is_within(dst_x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(dst_y, 0, board_get_height(board) - 1), "Invalid position");
+    verify(board_has_piece_at(board, dst_x, dst_y), "Destination position already occupied");
+
+    Piece* piece = board_pop_piece_at(board, src_x, src_y);
+    board_set_piece_at(board, piece, dst_x, dst_y);
 }
 
 
 
 // ========== tiles ==========
-void board_increment_size(BoardState* board)
+Tile* board_get_tile_at(const Board* board, int x, int y)
 {
+    verify(board == NULL, "Board does not exist");
+    verify(!is_within(x, 0, board_get_width(board) - 1), "Invalid position");
+    verify(!is_within(y, 0, board_get_height(board) - 1), "Invalid position");
+
+    return board->tiles[x + y * board->width];
+}
+
+void board_expand(Board* board)
+{
+    // TODO: clean mess
+
+    verify(board == NULL, "Board does not exist");
+
     // incrememt size
     board->width += 2;
     board->height += 2;
@@ -189,7 +231,9 @@ void board_increment_size(BoardState* board)
                 board->pieces[i + j * board->width] = NULL;
                 continue;
             }
-            move_piece(board, i, j, i + 1, j + 1);
+            board_move_piece(board, i, j, i + 1, j + 1);
         }
     }
 }
+
+
