@@ -6,17 +6,26 @@ struct AppState
     SDL_Renderer* sdl_renderer;
 
     InputState* input;
+
+    GameState* gamestate;
 };
 
 
 // ========== create ==========
 AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer)
 {
+    verify(sdl_window == NULL, "SDL_Window does not exist");
+    verify(sdl_renderer == NULL, "SDL_Renderer does not exist");
+
     AppState* app = (AppState*)SDL_malloc(sizeof(AppState));
+    verify(app == NULL, "AppState could not be created: malloc");
     
     app->sdl_window = sdl_window;
 
     app->sdl_renderer = sdl_renderer;
+
+    app->gamestate = gamestate_create();
+    gamestate_set_default(app->sdl_renderer, app->gamestate);
 
     app->input = input_create();
 
@@ -26,43 +35,69 @@ AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer)
 // ========== destroy ==========
 void app_destroy(AppState* app)
 {
+    verify(app == NULL, "AppState does not exist");
+
     SDL_DestroyWindow(app->sdl_window);
     SDL_DestroyRenderer(app->sdl_renderer);
+
     input_destroy(app->input);
+
+    gamestate_destroy(app->gamestate);
+
     SDL_free(app);
 }
 
 
 
-// update
+// ========== update ==========
 void app_update(AppState* app)
 {
-    (void)app;
+    verify(app == NULL, "AppState does not exist");
 }
 
 
 
-// ========== set ==========
-void app_set_sdl_window(AppState* app, SDL_Window* sdl_window)
+// ========== render ==========
+void app_render(AppState* app)
 {
-    app->sdl_window = sdl_window;
+    verify(app == NULL, "AppState does not exist");
+
+    SDL_Renderer* sdl_renderer = app_get_sdl_renderer(app);
+
+    SDL_SetRenderDrawColor(sdl_renderer, 12, 23, 34, SDL_ALPHA_OPAQUE);
+    SDL_RenderClear(sdl_renderer);
+
+    game_render(app->sdl_renderer, app->gamestate);
+
+    SDL_RenderPresent(sdl_renderer);
 }
-void app_set_sdl_renderer(AppState* app, SDL_Renderer* sdl_renderer)
-{
-    app->sdl_renderer = sdl_renderer;
-}
+
+
 
 // ========== get ==========
 SDL_Window* app_get_sdl_window(const AppState* app)
 {
+    verify(app == NULL, "AppState does not exist");
+
     return app->sdl_window;
 }
 SDL_Renderer* app_get_sdl_renderer(const AppState* app)
 {
+    verify(app == NULL, "AppState does not exist");
+
     return app->sdl_renderer;
 }
 
-InputState* app_get_input(const AppState* app)
+InputState* app_get_inputstate(const AppState* app)
 {
+    verify(app == NULL, "AppState does not exist");
+
     return app->input;
+}
+
+GameState* app_get_gamestate(const AppState* app)
+{
+    verify(app == NULL, "AppState does not exist");
+
+    return app->gamestate;
 }

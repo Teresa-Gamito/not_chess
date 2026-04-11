@@ -17,3 +17,4 @@ SDL_FRect* SDL_CreateFRect(double x, double y, double width, double height);
 void SDL_DestroyFRect(SDL_FRect* frect);
 
 bool is_within(int value, int min, int max);
+bool is_even(int x);

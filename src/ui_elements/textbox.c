@@ -29,6 +29,11 @@ Textbox* textbox_create(
     const double x,
     const double y)
 {
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+    verify(font == NULL, "TTF_Font does not exist");
+    verify(color == NULL, "SDL_Color does not exist");
+    verify(alignment < 0 || alignment >= TEXT_ALIGNMENT_COUNT, "Invalid alignment");
+
     Textbox* textbox = (Textbox*)SDL_malloc(sizeof(Textbox));
 
     textbox->font = font;
@@ -55,11 +60,7 @@ Textbox* textbox_create(
 
 void textbox_destroy(Textbox* textbox)
 {
-    if (textbox == NULL) 
-    {
-        SDL_Log("Textbox does not exist, could not destroy");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
 
     if (textbox->text != NULL) SDL_free(textbox->text);
     if (textbox->texture != NULL) SDL_DestroyTexture(textbox->texture);
@@ -74,16 +75,9 @@ void textbox_destroy(Textbox* textbox)
 
 void textbox_render(SDL_Renderer* renderer, Textbox* textbox)
 {
-    if (renderer == NULL)
-    {
-        SDL_Log("Renderer does not exist");
-        return;
-    }
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist, could not be rendered");
-        return;
-    }
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+    verify(textbox == NULL, "Textbox does not exist");
+    verify(textbox->texture == NULL, "Textbox does not have a texture");
 
     SDL_FRect position = *textbox->frect;
 
@@ -113,11 +107,7 @@ void textbox_render(SDL_Renderer* renderer, Textbox* textbox)
 
 void textbox_set_position(Textbox* textbox, double x, double y)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
 
     textbox->frect->x = x;
     textbox->frect->y = y;
@@ -125,11 +115,8 @@ void textbox_set_position(Textbox* textbox, double x, double y)
 
 void textbox_set_size(Textbox* textbox, double width, double height)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+    verify(width < 0 || height < 0, "Invalid size");
 
     textbox->frect->w = width;
     textbox->frect->h = height;
@@ -137,60 +124,44 @@ void textbox_set_size(Textbox* textbox, double width, double height)
 
 void textbox_set_max_width(Textbox* textbox, int max_width)
 {
-    if (textbox == NULL)
+    verify(textbox == NULL, "Textbox does not exist");
+
+    if (max_width < 0) 
     {
-        SDL_Log("Textbox does not exist");
+        textbox->max_width = 0;
         return;
     }
-
     textbox->max_width = max_width;
 }
 
 void textbox_set_alignment(Textbox* textbox, TextAlignment alignment)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+    verify(alignment < 0 || alignment >= TEXT_ALIGNMENT_COUNT, "Invalid alignment");
 
     textbox->alignment = alignment;
 }
 
 void textbox_set_color(Textbox* textbox, SDL_Color* color)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+    verify(color == NULL, "SDL_Color does not exist");
 
     textbox->color = color;
 }
 
 void textbox_set_font(Textbox* textbox, TTF_Font* font)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+    verify(font == NULL, "TTF_Font does not exist");
 
     textbox->font = font;
 }
 
 static void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
 {
-    if (renderer == NULL)
-    {
-        SDL_Log("Renderer does not exist");
-        return;
-    }
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+    verify(textbox == NULL, "Textbox does not exist");
 
     SDL_Surface* surface = TTF_RenderText_Solid_Wrapped(
         textbox->font,
@@ -214,16 +185,8 @@ static void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
 }
 void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text)
 {
-    if (renderer == NULL)
-    {
-        SDL_Log("Renderer does not exist");
-        return;
-    }
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return;
-    }
+    verify(renderer == NULL, "Renderer does not exist");
+    verify(textbox == NULL, "Textbox does not exist");
 
     if (textbox->text != NULL) 
     {
@@ -239,100 +202,70 @@ void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text
 
 float textbox_get_x(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->frect->x;
 }
 
 float textbox_get_y(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->frect->y;
 }
 
 float textbox_get_width(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->frect->w;
 }
 
 float textbox_get_height(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->frect->h;
 }
 
 int textbox_get_max_width(Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->max_width;
 }
 
 TextAlignment textbox_get_alignment(Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return 0;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->alignment;
 }
 
 SDL_FRect* textbox_get_frect(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return NULL;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->frect;
 }
 
 SDL_Color* textbox_get_color(Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return NULL;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->color;
 }
 
 TTF_Font* textbox_get_font(const Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return NULL;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->font;
 }
 
 SDL_Texture* textbox_get_texture(Textbox* textbox)
 {
-    if (textbox == NULL)
-    {
-        SDL_Log("Textbox does not exist");
-        return NULL;
-    }
+    verify(textbox == NULL, "Textbox does not exist");
+
     return textbox->texture;
 }

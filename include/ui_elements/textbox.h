@@ -14,7 +14,8 @@ typedef struct Textbox Textbox;
 typedef enum TextAlignment {
     TEXT_CENTERED,
     TEXT_RIGHT_ALIGNED,
-    TEXT_LEFT_ALIGNED 
+    TEXT_LEFT_ALIGNED,
+    TEXT_ALIGNMENT_COUNT
 } TextAlignment;
 
 

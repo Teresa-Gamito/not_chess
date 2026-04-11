@@ -1,12 +1,14 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
+#include "../../helper_functions/error_handling.h"
 
 typedef struct Tile Tile;
 
 typedef enum TileType
 {
-    TILE_NONE
+    TILE_NONE,
+    TILE_TYPE_COUNT
 } TileType;
 
 

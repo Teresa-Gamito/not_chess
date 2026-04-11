@@ -16,7 +16,6 @@ typedef struct Button Button;
 
 
 // ========== create ==========
-
 Button* button_create(
     double x, 
     double y, 
@@ -26,35 +25,20 @@ Button* button_create(
     SDL_Texture* texture_pressed
 );
 
-
-
 // ========== destroy ==========
-
-void button_destroy(void* p);
-
-
+void button_destroy(Button* button);
 
 // ========== update ==========
-
 void button_update(InputState* input, Button* button);
 
-
-
 // ========== render ==========
-
 void button_render(SDL_Renderer* renderer, Button* button);
 
-
-
 // ========== set ==========
-
 void button_set_position(Button* button, double x, double y);
 void button_set_size(Button* button, double width, double height);
 
-
-
 // ========== get ==========
-
 double button_get_x(const Button* button);
 double button_get_y(const Button* button);
 double button_get_width(const Button* button);

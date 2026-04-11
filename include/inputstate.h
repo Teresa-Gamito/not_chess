@@ -7,6 +7,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <stdbool.h>
+#include "helper_functions/error_handling.h"
 
 typedef struct InputState InputState;
 

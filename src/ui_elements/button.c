@@ -4,14 +4,12 @@ typedef enum ButtonState
 {
     IDLE,
     HOVERED,
-    PRESSED
+    PRESSED,
 } ButtonState;
 
 struct Button
 {
-    SDL_Texture* texture_idle;
-    SDL_Texture* texture_hovered;
-    SDL_Texture* texture_pressed;
+    SDL_Texture** textures;
 
     SDL_FRect* frect;
 
@@ -34,24 +32,22 @@ Button* button_create(
 {
     Button* button = (Button*)SDL_malloc(sizeof(Button));
     
-    button->texture_idle = texture_idle;
-    button->texture_hovered = texture_hovered;
-    button->texture_pressed = texture_pressed;
+    button->textures[IDLE] = texture_idle;
+    button->textures[HOVERED] = texture_hovered;
+    button->textures[PRESSED] = texture_pressed;
 
     button->state = IDLE;
 
     button->on_press = on_press;
 
-    float w, h;
-    if (texture_idle == NULL)
+    float w = 0;
+    float h = 0;
+
+    if (texture_idle != NULL)
     {
-        w = 0;
-        h = 0;
+        SDL_GetTextureSize(button->textures[IDLE], &w, &h);
     }
-    else 
-    {
-        SDL_GetTextureSize(button->texture_idle, &w, &h);
-    }
+
     button->frect = SDL_CreateFRect(x, y, w, h);
 
     return button;
@@ -61,14 +57,9 @@ Button* button_create(
 
 // ========== destroy ==========
 
-void button_destroy(void* p)
+void button_destroy(Button* button)
 {
-    Button* button = (Button*)p;
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist, could not destroy");
-        return;
-    }
+    verify(button == NULL, "Button does not exist");
 
     SDL_DestroyFRect(button->frect);
     SDL_free(button);
@@ -80,16 +71,8 @@ void button_destroy(void* p)
 
 void button_update(InputState* input, Button* button)
 {
-    if (input == NULL)
-    {
-        SDL_Log("InputState not defined");
-        return;
-    }
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist, could not update");
-        return;
-    }
+    verify(input == NULL, "InputState does not exist");
+    verify(button == NULL, "Button does not exist");
 
     double mouse_x = input_get_mouse_x(input);
     double mouse_y = input_get_mouse_y(input);
@@ -120,44 +103,15 @@ void button_update(InputState* input, Button* button)
 
 void button_render(SDL_Renderer* renderer, Button* button)
 {
-    if (renderer == NULL)
-    {
-        SDL_Log("Renderer does not exist");
-        return;
-    }
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist, could not be rendered");
-        return;
-    }
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+    verify(button == NULL, "Button does not exist");
 
-    if (button->state == PRESSED)
-    {
-        SDL_RenderTexture(
-            renderer, 
-            button->texture_pressed, 
-            NULL, 
-            button->frect
-        );
-    }
-    else if (button->state == HOVERED)
-    {
-        SDL_RenderTexture(
-            renderer, 
-            button->texture_hovered, 
-            NULL, 
-            button->frect
-        );
-    }
-    else if (button->state == IDLE)
-    {
-        SDL_RenderTexture(
-            renderer, 
-            button->texture_idle, 
-            NULL, 
-            button->frect
-        );
-    }
+    SDL_RenderTexture(
+        renderer, 
+        button->textures[button->state], 
+        NULL, 
+        button->frect
+    );
 }
 
 
@@ -166,11 +120,7 @@ void button_render(SDL_Renderer* renderer, Button* button)
 
 void button_set_position(Button* button, double x, double y)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return;
-    }
+    verify(button == NULL, "Button does not exist");
 
     button->frect->x = x;
     button->frect->y = y;
@@ -178,16 +128,8 @@ void button_set_position(Button* button, double x, double y)
 
 void button_set_size(Button* button, double width, double height)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return;
-    }
-    if (width < 0 || height < 0)
-    {
-        SDL_Log("Width or height have to be positive");
-        return;
-    }
+    verify(button == NULL, "Button does not exist");
+    verify(width < 0 || height < 0, "Invalid size");
 
     button->frect->w = width;
     button->frect->h = height;
@@ -199,50 +141,35 @@ void button_set_size(Button* button, double width, double height)
 
 double button_get_x(const Button* button)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return 0;
-    }
+    verify(button == NULL, "Button does not exist");
+
     return button->frect->x;
 }
 
 double button_get_y(const Button* button)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return 0;
-    }
+    verify(button == NULL, "Button does not exist");
+
     return button->frect->y;
 }
 
 double button_get_width(const Button* button)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return 0;
-    }
+    verify(button == NULL, "Button does not exist");
+
     return button->frect->w;
 }
 
 double button_get_height(const Button* button)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return 0;
-    }
+    verify(button == NULL, "Button does not exist");
+
     return button->frect->h;
 }
 
 SDL_FRect* button_get_frect(const Button* button)
 {
-    if (button == NULL)
-    {
-        SDL_Log("Button does not exist");
-        return NULL;
-    }
+    verify(button == NULL, "Button does not exist");
+
     return button->frect;
 }

@@ -3,11 +3,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_surface.h>
 #include "../helper_functions/helper_functions.h"
-
-// TODO:
-// - add animations
 
 typedef struct Object Object;
 

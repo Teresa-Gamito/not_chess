@@ -10,6 +10,7 @@ struct Tile
 // ========== create ==========
 Tile* tile_create(TileType type)
 {
+    verify(type < 0 || type >= TILE_TYPE_COUNT, "Invalid TileType");
     Tile* tile = (Tile*)SDL_malloc(sizeof(Tile));
 
     tile->type = type;

@@ -17,16 +17,14 @@ Object* object_create(
 
     object->texture = texture;
 
-    float w, h;
-    if (texture == NULL)
-    {
-        w = 0;
-        h = 0;
-    }
-    else 
+    float w = 0;
+    float h = 0;
+
+    if (texture != NULL)
     {
         SDL_GetTextureSize(object->texture, &w, &h);
     }
+
     object->frect = SDL_CreateFRect(x, y, w, h);
 
     return object;
@@ -37,11 +35,7 @@ Object* object_create(
 // ========== destroy ==========
 void object_destroy(Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist, could not destroy");
-        return;
-    }
+    verify(object == NULL, "Object does not exist");
 
     SDL_free(object->frect);
     SDL_free(object);
@@ -52,16 +46,8 @@ void object_destroy(Object* object)
 // ========== render ==========
 void object_render(SDL_Renderer* renderer, Object* object)
 {
-    if (renderer == NULL)
-    {
-        SDL_Log("Renderer does not exist");
-        return;
-    }
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist, could not be rendered");
-        return;
-    }
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+    verify(object == NULL, "Object does not exist");
 
     SDL_RenderTexture(
         renderer,
@@ -75,38 +61,22 @@ void object_render(SDL_Renderer* renderer, Object* object)
 // ========== set ==========
 void object_set_position(Object* object, const double x, const double y)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return;
-    }
+    verify(object == NULL, "Object does not exist");
 
     object->frect->x = x;
     object->frect->y = y;
 }
 void object_set_size(Object* object, const double width, const double height)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return;
-    }
-    if (width < 0 || height < 0)
-    {
-        SDL_Log("Width or height have to be positive");
-        return;
-    }
+    verify(object == NULL, "Object does not exist");
+    verify(width < 0 || height < 0, "Invalid size");
 
     object->frect->w = width;
     object->frect->h = height;
 }
 void object_set_texture(Object* object, SDL_Texture* texture)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return;
-    }
+    verify(object == NULL, "Object does not exist");
 
     object->texture = texture;
 }
@@ -115,56 +85,38 @@ void object_set_texture(Object* object, SDL_Texture* texture)
 // ========== set ==========
 float object_get_x(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return 0;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->frect->x;
 }
 float object_get_y(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return 0;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->frect->y;
 }
 float object_get_width(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return 0;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->frect->w;
 }
 float object_get_height(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return 0;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->frect->h;
 }
 SDL_FRect* object_get_frect(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return NULL;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->frect;
 }
 SDL_Texture* object_get_texture(const Object* object)
 {
-    if (object == NULL)
-    {
-        SDL_Log("Object does not exist");
-        return NULL;
-    }
+    verify(object == NULL, "Object does not exist");
+
     return object->texture;
 }
 
