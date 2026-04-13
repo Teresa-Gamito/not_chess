@@ -35,9 +35,6 @@ Piece* piece_create(PieceType type, PieceColor color);
 void piece_destroy(Piece *piece);
 
 
-bool can_knight_move_to(int src_col, int src_row, int dst_col, int dst_row);
-
-
 // ========== set ==========
 void piece_set_type(Piece* piece, PieceType type);
 void piece_set_color(Piece* piece, PieceColor color);

@@ -41,56 +41,6 @@ void piece_destroy(Piece* piece)
 
 
 
-bool can_move_to(int table[5][5], int src_col, int src_row, int dst_col, int dst_row)
-{
-    int piece_col;
-    int piece_row;
-
-    for (int col = 0; col < 5; col++)
-    {
-        for (int row = 0; row < 5; row++)
-        {
-            if (table[col][row] == 2)
-            {
-                piece_col = col;
-                piece_row = row;
-            }
-        }
-    }
-
-    for (int col = 0; col < 5; col++)
-    {
-        for (int row = 0; row < 5; row++)
-        {
-            if (table[col][row] == 1 &&
-                src_col - dst_col == piece_col - col &&
-                src_row - dst_row == piece_row - row)
-            {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-bool can_knight_move_to(int src_col, int src_row, int dst_col, int dst_row)
-{
-    int moves[5][5] =
-    {
-        {0, 1, 0, 1, 0},
-        {1, 0, 0, 0, 1},
-        {0, 0, 2, 0, 0},
-        {1, 0, 0, 0, 1},
-        {0, 1, 0, 1, 0}
-    };
-    if (can_move_to(moves, src_col, src_row, dst_col, dst_row))
-    {
-        return true;
-    }
-    return false;
-}
-
-
-
 // ========== set ==========
 void piece_set_type(Piece* piece, PieceType type) 
 {

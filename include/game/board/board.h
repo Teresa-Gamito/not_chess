@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <stdbool.h>
-#include <stdbool.h>
 #include "../../helper_functions/helper_functions.h"
 #include "../../helper_functions/error_handling.h"
 #include "../../ui_elements/window.h"
@@ -40,6 +39,55 @@
 
 typedef struct Board Board;
 
+typedef enum BoardTextures
+{
+    TEXTURE_WHITE_PAWN,
+    TEXTURE_WHITE_ROOK,
+    TEXTURE_WHITE_KNIGHT,
+    TEXTURE_WHITE_BISHOP,
+    TEXTURE_WHITE_QUEEN,
+    TEXTURE_WHITE_KING,
+
+    TEXTURE_BLACK_PAWN,
+    TEXTURE_BLACK_ROOK,
+    TEXTURE_BLACK_KNIGHT,
+    TEXTURE_BLACK_BISHOP,
+    TEXTURE_BLACK_QUEEN,
+    TEXTURE_BLACK_KING,
+
+    TEXTURE_TILE_WHITE,
+    TEXTURE_TILE_BLACK,
+
+    TEXTURE_TILE_SELECTED,
+    TEXTURE_TILE_VALID,
+    TEXTURE_TILE_CAPTURE,
+
+    BOARD_TEXTURE_COUNT
+} BoardTextures;
+
+static const char* path[] =
+{
+    PATH_TEXTURE_WHITE_PAWN,
+    PATH_TEXTURE_WHITE_ROOK,
+    PATH_TEXTURE_WHITE_KNIGHT,
+    PATH_TEXTURE_WHITE_BISHOP,
+    PATH_TEXTURE_WHITE_QUEEN,
+    PATH_TEXTURE_WHITE_KING,
+
+    PATH_TEXTURE_BLACK_PAWN,
+    PATH_TEXTURE_BLACK_ROOK,
+    PATH_TEXTURE_BLACK_KNIGHT,
+    PATH_TEXTURE_BLACK_BISHOP,
+    PATH_TEXTURE_BLACK_QUEEN,
+    PATH_TEXTURE_BLACK_KING,
+
+    PATH_TEXTURE_TILE_WHITE,
+    PATH_TEXTURE_TILE_BLACK,
+
+    PATH_TEXTURE_TILE_SELECTED,
+    PATH_TEXTURE_TILE_VALID,
+    PATH_TEXTURE_TILE_CAPTURE,
+};
 
 Board* board_create(
     SDL_Renderer* renderer, 
@@ -56,52 +104,23 @@ void board_update(InputState* input, Board* board);
 
 void board_set_default_layout(Board* board);
 
-    // board actions
-void board_move_piece_from_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-
 void board_add_piece_at(Board* board, Piece* piece, int col, int row);
-
+bool board_has_piece_at(Board* board, int col, int row);
+void board_piece_move_from_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
 void board_change_piece(Board* board, Piece* old_piece, Piece* new_piece);
-void board_change_piece_at(Board* board, int col, int row, Piece* new_piece);
+Piece* board_get_piece_at(Board* board, int col, int row);
+int board_piece_get_col(Board* board, Piece* piece);
+int board_piece_get_row(Board* board, Piece* piece);
+void board_remove_piece(Board* board, int col, int row);
+
+bool board_has_tile_at(Board* board, int col, int row);
+Tile* board_get_tile_at(Board* board, int col, int row);
 void board_change_tile(Board* board, Tile* old_tile, Tile* new_tile);
-void board_change_tile_at(Board* board, int col, int row, Tile* new_tile);
-
+int board_tile_get_col(Board* board, Tile* tile);
+int board_tile_get_row(Board* board, Tile* tile);
 void board_expand(Board* board, int expand_by);
-// maybe not?
-void board_add_row_left(Board* board, int expand_by);
-void board_add_row_right(Board* board, int expand_by);
-void board_add_col_left(Board* board, int expand_by);
-void board_add_col_right(Board* board, int expand_by);
 
-
-    // get
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
 Window* board_get_window(const Board* board);
-
-// // abstract
-// Window* board_window_create(SDL_Renderer* renderer, Board* board, double screen_x, double screen_y, double width, double height);
-// 
-// 
-// void board_add_tile(Board* board, Tile* tile, int col, int row);
-// 
-// void board_remove_tile(Board* board, int col, int row);
-// void board_remove_piece(Board* board, int col, int row);
-// 
-// 
-// Piece* board_get_piece_at(Board* board, int col, int row);
-// Tile* board_get_tile_at(Board* board, int col, int row);
-// 
-// void board_tile_set_object(Board* board, int col, int row);
-// void board_piece_set_object(Board* board, int col, int row);
-// 
-// Object* board_tile_get_object(Board* board, int col, int row);
-// Object* board_piece_get_object(Board* board, int col, int row);
-
-
-
-
-
-
-
 
