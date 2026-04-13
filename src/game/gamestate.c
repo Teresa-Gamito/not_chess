@@ -1,9 +1,15 @@
 #include "../../include/game/gamestate.h"
 
-struct GameState {
-    Window** windows;
-    int window_count;
+typedef enum GameWindows
+{
+    GAME_WINDOW_BOARD,
+    // GAME_WINDOW_TREE,
+    // GAME_WINDOW_
 
+    GAME_WINDOW_COUNT
+} GameWindows;
+
+struct GameState {
     Board* board;
 };
 
@@ -13,12 +19,7 @@ struct GameState {
 GameState* gamestate_create()
 {
     GameState* game = SDL_malloc(sizeof(GameState));
-
-    game->windows = NULL;
-    game->window_count = 0;
-
-    game->windows = NULL;
-    game->window_count = 0;
+    verify(game == NULL, "GameState could not be created: malloc");
 
     game->board = NULL;
 
@@ -29,18 +30,23 @@ void gamestate_set_default(SDL_Renderer* renderer, GameState* game)
     verify(renderer == NULL, "SDL_Renderer does not exist");
     verify(game == NULL, "GameState does not exist");
 
-    game->board = board_create(BOARD_STARTING_COL_NUM, BOARD_STARTING_ROW_NUM);
-    board_set_default(gamestate_get_board(game));
-
-    Window* board_window = board_create_window(
-        renderer, 
-        gamestate_get_board(game), 
-        50, 
-        50, 
-        1000, 
-        1000
+    game->board = board_create(
+        renderer,
+        BOARD_STARTING_COL_NUM,
+        BOARD_STARTING_ROW_NUM,
+        50,
+        30,
+        600,
+        600
     );
-    gamestate_add_window(game, board_window);
+    board_set_default_layout(game->board);
+
+    board_add_piece_at(
+        game->board,
+        piece_create(PAWN, PIECE_WHITE),
+        3,
+        3
+    );
 }
 
 
@@ -51,10 +57,6 @@ void gamestate_destroy(GameState* game)
     verify(game == NULL, "GameState does not exist");
 
     board_destroy(game->board);
-    for (int i = 0; i < game->window_count; i++)
-    {
-        window_destroy(game->windows[i]);
-    }
     SDL_free(game);
 }
 
@@ -66,24 +68,17 @@ void game_render(SDL_Renderer* renderer, GameState* game)
     verify(renderer == NULL, "SDL_Renderer does not exist");
     verify(game == NULL, "GameState does not exist");
 
-    for (int i = 0; i < game->window_count; i++)
-    {
-        window_render(renderer, game->windows[i]);
-    }
+    Board* board = gamestate_get_board(game);
+
+    window_render(renderer, board_get_window(board));
 }
 
 
 
-// ========== set ==========
-void gamestate_add_window(GameState* game, Window* window)
+// ========== update ==========
+void gamestate_update(InputState* input, GameState* game)
 {
-    verify(game == NULL, "GameState does not exist");
-    verify(window == NULL, "Window does not exist");
-
-    game->windows = SDL_realloc(game->windows, (game->window_count + 1) * sizeof(Window*));
-    verify(game->windows == NULL, "Could not add window: realloc");
-    game->windows[game->window_count] = window;
-    (game->window_count)++;
+    board_update(input, gamestate_get_board(game));
 }
 
 
@@ -94,5 +89,3 @@ Board* gamestate_get_board(GameState* game)
     verify(game == NULL, "GameState does not exist");
     return game->board;
 }
-
-

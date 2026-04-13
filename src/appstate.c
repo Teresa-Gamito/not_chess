@@ -24,13 +24,14 @@ AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer)
 
     app->sdl_renderer = sdl_renderer;
 
-    app->gamestate = gamestate_create();
-    gamestate_set_default(app->sdl_renderer, app->gamestate);
+    app->gamestate = NULL;
 
     app->input = input_create();
 
     return app;
 }
+
+
 
 // ========== destroy ==========
 void app_destroy(AppState* app)
@@ -49,10 +50,22 @@ void app_destroy(AppState* app)
 
 
 
+void game_start(AppState* app)
+{
+    verify(app == NULL, "AppState does not exist");
+
+    app->gamestate = gamestate_create();
+    gamestate_set_default(app->sdl_renderer, app->gamestate);
+}
+
+
+
 // ========== update ==========
 void app_update(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
+
+    gamestate_update(app_get_inputstate(app), app_get_gamestate(app));
 }
 
 

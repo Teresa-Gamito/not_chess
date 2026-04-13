@@ -7,7 +7,6 @@
 
 typedef struct GameState GameState;
 
-
 // ========== create ==========
 GameState* gamestate_create();
 void gamestate_set_default(SDL_Renderer* renderer, GameState* game);
@@ -19,6 +18,9 @@ void gamestate_destroy(GameState* game);
 
 // ========== render ==========
 void game_render(SDL_Renderer* renderer, GameState* game);
+
+// ========== update ==========
+void gamestate_update(InputState* input, GameState* game);
 
 
 // ========== set ==========

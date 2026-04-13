@@ -1,4 +1,5 @@
 #include "../../include/ui_elements/window.h"
+#include <SDL3/SDL_stdinc.h>
 
 struct Window {
     SDL_FRect* frect;
@@ -107,6 +108,57 @@ void window_destroy(Window* window)
 
     SDL_free(window);
 }
+void window_destroy_object(Window* window, Object* object)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(object == NULL, "Object does not exist");
+
+    for (int i = 0; i < window->object_count; i++)
+    {
+        if (window->objects[i] == object) 
+        {
+            object_destroy(object);
+            window->objects[i] = window->objects[window->object_count - 1];
+            window->objects = SDL_realloc(window->objects, (window->object_count - 1) * sizeof(Object*));
+            window->object_count--;
+            return;
+        }
+    }
+}
+void window_destroy_button(Window* window, Button* button)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(button == NULL, "Button does not exist");
+
+    for (int i = 0; i < window->button_count; i++)
+    {
+        if (window->buttons[i] == button) 
+        {
+            button_destroy(button);
+            window->buttons[i] = window->buttons[window->button_count - 1];
+            window->buttons = SDL_realloc(window->buttons, (window->button_count - 1) * sizeof(Button*));
+            window->button_count--;
+            return;
+        }
+    }
+}
+void window_destroy_textbox(Window* window, Textbox* textbox)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(textbox == NULL, "Textbox does not exist");
+
+    for (int i = 0; i < window->textbox_count; i++)
+    {
+        if (window->textboxes[i] == textbox) 
+        {
+            textbox_destroy(textbox);
+            window->textboxes[i] = window->textboxes[window->textbox_count - 1];
+            window->textboxes = SDL_realloc(window->textboxes, (window->textbox_count - 1) * sizeof(Textbox*));
+            window->textbox_count--;
+            return;
+        }
+    }
+}
 
 
 
@@ -157,7 +209,7 @@ void window_update(InputState* input, Window* window)
 
 // ========== set ==========
 
-static void window_objects_update_position(Window* window)
+static void window_objects_update_position(Window* window, int new_window_x, int new_window_y)
 {
     verify(window == NULL, "Window does not exist");
 
@@ -166,12 +218,12 @@ static void window_objects_update_position(Window* window)
         Object* object = window->objects[i];
         object_set_position(
             object, 
-            object_get_x(object) + window_get_x(window), 
-            object_get_y(object) + window_get_y(window)
+            object_get_x(object) - window_get_x(window) + new_window_x, 
+            object_get_y(object) - window_get_y(window) + new_window_y
         );
     }
 }
-static void window_buttons_update_position(Window* window)
+static void window_buttons_update_position(Window* window, int new_window_x, int new_window_y)
 {
     verify(window == NULL, "Window does not exist");
 
@@ -180,12 +232,12 @@ static void window_buttons_update_position(Window* window)
         Button* button = window->buttons[i];
         button_set_position(
             button,
-            button_get_x(button) + window_get_x(window), 
-            button_get_y(button) + window_get_y(window)
+            button_get_x(button) - window_get_x(window) + new_window_x, 
+            button_get_y(button) - window_get_y(window) + new_window_y 
         );
     }
 }
-static void window_textboxes_update_position(Window* window)
+static void window_textboxes_update_position(Window* window, int new_window_x, int new_window_y)
 {
     verify(window == NULL, "Window does not exist");
 
@@ -194,8 +246,8 @@ static void window_textboxes_update_position(Window* window)
         Textbox* textbox = window->textboxes[i];
         textbox_set_position(
             textbox,
-            textbox_get_x(textbox) + window_get_x(window), 
-            textbox_get_y(textbox) + window_get_y(window)
+            textbox_get_x(textbox) - window_get_x(window) + new_window_x,
+            textbox_get_y(textbox) - window_get_y(window) + new_window_y 
         );
     }
 }
@@ -203,11 +255,11 @@ void window_set_position(Window* window, double x, double y)
 {
     verify(window == NULL, "Window does not exist");
 
+    window_objects_update_position(window, x, y);
+    window_buttons_update_position(window, x, y);
+    window_textboxes_update_position(window, x, y);
     window->frect->x = x;
     window->frect->y = y;
-    window_objects_update_position(window);
-    window_buttons_update_position(window);
-    window_textboxes_update_position(window);
 }
 
 void window_set_size(Window* window, double width, double height)
@@ -239,12 +291,6 @@ void window_add_object(Window* window, Object* object)
     verify(window == NULL, "Window does not exist");
     verify(object == NULL, "Object does not exist");
 
-    object_set_position(
-        object, 
-        object_get_x(object) + window_get_x(window), 
-        object_get_y(object) + window_get_y(window)
-    );
-
     window->objects = SDL_realloc(
         window->objects, 
         (window->object_count + 1) * sizeof(Object*)
@@ -260,12 +306,6 @@ void window_add_button(Window* window, Button* button)
     verify(window == NULL, "Window does not exist");
     verify(button == NULL, "Button does not exist");
 
-    button_set_position(
-        button,
-        button_get_x(button) + window_get_x(window), 
-        button_get_y(button) + window_get_y(window)
-    );
-
     window->buttons = SDL_realloc(
         window->buttons, 
         (window->button_count + 1) * sizeof(Button*));
@@ -279,12 +319,6 @@ void window_add_textbox(Window* window, Textbox* textbox)
 {
     verify(window == NULL, "Window does not exist");
     verify(textbox == NULL, "Textbox does not exist");
-
-    textbox_set_position(
-        textbox,
-        textbox_get_x(textbox) + window_get_x(window), 
-        textbox_get_y(textbox) + window_get_y(window)
-    );
 
     window->textboxes = SDL_realloc(
         window->textboxes, 
@@ -334,10 +368,56 @@ SDL_FRect* window_get_frect(const Window* window)
 
     return window->frect;
 }
+
 SDL_Texture* window_get_texture(const Window* window, int index)
 {
     verify(window == NULL, "Window does not exist");
     verify(index < 0 || index >= window->texture_count, "Invalid index");
 
     return window->textures[index];
+}
+
+Object* window_get_object_at(const Window* window, int index)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(index < 0 || index >= window->object_count, "Invalid index");
+
+    return window->objects[index];
+}
+
+int window_get_object_count(const Window* window)
+{
+    verify(window == NULL, "Window does not exist");
+
+    return window->object_count;
+}
+
+Button* window_get_button_at(const Window* window, int index)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(index < 0 || index >= window->button_count, "Invalid index");
+
+    return window->buttons[index];
+}
+
+int window_get_button_count(const Window* window)
+{
+    verify(window == NULL, "Window does not exist");
+
+    return window->button_count;
+}
+
+Textbox* window_get_textbox_at(const Window* window, int index)
+{
+    verify(window == NULL, "Window does not exist");
+    verify(index < 0 || index >= window->textbox_count, "Invalid index");
+
+    return window->textboxes[index];
+}
+
+int window_get_textbox_count(const Window* window)
+{
+    verify(window == NULL, "Window does not exist");
+
+    return window->textbox_count;
 }

@@ -37,7 +37,7 @@ void object_destroy(Object* object)
 {
     verify(object == NULL, "Object does not exist");
 
-    SDL_free(object->frect);
+    SDL_DestroyFRect(object->frect);
     SDL_free(object);
 }
 
@@ -119,4 +119,3 @@ SDL_Texture* object_get_texture(const Object* object)
 
     return object->texture;
 }
-

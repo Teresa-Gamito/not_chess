@@ -11,6 +11,7 @@ typedef struct AppState AppState;
 
 // ========== create ==========
 AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer);
+void game_start(AppState* app);
 
 // ========== destroy ==========
 void app_destroy(AppState* app);

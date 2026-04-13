@@ -2,10 +2,7 @@
 
 void verify(bool statement, const char* error_msg)
 {
-    if (!statement) 
-    {
-        return;
-    }
+    if (!statement) return;
 
     SDL_Log("%s", error_msg);
     SDL_Quit();

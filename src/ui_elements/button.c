@@ -1,19 +1,25 @@
 #include "../../include/ui_elements/button.h"
+#include <SDL3/SDL_log.h>
 
 typedef enum ButtonState
 {
     IDLE,
     HOVERED,
     PRESSED,
+    BUTTON_STATE_COUNT
 } ButtonState;
 
 struct Button
 {
-    SDL_Texture** textures;
+    SDL_Texture* textures[BUTTON_STATE_COUNT];
 
     SDL_FRect* frect;
 
-    void (*on_press)();
+    void (*on_press0)();
+    void (*on_press1)(void* arg1);
+    void (*on_press2)(void* arg1, void* arg2);
+    void* arg1;
+    void* arg2;
 
     ButtonState state;
 };
@@ -25,7 +31,6 @@ struct Button
 Button* button_create(
     double x, 
     double y, 
-    void (*on_press)(),
     SDL_Texture* texture_idle, 
     SDL_Texture* texture_hovered, 
     SDL_Texture* texture_pressed)
@@ -38,7 +43,9 @@ Button* button_create(
 
     button->state = IDLE;
 
-    button->on_press = on_press;
+    button->on_press0 = NULL;
+    button->on_press1 = NULL;
+    button->on_press2 = NULL;
 
     float w = 0;
     float h = 0;
@@ -67,6 +74,7 @@ void button_destroy(Button* button)
 
 
 
+
 // ========== update ==========
 
 void button_update(InputState* input, Button* button)
@@ -81,7 +89,9 @@ void button_update(InputState* input, Button* button)
 
     if (button->state == PRESSED && mouse_left_released)
     {
-        button->on_press();
+        if(button->on_press0 != NULL) button->on_press0();
+        else if(button->on_press1 != NULL) button->on_press1(button->arg1);
+        else if(button->on_press2 != NULL) button->on_press2(button->arg1, button->arg2);
     }
 
     if (point_intersects_rect(mouse_x, mouse_y, button->frect))
@@ -135,6 +145,52 @@ void button_set_size(Button* button, double width, double height)
     button->frect->h = height;
 }
 
+void button_set_texture_idle(Button* button, SDL_Texture* texture)
+{
+    button->textures[IDLE] = texture;
+}
+void button_set_texture_hovered(Button* button, SDL_Texture* texture)
+{
+    button->textures[HOVERED] = texture;
+}
+void button_set_texture_pressed(Button* button, SDL_Texture* texture)
+{
+    button->textures[PRESSED] = texture;
+}
+void button_set_texture_all(Button* button, SDL_Texture* texture)
+{
+    button_set_texture_idle(button, texture);
+    button_set_texture_hovered(button, texture);
+    button_set_texture_pressed(button, texture);
+}
+
+void button_set_on_press_func_arg0(Button* button, void (*func)())
+{
+    button->on_press0 = func;
+    button->on_press1 = NULL;
+    button->on_press2 = NULL;
+
+    button->arg1 = NULL;
+    button->arg2 = NULL;
+}
+void button_set_on_press_func_arg1(Button* button, void (*func)(void* arg1), void* arg1)
+{
+    button->on_press0 = NULL;
+    button->on_press1 = func;
+    button->on_press2 = NULL;
+
+    button->arg1 = arg1;
+    button->arg2 = NULL;
+}
+void button_set_on_press_func_arg2(Button* button, void (*func)(void* arg1, void* arg2), void* arg1, void* arg2)
+{
+    button->on_press0 = NULL;
+    button->on_press1 = NULL;
+    button->on_press2 = func;
+
+    button->arg1 = arg1;
+    button->arg2 = arg2;
+}
 
 
 // ========== get ==========

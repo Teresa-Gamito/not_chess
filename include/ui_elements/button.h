@@ -19,7 +19,6 @@ typedef struct Button Button;
 Button* button_create(
     double x, 
     double y, 
-    void (*on_press)(),
     SDL_Texture* texture_idle, 
     SDL_Texture* texture_hovered, 
     SDL_Texture* texture_pressed
@@ -37,6 +36,14 @@ void button_render(SDL_Renderer* renderer, Button* button);
 // ========== set ==========
 void button_set_position(Button* button, double x, double y);
 void button_set_size(Button* button, double width, double height);
+void button_set_texture_idle(Button* button, SDL_Texture* texture);
+void button_set_texture_hovered(Button* button, SDL_Texture* texture);
+void button_set_texture_pressed(Button* button, SDL_Texture* texture);
+void button_set_texture_all(Button* button, SDL_Texture* texture);
+
+void button_set_on_press_func_arg0(Button* button, void (*func)());
+void button_set_on_press_func_arg1(Button* button, void (*func)(void* arg1), void* arg1);
+void button_set_on_press_func_arg2(Button* button, void (*func)(void* arg1, void* arg2), void* arg1, void* arg2);
 
 // ========== get ==========
 double button_get_x(const Button* button);

@@ -15,6 +15,8 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     AppState* app = app_create(sdl_window, sdl_renderer);
     *appstate = app;
 
+    game_start(app);
+
     return SDL_APP_CONTINUE;
 }
 
@@ -27,6 +29,8 @@ SDL_AppResult SDL_AppEvent(void* appstate, SDL_Event* event)
     {
         return SDL_APP_SUCCESS;
     }
+
+    input_update(app_get_inputstate(app), event);
 
     return SDL_APP_CONTINUE;
 }
@@ -42,7 +46,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     app_render(app);
 
     // reset input
-    // input_begin_frame(app_get_inputstate(app));
+    input_begin_frame(app_get_inputstate(app));
 
     SDL_Delay(1);
     return SDL_APP_CONTINUE; 
