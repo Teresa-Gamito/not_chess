@@ -1,4 +1,5 @@
 #include "../../../include/game/board/board.h"
+#include <SDL3/SDL_stdinc.h>
 
 struct Board
 {
@@ -26,6 +27,24 @@ static void board_add_tile(Board* board, Tile* tile, int col, int row);
 static void board_remove_tile(Board* board, int col, int row);
 void board_tile_set_object(Board* board, int col, int row);
 void board_tile_set_button(Board* board, int col, int row);
+
+
+static BoardTextures piece_get_texture_index(Piece* piece);
+static BoardTextures tile_get_texture_index(Tile* tile, int col, int row);
+
+
+static bool can_piece_type_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_pawn_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_rook_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_knight_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_bishop_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_queen_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_king_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+
+static bool can_piece_capture(Piece* capturing_piece, Piece* captured_piece);
+static void piece_capture(Board* board, Piece* captured_piece);
+
+
 
 Board* board_create(
     SDL_Renderer* renderer, 
@@ -121,12 +140,8 @@ void board_update(InputState* input, Board* board)
 {
     window_update(input, board_get_window(board));
 
-    if (board->selected_tile == NULL)
-    {
-        return;
-    }
-    board_clear_tiles(board);
     if (board->selected_tile == NULL) return;
+    board_clear_tiles(board);
     board_set_selected_tile(board);
     board_set_valid_tiles(board);
 }
@@ -141,6 +156,13 @@ void board_select_tile(void* arg1_board, void* arg2_tile)
     Tile* new_tile = (Tile*)arg2_tile;
     Tile* old_tile = board->selected_tile;
 
+    if (new_tile == old_tile) 
+    {
+        board->selected_tile = NULL;
+        board_clear_tiles(board);
+        return;
+    }
+
     board->selected_tile = new_tile;
 
     if (old_tile == NULL) return;
@@ -154,7 +176,19 @@ void board_select_tile(void* arg1_board, void* arg2_tile)
     if (!board_has_piece_at(board, old_col, old_row)) return;
 
     if (board_piece_can_move_to(board, old_col, old_row, new_col, new_row))
+    {
+        if (board_has_piece_at(board, new_col, new_row))
+        {
+            Piece* src_piece = board_get_piece_at(board, old_col, old_row);
+            Piece* dst_piece = board_get_piece_at(board, new_col, new_row);
+            if (can_piece_capture(src_piece, dst_piece))
+            {
+                piece_capture(board, dst_piece);
+            }
+
+        }
         board_piece_move_from_to(board, old_col, old_row, new_col, new_row);
+    }
 }
 
 
@@ -405,8 +439,6 @@ void board_set_default_layout(Board* board)
 // ==============================
 // Board UI
 // ==============================
-static BoardTextures piece_get_texture_index(Piece* piece);
-static BoardTextures tile_get_texture_index(Tile* tile, int col, int row);
 
 void board_piece_set_object(Board* board, int col, int row)
 {
@@ -630,10 +662,6 @@ static BoardTextures tile_get_texture_index(Tile* tile, int x, int y)
 // ==============================
 // piece movement
 // ==============================
-static bool can_piece_type_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-
-static bool can_piece_capture(Piece* capturing_piece, Piece* captured_piece);
-static void piece_capture(Board* board, Piece* captured_piece);
 
 void board_piece_move_from_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -643,7 +671,6 @@ void board_piece_move_from_to(Board* board, int src_col, int src_row, int dst_co
     verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
     verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
-    verify(board_has_piece_at(board, dst_col, dst_row), "Destination already occupied");
 
     Piece* piece = board_get_piece_at(board, src_col, src_row);
     board->pieces[dst_col + dst_row * board->col_num] = board->pieces[src_col + src_row * board->col_num];
@@ -655,6 +682,7 @@ void board_piece_move_from_to(Board* board, int src_col, int src_row, int dst_co
         window_get_y(board->window) + (dst_row * board->scale * TEXTURE_DEFAULT_SIZE_PX)
     );
 
+    board->selected_tile = NULL;
     board_clear_tiles(board);
 
     // TODO: add to log
@@ -694,24 +722,30 @@ static bool can_piece_type_move_to(Board* board, int src_col, int src_row, int d
     switch(type)
     {
         case PAWN:
+            return can_pawn_move(board, src_col, src_row, dst_col, dst_row);
             break;
         case ROOK:
+            return can_rook_move(board, src_col, src_row, dst_col, dst_row);
             break;
         case KNIGHT:
+            return can_knight_move(board, src_col, src_row, dst_col, dst_row);
             break;
         case BISHOP:
+            return can_bishop_move(board, src_col, src_row, dst_col, dst_row);
             break;
         case QUEEN:
+            return can_queen_move(board, src_col, src_row, dst_col, dst_row);
             break;
         case KING:
+            return can_king_move(board, src_col, src_row, dst_col, dst_row);
         default:
             break;
     }
     return false;
 }
-// TODO:
 static bool can_pawn_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
+    // TODO:
     verify(board == NULL, "Board does not exist");
     verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
     verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
@@ -719,12 +753,105 @@ static bool can_pawn_move(Board* board, int src_col, int src_row, int dst_col, i
     verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
 
+    Piece* piece = board_get_piece_at(board, src_col, src_row);
+    PieceColor color = piece_get_color(piece);
+    int dir;
+
+    if (color == PIECE_WHITE)
+        dir = 1;
+    else
+        dir = -1;
+
+    if (src_col == dst_col && dst_row == src_row + (1 * dir))
+    {
+        return true;
+    }
+    return false;
 }
-static bool can_rook_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool can_knight_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool can_bishop_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool can_queen_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool can_king_move(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_rook_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    // TODO:
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    if (src_col != dst_col && src_row != dst_row)
+    {
+        return false;
+    }
+    return true;
+}
+static bool can_knight_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    // TODO:
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 2) ||
+        (SDL_abs(src_col - dst_col) == 2 && SDL_abs(src_row - dst_row) == 1))
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_bishop_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    // TODO:
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    if (dst_col - src_col == dst_row - src_row || dst_row - src_row == -dst_col + src_col)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_queen_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    // TODO:
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    if (dst_col - src_col == dst_row - src_row || dst_row - src_row == -dst_col + src_col ||
+        src_col == dst_col || src_row == dst_row)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_king_move(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    // TODO:
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 1) ||
+        (SDL_abs(src_col - dst_col) == 0 && SDL_abs(src_row - dst_row) == 1) ||
+        (SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 0))
+    {
+        return true;
+    }
+    return false;
+}
 
 static void piece_capture(Board* board, Piece* captured_piece)
 {
@@ -745,5 +872,5 @@ static bool can_piece_capture(Piece* capturing_piece, Piece* captured_piece)
     verify(capturing_piece == NULL, "Piece does not exist");
     verify(captured_piece == NULL, "Piece does not exist");
 
-    return piece_get_type(capturing_piece) != piece_get_type(captured_piece);
+    return piece_get_color(capturing_piece) != piece_get_color(captured_piece);
 }
