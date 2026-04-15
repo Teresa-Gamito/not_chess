@@ -8,7 +8,16 @@ struct Piece
     Object* object;
 };
 
-//struct PieceProperties
+static bool can_piece_type_move_to(Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_pawn_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_bishop_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_king_move(int src_col, int src_row, int dst_col, int dst_row);
+
+static bool can_piece_type_capture(Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
+static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row);
 
 
 
@@ -38,6 +47,169 @@ void piece_destroy(Piece* piece)
 
     SDL_free(piece);
 }
+
+
+// ========== movement ==========
+bool piece_can_move_to(Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
+{
+    verify(piece == NULL, "Piece does not exist");
+
+    PieceType type = piece_get_type(piece);
+    if (!can_piece_type_move_to(piece, src_col, src_row, dst_col, dst_row))
+    {
+        return false;
+    }
+
+    return true;
+}
+bool piece_requires_clear_path(Piece* piece)
+{
+    PieceType type = piece_get_type(piece);
+    switch (type)
+    {
+        case PAWN:
+        case ROOK:
+        case BISHOP:
+        case QUEEN:
+            return true;
+
+        default:
+            return false;
+    }
+}
+static bool can_piece_type_move_to(Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
+{
+    verify(piece == NULL, "Piece does not exist");
+
+    PieceType type = piece_get_type(piece);
+    PieceColor color = piece_get_color(piece);
+    switch(type)
+    {
+        case PAWN:
+            if (color == PIECE_WHITE)
+                return can_pawn_move(src_col, src_row, dst_col, dst_row);
+            else if (color == PIECE_BLACK)
+                return can_pawn_move(-src_col, src_row, -dst_col, dst_row);
+            break;
+        case ROOK:
+            return can_rook_move(src_col, src_row, dst_col, dst_row);
+            break;
+        case KNIGHT:
+            return can_knight_move(src_col, src_row, dst_col, dst_row);
+            break;
+        case BISHOP:
+            return can_bishop_move(src_col, src_row, dst_col, dst_row);
+            break;
+        case QUEEN:
+            return can_queen_move(src_col, src_row, dst_col, dst_row);
+            break;
+        case KING:
+            return can_king_move(src_col, src_row, dst_col, dst_row);
+        default:
+            break;
+    }
+    return false;
+}
+static bool can_pawn_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (src_col == dst_col && dst_row == src_row + 1)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (src_col == dst_col || src_row == dst_row)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 2) ||
+        (SDL_abs(src_col - dst_col) == 2 && SDL_abs(src_row - dst_row) == 1))
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_bishop_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (dst_col - src_col == dst_row - src_row || dst_row - src_row == -dst_col + src_col)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (dst_col - src_col == dst_row - src_row || dst_row - src_row == -dst_col + src_col ||
+        src_col == dst_col || src_row == dst_row)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_king_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 1) ||
+        (SDL_abs(src_col - dst_col) == 0 && SDL_abs(src_row - dst_row) == 1) ||
+        (SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 0))
+    {
+        return true;
+    }
+    return false;
+}
+
+
+bool piece_can_capture(Piece* src_piece, Piece* dst_piece, int src_col, int src_row, int dst_col, int dst_row)
+{
+    verify(src_piece == NULL, "Piece does not exist");
+    verify(dst_piece == NULL, "Piece does not exist");
+
+    if (piece_get_color(src_piece) == piece_get_color(dst_piece))
+    {
+        return false;
+    }
+    if (can_piece_type_capture(src_piece, src_col, src_row, dst_col, dst_row))
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_piece_type_capture(Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
+{
+    verify(piece == NULL, "Piece does not exist");
+
+    PieceType type = piece_get_type(piece);
+    switch (type) 
+    {
+        case PAWN:
+            can_pawn_capture(src_col, src_row, dst_col, dst_row);
+            break;
+
+        case ROOK:
+        case KNIGHT:
+        case BISHOP:
+        case QUEEN:
+        case KING:
+        default:
+            return can_piece_type_move_to(piece, src_col, src_row, dst_col, dst_row);
+            break;
+    }
+    return false;
+}
+static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (dst_row == src_row + 1 && (dst_col == src_row + 1 || dst_col == src_col - 1))
+    {
+        return true;
+    }
+    return true;
+}
+
 
 
 

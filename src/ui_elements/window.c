@@ -1,5 +1,4 @@
 #include "../../include/ui_elements/window.h"
-#include <SDL3/SDL_stdinc.h>
 
 struct Window {
     SDL_FRect* frect;
@@ -20,6 +19,9 @@ struct Window {
 };
 
 
+static void window_objects_update_position(Window* window, int new_window_x, int new_window_y);
+static void window_buttons_update_position(Window* window, int new_window_x, int new_window_y);
+static void window_textboxes_update_position(Window* window, int new_window_x, int new_window_y);
 
 // ========== create ==========
 
@@ -32,7 +34,7 @@ Window* window_create(
 {
     verify(width < 0 || height < 0, "Invalid size");
 
-    Window* window = (Window*)SDL_malloc(sizeof(Window));
+    Window* window = SDL_malloc(sizeof(Window));
 
     window->frect = SDL_CreateFRect(x, y, width, height);
 
@@ -209,6 +211,16 @@ void window_update(InputState* input, Window* window)
 
 // ========== set ==========
 
+void window_set_position(Window* window, double x, double y)
+{
+    verify(window == NULL, "Window does not exist");
+
+    window_objects_update_position(window, x, y);
+    window_buttons_update_position(window, x, y);
+    window_textboxes_update_position(window, x, y);
+    window->frect->x = x;
+    window->frect->y = y;
+}
 static void window_objects_update_position(Window* window, int new_window_x, int new_window_y)
 {
     verify(window == NULL, "Window does not exist");
@@ -250,16 +262,6 @@ static void window_textboxes_update_position(Window* window, int new_window_x, i
             textbox_get_y(textbox) - window_get_y(window) + new_window_y 
         );
     }
-}
-void window_set_position(Window* window, double x, double y)
-{
-    verify(window == NULL, "Window does not exist");
-
-    window_objects_update_position(window, x, y);
-    window_buttons_update_position(window, x, y);
-    window_textboxes_update_position(window, x, y);
-    window->frect->x = x;
-    window->frect->y = y;
 }
 
 void window_set_size(Window* window, double width, double height)

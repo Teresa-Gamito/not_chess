@@ -31,6 +31,16 @@ void tile_set_type(Tile* tile, TileType type);
 void tile_set_object(Tile* tile, Object* object);
 void tile_set_button(Tile* tile, Button* button);
 void tile_set_texture(Tile* tile, SDL_Texture* texture);
+void tile_set_ui(
+    Tile* tile, 
+    SDL_Texture* texture_selected, 
+    SDL_Texture* texture_valid, 
+    SDL_Texture* texture_capture
+);
+void tile_ui_set_none(Tile* tile);
+void tile_ui_set_selected(Tile* tile);
+void tile_ui_set_valid(Tile* tile);
+void tile_ui_set_capture(Tile* tile);
 
 
 

@@ -1,5 +1,4 @@
 #include "../include/inputstate.h"
-#include <SDL3/SDL_scancode.h>
 
 typedef struct MouseState
 {
@@ -67,7 +66,7 @@ static void keyboard_clear(KeyboardState* key)
 {
     verify(key == NULL, "KeyboardState does not exist");
 
-    for (int i = 0; i < SDL_SCANCODE_COUNT + 1; i++)
+    for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
     {
         key->pressed[i] = false;
         key->released[i] = false;

@@ -102,11 +102,9 @@ void board_destroy(Board* board);
 void board_render(SDL_Renderer* renderer, const Board* board);
 void board_update(InputState* input, Board* board);
 
-void board_set_default_layout(Board* board);
-
 void board_add_piece_at(Board* board, Piece* piece, int col, int row);
 bool board_has_piece_at(Board* board, int col, int row);
-void board_piece_move_from_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
+void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
 void board_change_piece(Board* board, Piece* old_piece, Piece* new_piece);
 Piece* board_get_piece_at(Board* board, int col, int row);
 int board_piece_get_col(Board* board, Piece* piece);
@@ -120,7 +118,7 @@ int board_tile_get_col(Board* board, Tile* tile);
 int board_tile_get_row(Board* board, Tile* tile);
 void board_expand(Board* board, int expand_by);
 
+Window* board_get_window(const Board* board);
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
-Window* board_get_window(const Board* board);
 

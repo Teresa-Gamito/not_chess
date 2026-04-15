@@ -18,3 +18,4 @@ void SDL_DestroyFRect(SDL_FRect* frect);
 
 bool is_within(int value, int min, int max);
 bool is_even(int x);
+int sign(int value);

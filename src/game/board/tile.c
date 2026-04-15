@@ -1,9 +1,18 @@
 #include "../../../include/game/board/tile.h"
 
+typedef enum TileUI
+{
+    TILEUI_NONE,
+    TILEUI_SELECTED,
+    TILEUI_VALID,
+    TILEUI_CAPTURE
+} TileUI;
+
 struct Tile
 {
     TileType type;
 
+    TileUI ui;
     Object* object;
     Button* button;
 };
@@ -20,7 +29,9 @@ Tile* tile_create(TileType type)
 
     tile->type = type;
 
+    tile->ui = TILEUI_NONE;
     tile->object = NULL;
+    tile->button = NULL;
 
     return tile;
 }
@@ -61,7 +72,48 @@ void tile_set_texture(Tile* tile, SDL_Texture* texture)
 
     button_set_texture_all(tile->button, texture);
 }
+void tile_set_ui(
+    Tile* tile, 
+    SDL_Texture* texture_selected, 
+    SDL_Texture* texture_valid, 
+    SDL_Texture* texture_capture
+)
+{
+    switch (tile->ui)
+    {
+        case TILEUI_SELECTED:
+            tile_set_texture(tile, texture_selected);
+            break;
 
+        case TILEUI_VALID:
+            tile_set_texture(tile, texture_valid);
+            break;
+
+        case TILEUI_CAPTURE:
+            tile_set_texture(tile, texture_capture);
+            break;
+
+        default:
+            tile_set_texture(tile, NULL);
+            break;
+    }
+}
+void tile_ui_set_none(Tile* tile)
+{
+    tile->ui = TILEUI_NONE;
+}
+void tile_ui_set_selected(Tile* tile)
+{
+    tile->ui = TILEUI_SELECTED;
+}
+void tile_ui_set_valid(Tile* tile)
+{
+    tile->ui = TILEUI_VALID;
+}
+void tile_ui_set_capture(Tile* tile)
+{
+    tile->ui = TILEUI_CAPTURE;
+}
 
 // ========== get ==========
 TileType tile_get_type(const Tile* tile)

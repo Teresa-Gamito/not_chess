@@ -21,7 +21,7 @@ SDL_FRect* SDL_CreateFRect(double x, double y, double width, double height)
 {
     verify(width < 0 || height < 0, "Invalid size");
 
-    SDL_FRect* frect = (SDL_FRect*)SDL_malloc(sizeof(SDL_FRect));
+    SDL_FRect* frect = SDL_malloc(sizeof(SDL_FRect));
     verify(frect == NULL, "Could not create SDL_FRect: malloc");
     frect->x = x;
     frect->y = y;
@@ -69,3 +69,8 @@ bool is_even(int x)
 {
     return x % 2 == 0;
 }
+int sign(int value)
+{
+    return value > 0 ? 1 : (value < 0 ? -1 : 0);
+}
+

@@ -1,5 +1,4 @@
 #include "../../include/ui_elements/button.h"
-#include <SDL3/SDL_log.h>
 
 typedef enum ButtonState
 {

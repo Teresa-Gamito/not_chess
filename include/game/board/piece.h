@@ -39,6 +39,9 @@ void piece_destroy(Piece *piece);
 void piece_set_type(Piece* piece, PieceType type);
 void piece_set_color(Piece* piece, PieceColor color);
 void piece_set_object(Piece* piece, Object* object);
+bool piece_can_move_to(Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
+bool piece_requires_clear_path(Piece* piece);
+bool piece_can_capture(Piece* capturing_piece, Piece* captured_piece, int src_col, int src_row, int dst_col, int dst_row);
 
 
 

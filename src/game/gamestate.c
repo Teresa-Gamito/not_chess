@@ -13,6 +13,8 @@ struct GameState {
     Board* board;
 };
 
+static void board_set_default_layout(Board* board);
+
 
 
 // ========== create ==========
@@ -47,6 +49,44 @@ void gamestate_set_default(SDL_Renderer* renderer, GameState* game)
         3,
         3
     );
+}
+static void board_set_default_layout(Board* board)
+{
+    verify(board == NULL, "Board does not exist");
+
+    board_add_piece_at(board, piece_create(KING, PIECE_WHITE), 4, 0);
+    board_add_piece_at(board, piece_create(QUEEN, PIECE_WHITE), 3, 0);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_WHITE), 2, 0);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_WHITE), 5, 0);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_WHITE), 1, 0);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_WHITE), 6, 0);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_WHITE), 0, 0);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_WHITE), 7, 0);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 0, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 1, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 2, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 3, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 4, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 5, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 6, 1);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_WHITE), 7, 1);
+
+    board_add_piece_at(board, piece_create(KING, PIECE_BLACK), 4, 7);
+    board_add_piece_at(board, piece_create(QUEEN, PIECE_BLACK), 3, 7);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_BLACK), 2, 7);
+    board_add_piece_at(board, piece_create(BISHOP, PIECE_BLACK), 5, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_BLACK), 1, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, PIECE_BLACK), 6, 7);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_BLACK), 0, 7);
+    board_add_piece_at(board, piece_create(ROOK, PIECE_BLACK), 7, 7);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 0, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 1, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 2, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 3, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 4, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 5, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 6, 6);
+    board_add_piece_at(board, piece_create(PAWN, PIECE_BLACK), 7, 6);
 }
 
 
