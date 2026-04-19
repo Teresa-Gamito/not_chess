@@ -1,5 +1,10 @@
 #include "../include/appstate.h"
 
+int g_app_window_width = APP_WINDOW_WIDTH;
+int g_app_window_height = APP_WINDOW_HEIGHT;
+float g_app_scale = 1;
+int g_app_sprite_size_px = 16;
+
 struct AppState
 {
     SDL_Window* sdl_window;
@@ -12,17 +17,23 @@ struct AppState
 
 
 // ========== create ==========
-AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer)
+AppState* app_create()
 {
-    verify(sdl_window == NULL, "SDL_Window does not exist");
-    verify(sdl_renderer == NULL, "SDL_Renderer does not exist");
-
     AppState* app = (AppState*)SDL_malloc(sizeof(AppState));
     verify(app == NULL, "AppState could not be created: malloc");
     
-    app->sdl_window = sdl_window;
+    app->sdl_window = SDL_CreateWindow(
+        APP_NAME,
+        APP_WINDOW_WIDTH,
+        APP_WINDOW_HEIGHT,
+        APP_WINDOW_FLAGS
+    );
+    verify(app->sdl_window == NULL, "SDL_Window could not be created");
 
-    app->sdl_renderer = sdl_renderer;
+    app->sdl_renderer = SDL_CreateRenderer(app->sdl_window, NULL);
+    verify(app->sdl_renderer == NULL, "SDL_Renderer could not be created");
+
+    SDL_SetDefaultTextureScaleMode(app->sdl_renderer, SDL_SCALEMODE_PIXELART);
 
     app->gamestate = NULL;
 
@@ -64,6 +75,15 @@ void game_start(AppState* app)
 void app_update(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
+    SDL_GetWindowSize(app->sdl_window, &g_app_window_width, &g_app_window_height);
+    if (APP_WINDOW_WIDTH / APP_WINDOW_HEIGHT < g_app_window_width / g_app_window_height)
+    {
+        g_app_scale = (float) g_app_window_width / APP_WINDOW_WIDTH;
+    }
+    else
+    {
+        g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
+    }
 
     gamestate_update(app_get_inputstate(app), app_get_gamestate(app));
 }

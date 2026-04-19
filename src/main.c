@@ -1,4 +1,5 @@
 #include "../include/main.h"
+#include <SDL3/SDL_video.h>
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) 
 {
@@ -7,12 +8,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_Window* sdl_window = SDL_CreateWindow("test", 1000, 1000, 0);
-
-    SDL_Renderer* sdl_renderer = SDL_CreateRenderer(sdl_window, NULL);
-    SDL_SetDefaultTextureScaleMode(sdl_renderer, SDL_SCALEMODE_PIXELART);
-
-    AppState* app = app_create(sdl_window, sdl_renderer);
+    AppState* app = app_create();
     *appstate = app;
 
     game_start(app);
@@ -61,4 +57,3 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
 
     SDL_Quit();
 }
-

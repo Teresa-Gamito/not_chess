@@ -65,7 +65,7 @@ typedef enum BoardTextures
     BOARD_TEXTURE_COUNT
 } BoardTextures;
 
-static const char* path[] =
+static const char* board_textures[] =
 {
     PATH_TEXTURE_WHITE_PAWN,
     PATH_TEXTURE_WHITE_ROOK,
@@ -86,8 +86,13 @@ static const char* path[] =
 
     PATH_TEXTURE_TILE_SELECTED,
     PATH_TEXTURE_TILE_VALID,
-    PATH_TEXTURE_TILE_CAPTURE,
+    PATH_TEXTURE_TILE_CAPTURE
 };
+
+typedef enum BoardTask
+{
+    ADD_PAWN,
+} BoardTask;
 
 Board* board_create(
     SDL_Renderer* renderer, 
@@ -100,25 +105,24 @@ Board* board_create(
 );
 void board_destroy(Board* board);
 void board_render(SDL_Renderer* renderer, const Board* board);
-void board_update(InputState* input, Board* board);
+void board_update(const InputState* input, Board* board);
 
 void board_add_piece_at(Board* board, Piece* piece, int col, int row);
-bool board_has_piece_at(Board* board, int col, int row);
+void board_piece_capture(Board* board, int col, int row);
+bool board_has_piece_at(const Board* board, int col, int row);
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-void board_change_piece(Board* board, Piece* old_piece, Piece* new_piece);
-Piece* board_get_piece_at(Board* board, int col, int row);
-int board_piece_get_col(Board* board, Piece* piece);
-int board_piece_get_row(Board* board, Piece* piece);
-void board_remove_piece(Board* board, int col, int row);
+// void board_change_piece(Board* board, Piece* old_piece, Piece* new_piece);
+Piece* board_get_piece_at(const Board* board, int col, int row);
+int board_piece_get_col(const Board* board, const Piece* piece);
+int board_piece_get_row(const Board* board, const Piece* piece);
+void board_piece_remove(Board* board, int col, int row);
 
-bool board_has_tile_at(Board* board, int col, int row);
-Tile* board_get_tile_at(Board* board, int col, int row);
+bool board_has_tile_at(const Board* board, int col, int row);
+Tile* board_get_tile_at(const Board* board, int col, int row);
 void board_change_tile(Board* board, Tile* old_tile, Tile* new_tile);
-int board_tile_get_col(Board* board, Tile* tile);
-int board_tile_get_row(Board* board, Tile* tile);
-void board_expand(Board* board, int expand_by);
+int board_tile_get_col(const Board* board, const Tile* tile);
+int board_tile_get_row(const Board* board, const Tile* tile);
 
 Window* board_get_window(const Board* board);
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
-

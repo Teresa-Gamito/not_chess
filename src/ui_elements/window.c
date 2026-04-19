@@ -1,12 +1,14 @@
 #include "../../include/ui_elements/window.h"
+#include <stddef.h>
 
 struct Window {
     SDL_FRect* frect;
 
     SDL_Texture* texture_background;
 
-    Object** objects;
-    int object_count;
+    Vector* objects;
+    Vector* buttons;
+    Vector* textboxes;
 
     Button** buttons;
     int button_count;
@@ -19,9 +21,6 @@ struct Window {
 };
 
 
-static void window_objects_update_position(Window* window, int new_window_x, int new_window_y);
-static void window_buttons_update_position(Window* window, int new_window_x, int new_window_y);
-static void window_textboxes_update_position(Window* window, int new_window_x, int new_window_y);
 
 // ========== create ==========
 
@@ -121,7 +120,8 @@ void window_destroy_object(Window* window, Object* object)
         {
             object_destroy(object);
             window->objects[i] = window->objects[window->object_count - 1];
-            window->objects = SDL_realloc(window->objects, (window->object_count - 1) * sizeof(Object*));
+            size_t new_size = (window->object_count - 1) * sizeof(Object*);
+            window->objects = SDL_realloc(window->objects, new_size);
             window->object_count--;
             return;
         }
@@ -138,7 +138,8 @@ void window_destroy_button(Window* window, Button* button)
         {
             button_destroy(button);
             window->buttons[i] = window->buttons[window->button_count - 1];
-            window->buttons = SDL_realloc(window->buttons, (window->button_count - 1) * sizeof(Button*));
+            size_t new_size = (window->button_count - 1) * sizeof(Button*);
+            window->buttons = SDL_realloc(window->buttons, new_size);
             window->button_count--;
             return;
         }
@@ -155,7 +156,8 @@ void window_destroy_textbox(Window* window, Textbox* textbox)
         {
             textbox_destroy(textbox);
             window->textboxes[i] = window->textboxes[window->textbox_count - 1];
-            window->textboxes = SDL_realloc(window->textboxes, (window->textbox_count - 1) * sizeof(Textbox*));
+            size_t new_size = (window->textbox_count - 1) * sizeof(Textbox*);
+            window->textboxes = SDL_realloc(window->textboxes, new_size);
             window->textbox_count--;
             return;
         }
@@ -165,7 +167,7 @@ void window_destroy_textbox(Window* window, Textbox* textbox)
 
 
 // ========== render ==========
-static void window_render_background(SDL_Renderer* renderer, Window* window)
+static void window_render_background(SDL_Renderer* renderer, const Window* window)
 {
     verify(window == NULL, "Window does not exist");
     verify(renderer == NULL, "Renderer does not exist");
@@ -198,7 +200,7 @@ void window_render(SDL_Renderer* renderer, Window* window)
 
 // ========== update ==========
 
-void window_update(InputState* input, Window* window)
+void window_update(const InputState* input, Window* window)
 {
     verify(window == NULL, "Window does not exist");
     verify(input == NULL, "InputState does not exist");
@@ -293,14 +295,18 @@ void window_add_object(Window* window, Object* object)
     verify(window == NULL, "Window does not exist");
     verify(object == NULL, "Object does not exist");
 
-    window->objects = SDL_realloc(
-        window->objects, 
-        (window->object_count + 1) * sizeof(Object*)
-    );
+    size_t new_size = (window->object_count + 1) * sizeof(Object*);
+    window->objects = SDL_realloc(window->objects, new_size);
     verify(window->objects == NULL, "Could not add object: realloc");
 
     window->objects[window->object_count] = object;
     window->object_count++;
+
+    object_set_position(
+        object,
+        window_get_x(window) + object_get_x(object),
+        window_get_y(window) + object_get_y(object)
+    );
 }
 
 void window_add_button(Window* window, Button* button)
@@ -308,13 +314,18 @@ void window_add_button(Window* window, Button* button)
     verify(window == NULL, "Window does not exist");
     verify(button == NULL, "Button does not exist");
 
-    window->buttons = SDL_realloc(
-        window->buttons, 
-        (window->button_count + 1) * sizeof(Button*));
+    size_t new_size = (window->button_count + 1) * sizeof(Button*);
+    window->buttons = SDL_realloc(window->buttons, new_size);
     verify(window->buttons == NULL, "Could not add button: realloc");
 
     window->buttons[window->button_count] = button;
     window->button_count++;
+
+    button_set_position(
+        button,
+        window_get_x(window) + button_get_x(button),
+        window_get_y(window) + button_get_y(button)
+    );
 }
 
 void window_add_textbox(Window* window, Textbox* textbox)
@@ -322,14 +333,18 @@ void window_add_textbox(Window* window, Textbox* textbox)
     verify(window == NULL, "Window does not exist");
     verify(textbox == NULL, "Textbox does not exist");
 
-    window->textboxes = SDL_realloc(
-        window->textboxes, 
-        (window->textbox_count + 1) * sizeof(Textbox*)
-    );
+    size_t new_size = (window->textbox_count + 1) * sizeof(Textbox*);
+    window->textboxes = SDL_realloc(window->textboxes, new_size);
     verify(window->textboxes == NULL, "Could not add textbox: realloc");
 
     window->textboxes[window->textbox_count] = textbox;
     window->textbox_count++;
+
+    textbox_set_position(
+        textbox,
+        window_get_x(window) + textbox_get_x(textbox),
+        window_get_y(window) + textbox_get_y(textbox)
+    );
 }
 
 

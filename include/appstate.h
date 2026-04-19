@@ -6,11 +6,20 @@
 #include "inputstate.h"
 #include "game/gamestate.h"
 
+#define APP_NAME "!Chess"
+#define APP_WINDOW_WIDTH 1000
+#define APP_WINDOW_HEIGHT 1000
+#define APP_WINDOW_FLAGS SDL_WINDOW_RESIZABLE
+
 typedef struct AppState AppState;
 
+extern int g_app_window_width;
+extern int g_app_window_height;
+extern float g_app_scale;
+extern int g_app_sprite_size_px;
 
 // ========== create ==========
-AppState* app_create(SDL_Window* sdl_window, SDL_Renderer* sdl_renderer);
+AppState* app_create();
 void game_start(AppState* app);
 
 // ========== destroy ==========

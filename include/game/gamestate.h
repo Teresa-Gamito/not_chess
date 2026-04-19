@@ -5,6 +5,23 @@
 #include "../ui_elements/window.h"
 #include "board/board.h"
 
+#define PATH_TEXTURE_WINDOW_BACKGROUND      "assets/sprites/tile_black.png"
+#define PATH_TEXTURE_BUTTON                 "assets/sprites/tile_white.png"
+
+typedef enum ShopTextures
+{
+    TEXTURE_WINDOW_BACKGROUND,
+    TEXTURE_BUTTON,
+
+    SHOP_TEXTURE_COUNT
+} ShopTextures;
+
+static const char* shop_textures[] =
+{
+    PATH_TEXTURE_WINDOW_BACKGROUND,
+    PATH_TEXTURE_BUTTON
+};
+
 typedef struct GameState GameState;
 
 // ========== create ==========

@@ -10,17 +10,20 @@ typedef enum ButtonState
 
 struct Button
 {
+    ButtonState state;
+
     SDL_Texture* textures[BUTTON_STATE_COUNT];
 
-    SDL_FRect* frect;
+    float x;
+    float y;
+    float width;
+    float height;
 
     void (*on_press0)();
     void (*on_press1)(void* arg1);
     void (*on_press2)(void* arg1, void* arg2);
     void* arg1;
     void* arg2;
-
-    ButtonState state;
 };
 
 
@@ -28,8 +31,6 @@ struct Button
 // ========== create ==========
 
 Button* button_create(
-    double x, 
-    double y, 
     SDL_Texture* texture_idle, 
     SDL_Texture* texture_hovered, 
     SDL_Texture* texture_pressed)
@@ -54,7 +55,11 @@ Button* button_create(
         SDL_GetTextureSize(button->textures[IDLE], &w, &h);
     }
 
-    button->frect = SDL_CreateFRect(x, y, w, h);
+    button->x = 0;
+    button->y = 0;
+    button->width = w;
+    button->height = h;
+
 
     return button;
 }
@@ -76,7 +81,7 @@ void button_destroy(Button* button)
 
 // ========== update ==========
 
-void button_update(InputState* input, Button* button)
+void button_update(const InputState* input, Button* button)
 {
     verify(input == NULL, "InputState does not exist");
     verify(button == NULL, "Button does not exist");

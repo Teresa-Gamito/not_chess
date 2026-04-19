@@ -18,25 +18,23 @@ typedef struct Button Button;
 
 // ========== create ==========
 Button* button_create(
-    double x, 
-    double y, 
     SDL_Texture* texture_idle, 
     SDL_Texture* texture_hovered, 
     SDL_Texture* texture_pressed
 );
 
 // ========== destroy ==========
-void button_destroy(Button* button);
+void button_destroy(void* button);
 
 // ========== update ==========
-void button_update(InputState* input, Button* button);
+void button_update(const InputState* input, void* button);
 
 // ========== render ==========
-void button_render(SDL_Renderer* renderer, Button* button);
+void button_render(SDL_Renderer* renderer, void* button);
 
 // ========== set ==========
-void button_set_position(Button* button, double x, double y);
-void button_set_size(Button* button, double width, double height);
+void button_set_position(void* button, float x, float y);
+void button_set_size(void* button, float width, float height);
 void button_set_texture_idle(Button* button, SDL_Texture* texture);
 void button_set_texture_hovered(Button* button, SDL_Texture* texture);
 void button_set_texture_pressed(Button* button, SDL_Texture* texture);
@@ -47,8 +45,8 @@ void button_set_on_press_func_arg1(Button* button, void (*func)(void* arg1), voi
 void button_set_on_press_func_arg2(Button* button, void (*func)(void* arg1, void* arg2), void* arg1, void* arg2);
 
 // ========== get ==========
-double button_get_x(const Button* button);
-double button_get_y(const Button* button);
-double button_get_width(const Button* button);
-double button_get_height(const Button* button);
-SDL_FRect* button_get_frect(const Button* button);
+double button_get_x(const void* button);
+double button_get_y(const void* button);
+double button_get_width(const void* button);
+double button_get_height(const void* button);
+SDL_FRect button_get_frect(const void* button);

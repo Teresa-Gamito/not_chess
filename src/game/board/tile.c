@@ -72,7 +72,7 @@ void tile_set_texture(Tile* tile, SDL_Texture* texture)
 
     button_set_texture_all(tile->button, texture);
 }
-void tile_set_ui(
+void tile_set_ui_textures(
     Tile* tile, 
     SDL_Texture* texture_selected, 
     SDL_Texture* texture_valid, 
@@ -93,6 +93,7 @@ void tile_set_ui(
             tile_set_texture(tile, texture_capture);
             break;
 
+        case TILEUI_NONE:
         default:
             tile_set_texture(tile, NULL);
             break;
@@ -131,4 +132,22 @@ Button* tile_get_button(const Tile* tile)
     verify(tile == NULL, "Tile does not exist");
 
     return tile->button;
+}
+bool tile_is_selected(const Tile* tile)
+{
+    verify(tile == NULL, "Tile does not exist");
+
+    return tile->ui == TILEUI_SELECTED;
+}
+bool tile_is_valid(const Tile* tile)
+{
+    verify(tile == NULL, "Tile does not exist");
+
+    return tile->ui == TILEUI_VALID;
+}
+bool tile_is_capture(const Tile* tile)
+{
+    verify(tile == NULL, "Tile does not exist");
+
+    return tile->ui == TILEUI_CAPTURE;
 }
