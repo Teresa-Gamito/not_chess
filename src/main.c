@@ -1,5 +1,4 @@
-#include "../include/main.h"
-#include <SDL3/SDL_video.h>
+#include "include/main.h"
 
 SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[]) 
 {
@@ -11,7 +10,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     AppState* app = app_create();
     *appstate = app;
 
-    game_start(app);
+    app_game_start(app);
 
     return SDL_APP_CONTINUE;
 }

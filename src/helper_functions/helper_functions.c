@@ -1,4 +1,6 @@
-#include "../../include/helper_functions/helper_functions.h"
+#include "include/helper_functions/helper_functions.h"
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
 
 SDL_Texture* SDL_CreateTextureFromPNG(SDL_Renderer* renderer, const char* png_path)
 {
@@ -74,3 +76,27 @@ int sign(int value)
     return value > 0 ? 1 : (value < 0 ? -1 : 0);
 }
 
+
+
+static void texture_destroy(void* t)
+{
+    SDL_Texture* texture = (SDL_Texture*)t;
+    verify(texture == NULL, "SDL_Texture does not exist");
+    SDL_DestroyTexture(texture);
+}
+static TypeOps sdl_texture_ops =
+    {
+        texture_destroy
+    };
+TypeOps* SDL_Texture_ops()
+{
+    return &sdl_texture_ops;
+}
+static TypeOps ops =
+    {
+        SDL_free
+    };
+TypeOps* default_ops()
+{
+    return &ops;
+}

@@ -4,7 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_events.h>
 #include "inputstate.h"
-#include "game/gamestate.h"
+#include "include/game/gamestate.h"
 
 #define APP_NAME "!Chess"
 #define APP_WINDOW_WIDTH 1000
@@ -20,7 +20,7 @@ extern int g_app_sprite_size_px;
 
 // ========== create ==========
 AppState* app_create();
-void game_start(AppState* app);
+void app_game_start(AppState* app);
 
 // ========== destroy ==========
 void app_destroy(AppState* app);

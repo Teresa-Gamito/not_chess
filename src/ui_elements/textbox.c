@@ -1,4 +1,4 @@
-#include "../../include/ui_elements/textbox.h"
+#include "include/ui_elements/textbox.h"
 
 struct Textbox
 {
@@ -10,14 +10,13 @@ struct Textbox
     int max_width;
     TextAlignment alignment;
 
-    SDL_FRect* frect;
+    float x;
+    float y;
+    float width;
+    float height;
 
     SDL_Texture* texture;
 };
-
-
-
-// ========== create ==========
 
 Textbox* textbox_create(
     SDL_Renderer* renderer,
@@ -25,9 +24,7 @@ Textbox* textbox_create(
     SDL_Color* color,
     const char* text,
     const double max_width,
-    TextAlignment alignment,
-    const double x,
-    const double y)
+    TextAlignment alignment)
 {
     verify(renderer == NULL, "SDL_Renderer does not exist");
     verify(font == NULL, "TTF_Font does not exist");
@@ -47,16 +44,15 @@ Textbox* textbox_create(
 
     textbox->alignment = alignment;
 
-    textbox->frect = SDL_CreateFRect(x, y, 0, 0); 
+    textbox->x = 0;
+    textbox->y = 0;
+    textbox->width = 0;
+    textbox->height = 0;
 
     textbox_set_text(renderer, textbox, text);
 
     return textbox;
 }
-
-
-
-// ========== destroy ==========
 
 void textbox_destroy(Textbox* textbox)
 {
@@ -65,21 +61,23 @@ void textbox_destroy(Textbox* textbox)
     if (textbox->text != NULL) SDL_free(textbox->text);
     if (textbox->texture != NULL) SDL_DestroyTexture(textbox->texture);
 
-    SDL_free(textbox->frect);
     SDL_free(textbox);
 }
 
 
-
-// ========== render ==========
-
-void textbox_render(SDL_Renderer* renderer, Textbox* textbox)
+void textbox_render(SDL_Renderer* renderer, const Textbox* textbox)
 {
     verify(renderer == NULL, "SDL_Renderer does not exist");
     verify(textbox == NULL, "Textbox does not exist");
     verify(textbox->texture == NULL, "Textbox does not have a texture");
 
-    SDL_FRect position = *textbox->frect;
+    SDL_FRect position = 
+        {
+            textbox->x,
+            textbox->y,
+            textbox->width,
+            textbox->height
+        };
 
     switch (textbox->alignment)
     {
@@ -101,27 +99,21 @@ void textbox_render(SDL_Renderer* renderer, Textbox* textbox)
     );
 }
 
-
-
-// ========== set ==========
-
-void textbox_set_position(Textbox* textbox, double x, double y)
+void textbox_set_position(Textbox* textbox, float x, float y)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    textbox->frect->x = x;
-    textbox->frect->y = y;
+    textbox->x = x;
+    textbox->y = y;
 }
-
-void textbox_set_size(Textbox* textbox, double width, double height)
+void textbox_set_size(Textbox* textbox, float width, float height)
 {
     verify(textbox == NULL, "Textbox does not exist");
     verify(width < 0 || height < 0, "Invalid size");
 
-    textbox->frect->w = width;
-    textbox->frect->h = height;
+    textbox->width = width;
+    textbox->height = height;
 }
-
 void textbox_set_max_width(Textbox* textbox, int max_width)
 {
     verify(textbox == NULL, "Textbox does not exist");
@@ -133,7 +125,6 @@ void textbox_set_max_width(Textbox* textbox, int max_width)
     }
     textbox->max_width = max_width;
 }
-
 void textbox_set_alignment(Textbox* textbox, TextAlignment alignment)
 {
     verify(textbox == NULL, "Textbox does not exist");
@@ -141,7 +132,6 @@ void textbox_set_alignment(Textbox* textbox, TextAlignment alignment)
 
     textbox->alignment = alignment;
 }
-
 void textbox_set_color(Textbox* textbox, SDL_Color* color)
 {
     verify(textbox == NULL, "Textbox does not exist");
@@ -149,7 +139,6 @@ void textbox_set_color(Textbox* textbox, SDL_Color* color)
 
     textbox->color = color;
 }
-
 void textbox_set_font(Textbox* textbox, TTF_Font* font)
 {
     verify(textbox == NULL, "Textbox does not exist");
@@ -157,7 +146,6 @@ void textbox_set_font(Textbox* textbox, TTF_Font* font)
 
     textbox->font = font;
 }
-
 static void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
 {
     verify(renderer == NULL, "SDL_Renderer does not exist");
@@ -179,8 +167,8 @@ static void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
     SDL_DestroySurface(surface);
     SDL_GetTextureSize(
         textbox->texture, 
-        &textbox->frect->w, 
-        &textbox->frect->h
+        &textbox->width,
+        &textbox->height
     );
 }
 void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text)
@@ -196,76 +184,90 @@ void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text
     textbox_update_texture(renderer, textbox);
 }
 
-
-
-// ========== get ==========
-
 float textbox_get_x(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    return textbox->frect->x;
+    return textbox->x;
 }
-
 float textbox_get_y(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    return textbox->frect->y;
+    return textbox->y;
 }
-
 float textbox_get_width(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    return textbox->frect->w;
+    return textbox->width;
 }
-
 float textbox_get_height(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    return textbox->frect->h;
+    return textbox->height;
 }
-
-int textbox_get_max_width(Textbox* textbox)
+int textbox_get_max_width(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
     return textbox->max_width;
 }
-
-TextAlignment textbox_get_alignment(Textbox* textbox)
+TextAlignment textbox_get_alignment(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
     return textbox->alignment;
 }
-
-SDL_FRect* textbox_get_frect(const Textbox* textbox)
+SDL_FRect textbox_get_frect(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
-    return textbox->frect;
+    SDL_FRect frect =
+        {
+            textbox->x,
+            textbox->y,
+            textbox->width,
+            textbox->height
+        };
+    return frect;
 }
-
-SDL_Color* textbox_get_color(Textbox* textbox)
+SDL_Color* textbox_get_color(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
     return textbox->color;
 }
-
 TTF_Font* textbox_get_font(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
     return textbox->font;
 }
-
-SDL_Texture* textbox_get_texture(Textbox* textbox)
+SDL_Texture* textbox_get_texture(const Textbox* textbox)
 {
     verify(textbox == NULL, "Textbox does not exist");
 
     return textbox->texture;
+}
+
+
+
+static void destroy(void* t)
+{
+    Textbox* textbox = (Textbox*)t;
+    verify(textbox == NULL, "Textbox does not exist");
+
+    textbox_destroy(textbox);
+}
+TypeOps ops =
+    {
+        destroy
+        //is_equal,
+    };
+
+TypeOps* textbox_ops()
+{
+    return &ops;
 }

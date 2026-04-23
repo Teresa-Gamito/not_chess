@@ -1,4 +1,4 @@
-#include "../include/appstate.h"
+#include "include/appstate.h"
 
 int g_app_window_width = APP_WINDOW_WIDTH;
 int g_app_window_height = APP_WINDOW_HEIGHT;
@@ -61,12 +61,12 @@ void app_destroy(AppState* app)
 
 
 
-void game_start(AppState* app)
+void app_game_start(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
 
     app->gamestate = gamestate_create();
-    gamestate_set_default(app->sdl_renderer, app->gamestate);
+    game_start(app->sdl_renderer, app->gamestate);
 }
 
 
@@ -85,7 +85,7 @@ void app_update(AppState* app)
         g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
     }
 
-    gamestate_update(app_get_inputstate(app), app_get_gamestate(app));
+    game_update(app_get_inputstate(app), app_get_gamestate(app));
 }
 
 

@@ -1,4 +1,4 @@
-#include "../include/inputstate.h"
+#include "include/inputstate.h"
 
 typedef struct MouseState
 {
@@ -13,6 +13,13 @@ typedef struct MouseState
     bool right_down;
     bool right_pressed;
     bool right_released;
+    // middle button
+    bool middle_down;
+    bool middle_pressed;
+    bool middle_released;
+    // mouse wheel
+    bool wheel_up;
+    bool wheel_down;
 } MouseState;
 
 typedef struct KeyboardState
@@ -33,9 +40,12 @@ struct InputState {
 // ========== create ==========
 InputState* input_create()
 {
-    InputState* input = (InputState*)SDL_malloc(sizeof(InputState));
-    input->mouse = (MouseState*)SDL_calloc(1, sizeof(MouseState));
-    input->key = (KeyboardState*)SDL_calloc(1, sizeof(KeyboardState));
+    InputState* input = SDL_malloc(sizeof(InputState));
+    verify(input == NULL, "InputState could not be created: malloc");
+    input->mouse = SDL_calloc(1, sizeof(MouseState));
+    verify(input == NULL, "MouseState could not be created: calloc");
+    input->key = SDL_calloc(1, sizeof(KeyboardState));
+    verify(input == NULL, "KeyboardState could not be created: calloc");
     return input;
 }
 
@@ -61,6 +71,12 @@ static void mouse_clear(MouseState* mouse)
 
     mouse->right_pressed = false;
     mouse->right_released = false;
+
+    mouse->middle_pressed = false;
+    mouse->middle_released = false;
+
+    mouse->wheel_up = false;
+    mouse->wheel_down = false;
 }
 static void keyboard_clear(KeyboardState* key)
 {
@@ -103,8 +119,13 @@ static void mouse_update(MouseState* mouse, const SDL_Event* event)
             if (!mouse->right_down) mouse->right_pressed = true;
             mouse->right_down = true;
         }
+        if (event->button.button == SDL_BUTTON_MIDDLE)
+        {
+            if (!mouse->middle_down) mouse->middle_pressed = true;
+            mouse->middle_down = true;
+        }
     }
-    
+
     if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
     {
         if (event->button.button == SDL_BUTTON_LEFT)
@@ -116,6 +137,23 @@ static void mouse_update(MouseState* mouse, const SDL_Event* event)
         {
             mouse->right_down = false;
             mouse->right_released = true;
+        }
+        if (event->button.button == SDL_BUTTON_MIDDLE)
+        {
+            mouse->middle_down = false;
+            mouse->middle_released = true;
+        }
+    }
+
+    if (event->type == SDL_EVENT_MOUSE_WHEEL)
+    {
+        if (event->wheel.mouse_x < 0)
+        {
+            mouse->wheel_down = true;
+        }
+        else if (event->wheel.mouse_x > 0)
+        {
+            mouse->wheel_up = true;
         }
     }
 }
@@ -198,6 +236,36 @@ bool input_get_mouse_right_released(const InputState* input)
     verify(input == NULL, "InputState does not exist");
 
     return input->mouse->right_released;
+}
+bool input_get_mouse_middle_down(const InputState* input)
+{
+    verify(input == NULL, "InputState does not exist");
+
+    return input->mouse->middle_down;
+}
+bool input_get_mouse_middle_pressed(const InputState* input)
+{
+    verify(input == NULL, "InputState does not exist");
+
+    return input->mouse->middle_pressed;
+}
+bool input_get_mouse_middle_released(const InputState* input)
+{
+    verify(input == NULL, "InputState does not exist");
+
+    return input->mouse->middle_released;
+}
+bool input_get_mouse_wheel_up(const InputState* input)
+{
+    verify(input == NULL, "InputState does not exist");
+
+    return input->mouse->wheel_up;
+}
+bool input_get_mouse_wheel_down(const InputState* input)
+{
+    verify(input == NULL, "InputState does not exist");
+
+    return input->mouse->wheel_down;
 }
 
 

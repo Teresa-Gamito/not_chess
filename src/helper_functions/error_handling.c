@@ -1,4 +1,4 @@
-#include "../../include/helper_functions/error_handling.h"
+#include "include/helper_functions/error_handling.h"
 
 void verify(bool statement, const char* error_msg)
 {

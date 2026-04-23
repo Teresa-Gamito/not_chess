@@ -54,7 +54,7 @@ endif
 CSTD := -std=c17
 WARN := -Wall -Wextra -Wpedantic
 DEPS := -MMD -MP
-INC  := -Isource -Iutils
+INC  := -Isource -Iutils -Iinclude -I.
 
 DBG := -g -O0 -fno-omit-frame-pointer
 REL := -O2 -DNDEBUG

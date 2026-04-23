@@ -1,78 +1,23 @@
-#include "../../../include/game/board/board.h"
+#include "include/game/board/board.h"
+
+static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
 struct Board
 {
     int col_num;
     int row_num;
 
-    Window* window;
-    double scale;
-    Tile* selected_tile;
-
     Tile** tiles;
     Piece** pieces;
 };
 
-
-static void board_add_tile(Board* board, Tile* tile, int col, int row);
-static void board_remove_tile(Board* board, int col, int row);
-
-static bool board_piece_can_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool board_piece_can_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
-
-static void board_select_tile(void* arg1_board, void* arg2_tile);
-
-static void board_ui_update(Board* board);
-static void board_tile_set_ui(Board* board, Tile* tile);
-static void board_tile_set_button(Board* board, Tile* tile);
-
-static void board_piece_set_object(Board* board, Piece* piece);
-static BoardTextures piece_get_texture_index(const Piece* piece);
-
-static void board_tile_set_object(Board* board, Tile* tile);
-static BoardTextures tile_get_texture_index(const Tile* tile, int col, int row);
-
-
-Board* board_create(
-    SDL_Renderer* renderer, 
-    int col_num, 
-    int row_num, 
-    double window_x, 
-    double window_y, 
-    double window_width, 
-    double window_height
-)
+Board* board_create(int col_num, int row_num)
 {
     Board* board = SDL_malloc(sizeof(Board));
     verify(board == NULL, "Board could not be created: malloc");
 
     board->col_num = col_num;
     board->row_num = row_num;
-
-    if ((double) col_num / row_num > window_width / window_height)
-        board->scale = window_width / (col_num * TEXTURE_DEFAULT_SIZE_PX);
-    else 
-        board->scale = window_height / (row_num * TEXTURE_DEFAULT_SIZE_PX);
-
-    board->window = window_create(
-        window_x,
-        window_y,
-        window_width,
-        window_height,
-        SDL_CreateTextureFromPNG(
-            renderer,
-            PATH_TEXTURE_WINDOW_BOARD_BACKGROUND
-        )
-    );
-    window_load_textures(
-        renderer, 
-        board->window, 
-        board_textures, 
-        BOARD_TEXTURE_COUNT
-    );
-
-    board->selected_tile = NULL;
 
     board->tiles = SDL_calloc(col_num * row_num, sizeof(Tile*));
     verify(board->tiles == NULL, "Tiles could not be created: malloc");
@@ -86,7 +31,7 @@ Board* board_create(
         for (int row = 0; row < row_num; row++)
         {
             tile = tile_create(TILE_NONE);
-            board_add_tile(board, tile, col, row);
+            board->tiles[col + row * board->col_num] = tile;
             board->pieces[col + row * board->col_num] = NULL;
         }
     }
@@ -97,8 +42,6 @@ void board_destroy(Board* board)
 {
     verify(board == NULL, "Board does not exist");
 
-    window_destroy(board->window);
-
     int col_num = board->col_num;
     int row_num = board->row_num;
 
@@ -106,13 +49,15 @@ void board_destroy(Board* board)
     {
         for (int row = 0; row < row_num; row++)
         {
-            tile_destroy(board_get_tile_at(board, col, row));
+            Tile* tile = board_get_tile_at(board, col, row);
+            tile_destroy(tile);
 
             if (!board_has_piece_at(board, col, row))
             {
                 continue;
             }
-            piece_destroy(board_get_piece_at(board, col, row));
+            Piece* piece = board_get_piece_at(board, col, row);
+            piece_destroy(piece);
         }
     }
     SDL_free(board->tiles);
@@ -123,20 +68,14 @@ void board_destroy(Board* board)
 
 
 
-void board_render(SDL_Renderer* renderer, const Board* board)
+bool board_can_add_piece_at(Board* board, int col, int row)
 {
-    window_render(renderer, board_get_window(board));
+    verify(board == NULL, "Board does not exist");
+    verify(col < 0 || col > board->col_num, "Invalid board position");
+    verify(row < 0 || row > board->row_num, "Invalid board position");
+
+    return !board_has_piece_at(board, col, row);
 }
-
-
-
-void board_update(const InputState* input, Board* board)
-{
-    window_update(input, board_get_window(board));
-}
-
-
-
 void board_add_piece_at(Board* board, Piece* piece, int col, int row)
 {
     verify(board == NULL, "Board does not exist");
@@ -146,8 +85,6 @@ void board_add_piece_at(Board* board, Piece* piece, int col, int row)
     verify(board_has_piece_at(board, col, row), "Could not add piece, position already occupied");
 
     board->pieces[col + row * board->col_num] = piece;
-
-    board_piece_set_object(board, piece);
 }
 void board_piece_remove(Board* board, int col, int row)
 {
@@ -157,11 +94,6 @@ void board_piece_remove(Board* board, int col, int row)
     verify(!board_has_piece_at(board, col, row), "Piece does not exist");
 
     Piece* piece = board_get_piece_at(board, col, row);
-
-    Window* window = board_get_window(board);
-    Object* object = piece_get_object(piece);
-    window_destroy_object(window, object);
-
     piece_destroy(piece);
     board->pieces[col + row * board->col_num] = NULL;
 }
@@ -215,45 +147,7 @@ int board_piece_get_row(const Board* board, const Piece* piece)
     }
     return 0;
 }
-void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
-    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
-    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
-    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
-    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
-
-    Piece* piece = board_get_piece_at(board, src_col, src_row);
-
-    if (board_has_piece_at(board, dst_col, dst_row))
-    {
-        Piece* dst_piece = board_get_piece_at(board, dst_col, dst_row);
-        if (!piece_can_capture(piece, dst_piece, src_col, src_row, dst_col, dst_row))
-        {
-            return;
-        }
-        if (!board_piece_can_capture(board, src_col, src_row, dst_col, dst_row))
-        {
-            return;
-        }
-    }
-
-    board->pieces[dst_col + dst_row * board->col_num] = board->pieces[src_col + src_row * board->col_num];
-    board->pieces[src_col + src_row * board->col_num] = NULL;
-
-    object_set_position(
-        piece_get_object(piece), 
-        window_get_x(board->window) + (dst_col * board->scale * TEXTURE_DEFAULT_SIZE_PX), 
-        window_get_y(board->window) + (dst_row * board->scale * TEXTURE_DEFAULT_SIZE_PX)
-    );
-
-    piece_set_moved(piece);
-
-    board->selected_tile = NULL;
-    board_ui_update(board);
-}
-static bool board_piece_can_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify(board == NULL, "Board does not exist");
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
@@ -273,7 +167,35 @@ static bool board_piece_can_move_to(Board* board, int src_col, int src_row, int 
     }
     return true;
 }
-static bool board_piece_can_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+{
+    verify(board == NULL, "Board does not exist");
+    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
+    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
+    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
+    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+
+    Piece* piece = board_get_piece_at(board, src_col, src_row);
+
+    if (board_has_piece_at(board, dst_col, dst_row))
+    {
+        Piece* dst_piece = board_get_piece_at(board, dst_col, dst_row);
+        if (!piece_can_capture(piece, dst_piece, src_col, src_row, dst_col, dst_row))
+        {
+            return;
+        }
+        if (!board_can_piece_capture(board, src_col, src_row, dst_col, dst_row))
+        {
+            return;
+        }
+    }
+
+    board->pieces[dst_col + dst_row * board->col_num] = board->pieces[src_col + src_row * board->col_num];
+    board->pieces[src_col + src_row * board->col_num] = NULL;
+    piece_set_moved(piece);
+}
+bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
     verify(!board_has_piece_at(board, dst_col, dst_row), "Piece does not exist");
@@ -289,6 +211,10 @@ static bool board_piece_can_capture(Board* board, int src_col, int src_row, int 
         return false;
     }
     return true;
+
+}
+void board_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col)
+{
 
 }
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
@@ -336,50 +262,6 @@ static bool board_piece_has_clear_path(const Board* board, int src_col, int src_
 
 
 
-static void board_add_tile(Board* board, Tile* tile, int col, int row)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(tile == NULL, "Tile does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
-    verify(board_has_tile_at(board, col, row), "Could not add tile, position already occupied");
-
-    board->tiles[col + row * board->col_num] = tile;
-
-    board_tile_set_object(board, tile);
-    board_tile_set_button(board, tile);
-}
-static void board_remove_tile(Board* board, int col, int row)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
-    verify(!board_has_tile_at(board, col, row), "Tile does not exist");
-
-    Tile* tile = board_get_tile_at(board, col, row);
-
-    Window* window = board_get_window(board);
-    Object* object = tile_get_object(tile);
-    window_destroy_object(window, object);
-    Button* button = tile_get_button(tile);
-    window_destroy_button(window, button);
-
-    if (board->selected_tile == tile)
-    {
-        board->selected_tile = NULL;
-    }
-
-    tile_destroy(tile);
-    board->tiles[col + row * board->col_num] = NULL;
-}
-bool board_has_tile_at(const Board* board, int col, int row)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(!is_within(col, 0, board_get_col_num(board) - 1), "Invalid position");
-    verify(!is_within(row, 0, board_get_row_num(board) - 1), "Invalid position");
-
-    return board_get_tile_at(board, col, row) != NULL;
-}
 Tile* board_get_tile_at(const Board* board, int col, int row)
 {
     verify(board == NULL, "Board does not exist");
@@ -422,68 +304,6 @@ int board_tile_get_row(const Board* board, const Tile* tile)
     }
     return 0;
 }
-static void board_add_col(Board* board)
-{
-    verify(board == NULL, "Board does not exist");
-
-    board->col_num++;
-    size_t new_size = board->col_num * board->row_num * sizeof(Piece*);
-
-    board->tiles = SDL_realloc(board->tiles, new_size);
-    verify(board->tiles == NULL, "Could not add row: realloc");
-
-    board->pieces = SDL_realloc(board->pieces, new_size);
-    verify(board->pieces == NULL, "Could not add row: realloc");
-
-    for (int row = 0; row < board->row_num; row++)
-    {
-        board_add_tile(
-            board, 
-            tile_create(TILE_NONE), 
-            board->col_num - 1, 
-            row
-        );
-        board->pieces[(board->col_num - 1) + row * board->col_num] = NULL;
-    }
-}
-static void board_add_row(Board* board)
-{
-    verify(board == NULL, "Board does not exist");
-
-    board->row_num++;
-    size_t new_size = board->col_num * board->row_num * sizeof(Piece*);
-
-    board->tiles = SDL_realloc(board->tiles, new_size);
-    verify(board->tiles == NULL, "Could not add row: realloc");
-
-    board->pieces = SDL_realloc(board->pieces, new_size);
-    verify(board->pieces == NULL, "Could not add row: realloc");
-
-    for (int col = 0; col < board->col_num; col++)
-    {
-        board_add_tile(
-            board, 
-            tile_create(TILE_NONE), 
-            col, 
-            board->row_num - 1
-        );
-        board->pieces[col + (board->row_num - 1) * board->col_num] = NULL;
-    }
-}
-void board_expand(Board* board, int expand_by)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(expand_by < 0, "Invalid expand value, can only be positive");
-
-    if (expand_by <= 0) return;
-
-    for (int i = 0; i < expand_by; i++)
-    {
-        board_add_col(board);
-        board_add_row(board);
-    }
-
-}
 
 
 
@@ -499,19 +319,13 @@ int board_get_row_num(const Board* board)
 
     return board->row_num;
 }
-Window* board_get_window(const Board* board)
-{
-    verify(board == NULL, "Board does not exist");
-
-    return board->window;
-}
 
 
 
 // ==============================
 // Board UI
 // ==============================
-
+/*
 void board_select_tile(void* arg1_board, void* arg2_tile)
 {
     Board* board = (Board*)arg1_board;
@@ -534,7 +348,6 @@ void board_select_tile(void* arg1_board, void* arg2_tile)
     if (new_tile == NULL) return;
     if (old_tile == NULL) return;
 
-
     int old_col = board_tile_get_col(board, old_tile);
     int old_row = board_tile_get_row(board, old_tile);
     int new_col = board_tile_get_col(board, new_tile);
@@ -544,7 +357,6 @@ void board_select_tile(void* arg1_board, void* arg2_tile)
     {
         return;
     }
-    Piece* src_piece = board_get_piece_at(board, old_col, old_row);
     if (board_piece_can_move_to(board, old_col, old_row, new_col, new_row))
     {
         board_piece_move_to(board, old_col, old_row, new_col, new_row);
@@ -555,12 +367,10 @@ void board_select_tile(void* arg1_board, void* arg2_tile)
     {
         return;
     }
-    Piece* dst_piece = board_get_piece_at(board, old_col, old_row);
     if (board_piece_can_capture(board, old_col, old_row, new_col, new_row))
     {
         board_piece_capture(board, new_col, new_row);
         board_piece_move_to(board, old_col, old_row, new_col, new_row);
-        return;
     }
 }
 void board_piece_capture(Board* board, int col, int row)
@@ -616,10 +426,8 @@ static void board_tile_set_ui(Board* board, Tile* tile)
         return;
     }
 
-    Piece* src_piece = board_get_piece_at(board, src_col, src_row);
     if (board_has_piece_at(board, dst_col, dst_row))
     {
-        Piece* dst_piece = board_get_piece_at(board, dst_col, dst_row);
         if (board_piece_can_capture(board, src_col, src_row, dst_col, dst_row))
         {
             tile_ui_set_capture(tile);
@@ -633,168 +441,4 @@ static void board_tile_set_ui(Board* board, Tile* tile)
     }
     tile_ui_set_none(tile);
 }
-
-static void board_piece_set_object(Board* board, Piece* piece)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(piece == NULL, "Piece does not exist");
-
-    Window* window = board_get_window(board);
-
-    int col = board_piece_get_col(board, piece);
-    int row = board_piece_get_row(board, piece);
-
-    BoardTextures index = piece_get_texture_index(piece);
-    SDL_Texture* texture = window_get_texture(window, index);
-
-    // TODO: center board
-    Object* object = object_create(
-        (col * board->scale * TEXTURE_DEFAULT_SIZE_PX), 
-        (row * board->scale * TEXTURE_DEFAULT_SIZE_PX), 
-        texture
-    );
-    object_set_size(
-        object, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX
-    );
-
-    window_add_object(window, object);
-    piece_set_object(piece, object);
-}
-static void board_tile_set_object(Board* board, Tile* tile)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(tile == NULL, "Tile does not exist");
-
-    Window* window = board_get_window(board);
-
-    int col = board_tile_get_col(board, tile);
-    int row = board_tile_get_row(board, tile);
-
-    BoardTextures index = tile_get_texture_index(tile, col, row);
-    SDL_Texture* texture = window_get_texture(window, index);
-
-    double object_x = col * board->scale * TEXTURE_DEFAULT_SIZE_PX;
-    double object_y = row * board->scale * TEXTURE_DEFAULT_SIZE_PX;
-
-    // TODO: center board
-    Object* object = object_create(
-        object_x,
-        object_y,
-        texture
-    );
-    object_set_size(
-        object, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX
-    );
-
-    window_add_object(window, object);
-    tile_set_object(tile, object);
-}
-static void board_tile_set_button(Board* board, Tile* tile)
-{
-    verify(board == NULL, "Board does not exist");
-    verify(tile == NULL, "Tile does not exist");
-
-    Window* window = board_get_window(board);
-    
-    int col = board_tile_get_col(board, tile);
-    int row = board_tile_get_row(board, tile);
-
-    Button* button = button_create(
-        (col * board->scale * TEXTURE_DEFAULT_SIZE_PX), 
-        (row * board->scale * TEXTURE_DEFAULT_SIZE_PX), 
-        NULL,
-        window_get_texture(window, TEXTURE_TILE_SELECTED),
-        NULL
-    );
-    button_set_size(
-        button, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX, 
-        board->scale * TEXTURE_DEFAULT_SIZE_PX
-    );
-    button_set_texture_all(button, NULL);
-    button_set_on_press_func_arg2(button, board_select_tile, board, tile);
-
-    window_add_button(window, button);
-    tile_set_button(tile, button);
-}
-
-
-
-
-
-static BoardTextures piece_get_texture_index(const Piece* piece)
-{
-    verify(piece == NULL, "Piece does not exist");
-
-    PieceColor color = piece_get_color(piece);
-    PieceType type = piece_get_type(piece);
-
-    if (color == PIECE_WHITE)
-    {
-        switch (type)
-        {
-            case PAWN:
-                return TEXTURE_WHITE_PAWN;
-                break;
-            case ROOK:
-                return TEXTURE_WHITE_ROOK;
-                break;
-            case KNIGHT:
-                return TEXTURE_WHITE_KNIGHT;
-                break;
-            case BISHOP:
-                return TEXTURE_WHITE_BISHOP;
-                break;
-            case QUEEN:
-                return TEXTURE_WHITE_QUEEN;
-                break;
-            case KING:
-                return TEXTURE_WHITE_KING;
-                break;
-            default:
-                return 0;
-                break;
-        }
-    }
-    else if (color == PIECE_BLACK)
-    {
-        switch (type)
-        {
-            case PAWN:
-                return TEXTURE_BLACK_PAWN;
-                break;
-            case ROOK:
-                return TEXTURE_BLACK_ROOK;
-                break;
-            case KNIGHT:
-                return TEXTURE_BLACK_KNIGHT;
-                break;
-            case BISHOP:
-                return TEXTURE_BLACK_BISHOP;
-                break;
-            case QUEEN:
-                return TEXTURE_BLACK_QUEEN;
-                break;
-            case KING:
-                return TEXTURE_BLACK_KING;
-                break;
-            default:
-                return 0;
-                break;
-        }
-    }
-    return 0;
-}
-static BoardTextures tile_get_texture_index(const Tile* tile, int x, int y)
-{
-    verify(tile == NULL, "Tile does not exist");
-
-    if (is_even(x + y))
-        return TEXTURE_TILE_BLACK;
-    else
-        return TEXTURE_TILE_WHITE;
-}
+*/

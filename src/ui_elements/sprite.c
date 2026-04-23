@@ -1,4 +1,12 @@
-#include "../../include/ui_elements/sprite.h"
+#include "include/ui_elements/sprite.h"
+
+struct Sprite {
+    SDL_Texture* texture;
+    float x;
+    float y;
+    float width;
+    float height;
+};
 
 Sprite* sprite_create(SDL_Texture* texture)
 {
@@ -23,68 +31,48 @@ Sprite* sprite_create(SDL_Texture* texture)
     return sprite;
 }
 
-
-
-void sprite_destroy(void* sprite)
+void sprite_destroy(Sprite* sprite)
 {
-    Sprite* s = (Sprite*)sprite;
-    verify(s == NULL, "Sprite does not exist");
+    verify(sprite == NULL, "Sprite does not exist");
 
-    SDL_free(s);
+    SDL_free(sprite);
 }
 
-
-
-bool sprite_equals(const void* sprite1, const void* sprite2)
+void sprite_render(SDL_Renderer* renderer, const Sprite* sprite)
 {
-    Sprite* s1 = (Sprite*)sprite1;
-    Sprite* s2 = (Sprite*)sprite2;
-
-    return s1 == s2;
-}
-
-
-
-void sprite_render(SDL_Renderer* renderer, const void* sprite)
-{
-    Sprite* spr = (Sprite*)sprite;
     verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(spr == NULL, "Sprite does not exist");
+    verify(sprite == NULL, "Sprite does not exist");
 
     SDL_FRect frect =
         {
-            spr->x,
-            spr->y,
-            spr->width,
-            spr->height
+            sprite->x,
+            sprite->y,
+            sprite->width,
+            sprite->height
         };
 
     SDL_RenderTexture(
         renderer,
-        spr->texture,
+        sprite->texture,
         NULL,
         &frect
     );
 }
 
-
-
-void sprite_set_position(void* sprite, const float x, const float y)
+void sprite_set_position(Sprite* sprite, const float x, const float y)
 {
-    Sprite* spr = (Sprite*)sprite;
-    verify(spr == NULL, "Sprite does not exist");
+    verify(sprite == NULL, "Sprite does not exist");
 
-    spr->x = x;
-    spr->y = y;
+    sprite->x = x;
+    sprite->y = y;
 }
-void sprite_set_size(void* sprite, const float width, const float height)
+void sprite_set_size(Sprite* sprite, const float width, const float height)
 {
-    Sprite* spr = (Sprite*)sprite;
-    verify(spr == NULL, "Sprite does not exist");
+    verify(sprite == NULL, "Sprite does not exist");
     verify(width < 0 || height < 0, "Invalid size");
 
-    spr->width = width;
-    spr->height = height;
+    sprite->width = width;
+    sprite->height = height;
 }
 void sprite_set_texture(Sprite* sprite, SDL_Texture* texture)
 {
@@ -93,74 +81,63 @@ void sprite_set_texture(Sprite* sprite, SDL_Texture* texture)
     sprite->texture = texture;
 }
 
-
-
-float sprite_get_x(const void* sprite)
+float sprite_get_x(const Sprite* sprite)
 {
-    Sprite* spr = (Sprite*)sprite;
-    verify(spr == NULL, "Sprite does not exist");
-
-    return spr->x;
-}
-float sprite_get_y(const void* sprite)
-{
-    Sprite* spr = (Sprite*)sprite;
     verify(sprite == NULL, "Sprite does not exist");
 
-    return spr->y;
+    return sprite->x;
 }
-float sprite_get_width(const void* sprite)
+float sprite_get_y(const Sprite* sprite)
 {
-    Sprite* spr = (Sprite*)sprite;
-    verify(spr == NULL, "Sprite does not exist");
-
-    return spr->width;
-}
-float sprite_get_height(const void* sprite)
-{
-    Sprite* spr = (Sprite*)sprite;
     verify(sprite == NULL, "Sprite does not exist");
 
-    return spr->height;
+    return sprite->y;
 }
-SDL_FRect sprite_get_frect(const void* sprite)
+float sprite_get_width(const Sprite* sprite)
 {
-    Sprite* spr = (Sprite*)sprite;
-    verify(spr == NULL, "Sprite does not exist");
+    verify(sprite == NULL, "Sprite does not exist");
+
+    return sprite->width;
+}
+float sprite_get_height(const Sprite* sprite)
+{
+    verify(sprite == NULL, "Sprite does not exist");
+
+    return sprite->height;
+}
+SDL_FRect sprite_get_frect(const Sprite* sprite)
+{
+    verify(sprite == NULL, "Sprite does not exist");
 
     SDL_FRect frect =
         {
-            spr->x,
-            spr->y,
-            spr->width,
-            spr->height
+            sprite->x,
+            sprite->y,
+            sprite->width,
+            sprite->height
         };
     return frect;
 }
-SDL_Texture* sprite_get_texture(const void* sprite)
+SDL_Texture* sprite_get_texture(const Sprite* sprite)
 {
-    Sprite* spr = (Sprite*)sprite;
     verify(sprite == NULL, "Sprite does not exist");
 
-    return spr->texture;
+    return sprite->texture;
 }
 
 
 
+static void destroy(void* s)
+{
+    Sprite* sprite = (Sprite*)s;
+    verify(sprite == NULL, "Sprite does not exist");
+
+    sprite_destroy(sprite);
+}
 static TypeOps ops =
     {
-        sprite_destroy,
-        sprite_equals,
-        sprite_render,
-        NULL,
-        sprite_set_position,
-        sprite_set_size,
-        sprite_get_x,
-        sprite_get_y,
-        sprite_get_width,
-        sprite_get_height,
-        sprite_get_frect,
-        sprite_get_texture
+        destroy
+        // is_equal
     };
 TypeOps* sprite_ops()
 {

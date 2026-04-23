@@ -7,7 +7,7 @@
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_scancode.h>
 #include <stdbool.h>
-#include "helper_functions/error_handling.h"
+#include "include/helper_functions/error_handling.h"
 
 typedef struct InputState InputState;
 
@@ -130,6 +130,51 @@ bool input_get_mouse_right_pressed(const InputState* input);
     * @return true if the mouse right button is released
     */
 bool input_get_mouse_right_released(const InputState* input);
+
+/**
+    * @brief get the state of the mouse button
+    * 
+    * @param input the InputState to read the values from
+    *
+    * @return true if the mouse middle button is down
+    */
+bool input_get_mouse_middle_down(const InputState* input);
+
+/**
+    * @brief get the state of the mouse button
+    * 
+    * @param input the InputState to read the values from
+    *
+    * @return true if the mouse middle button is pressed
+    */
+bool input_get_mouse_middle_pressed(const InputState* input);
+
+/**
+    * @brief get the state of the mouse button
+    * 
+    * @param input the InputState to read the values from
+    *
+    * @return true if the mouse middle button is released
+    */
+bool input_get_mouse_middle_released(const InputState* input);
+
+/**
+    * @brief get the state of the mouse wheel
+    * 
+    * @param input the InputState to read the values from
+    *
+    * @return true if the mouse wheel scrolls up
+    */
+bool input_get_mouse_wheel_up(const InputState* input);
+
+/**
+    * @brief get the state of the mouse wheel
+    * 
+    * @param input the InputState to read the values from
+    *
+    * @return true if the mouse wheel scrolls down
+    */
+bool input_get_mouse_wheel_down(const InputState* input);
 
 
 

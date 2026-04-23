@@ -1,4 +1,4 @@
-#include "../../../include/game/board/piece.h"
+#include "include/game/board/piece.h"
 #include <SDL3/SDL_stdinc.h>
 
 struct PieceProperties
@@ -11,14 +11,11 @@ struct Piece
     PieceType type;
     PieceColor color;
     PieceProperties* properties;
-
-    Object* object;
 };
 
 
 static void piece_set_properties(Piece* piece);
 
-static bool can_piece_type_move_to(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_pawn_move(bool has_moved, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row);
@@ -47,8 +44,6 @@ Piece* piece_create(PieceType type, PieceColor color)
     verify(piece->properties == NULL, "PieceProperties could not be created: malloc");
     piece_set_properties(piece);
 
-    piece->object = NULL;
-
     return piece;
 }
 static void piece_set_properties(Piece* piece)
@@ -76,42 +71,14 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
     verify(piece == NULL, "Piece does not exist");
 
     PieceType type = piece_get_type(piece);
-    if (can_piece_type_move_to(piece, src_col, src_row, dst_col, dst_row))
-    {
-        return true;
-    }
-    return false;
-}
-bool piece_requires_clear_path(const Piece* piece)
-{
-    PieceType type = piece_get_type(piece);
-    switch (type)
-    {
-        case PAWN:
-        case ROOK:
-        case BISHOP:
-        case QUEEN:
-            return true;
-
-        case KNIGHT:
-        case KING:
-        default:
-            return false;
-    }
-}
-static bool can_piece_type_move_to(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
-{
-    verify(piece == NULL, "Piece does not exist");
-
-    PieceType type = piece_get_type(piece);
     PieceColor color = piece_get_color(piece);
     bool has_moved = piece_has_moved(piece);
     switch(type)
     {
         case PAWN:
-            if (color == PIECE_WHITE)
+            if (color == PIECE_BLACK)
                 return can_pawn_move(has_moved, src_col, src_row, dst_col, dst_row);
-            else if (color == PIECE_BLACK)
+            else if (color == PIECE_WHITE)
                 return can_pawn_move(has_moved, src_col, -src_row, dst_col, -dst_row);
             break;
         case ROOK:
@@ -192,6 +159,23 @@ static bool can_king_move(int src_col, int src_row, int dst_col, int dst_row)
     }
     return false;
 }
+bool piece_requires_clear_path(const Piece* piece)
+{
+    PieceType type = piece_get_type(piece);
+    switch (type)
+    {
+        case PAWN:
+        case ROOK:
+        case BISHOP:
+        case QUEEN:
+            return true;
+
+        case KNIGHT:
+        case KING:
+        default:
+            return false;
+    }
+}
 
 
 bool piece_can_capture(const Piece* src_piece, const Piece* dst_piece, int src_col, int src_row, int dst_col, int dst_row)
@@ -218,9 +202,9 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
     switch (type) 
     {
         case PAWN:
-            if (color == PIECE_WHITE)
+            if (color == PIECE_BLACK)
                 return can_pawn_capture(src_col, src_row, dst_col, dst_row);
-            else if (color == PIECE_BLACK)
+            else if (color == PIECE_WHITE)
                 return can_pawn_capture(src_col, -src_row, dst_col, -dst_row);
             break;
 
@@ -230,7 +214,7 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
         case QUEEN:
         case KING:
         default:
-            return can_piece_type_move_to(piece, src_col, src_row, dst_col, dst_row);
+            return piece_can_move_to(piece, src_col, src_row, dst_col, dst_row);
             break;
     }
     return false;
@@ -262,13 +246,6 @@ void piece_set_colour(Piece* piece, PieceColor color)
 
     piece->color = color;
 }
-void piece_set_object(Piece* piece, Object* object)
-{
-    verify(piece == NULL, "Piece does not exist");
-    verify(object == NULL, "Object does not exist");
-
-    piece->object = object;
-}
 void piece_set_moved(Piece* piece)
 {
     verify(piece == NULL, "Piece does not exist");
@@ -290,12 +267,6 @@ PieceColor piece_get_color(const Piece* piece)
     verify(piece == NULL, "Piece does not exist");
 
     return piece->color;
-}
-Object* piece_get_object(const Piece* piece)
-{
-    verify(piece == NULL, "Piece does not exist");
-
-    return piece->object;
 }
 bool piece_has_moved(const Piece* piece)
 {

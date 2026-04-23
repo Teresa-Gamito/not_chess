@@ -4,7 +4,9 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_rect.h>
-#include "error_handling.h"
+#include "include/helper_functions/typeops.h"
+#include "include/helper_functions/error_handling.h"
+
 
 SDL_Texture* SDL_CreateTextureFromPNG(SDL_Renderer* renderer, const char* png_path);
 
@@ -19,3 +21,6 @@ void SDL_DestroyFRect(SDL_FRect* frect);
 bool is_within(int value, int min, int max);
 bool is_even(int x);
 int sign(int value);
+
+TypeOps* SDL_Texture_ops();
+TypeOps* default_ops();
