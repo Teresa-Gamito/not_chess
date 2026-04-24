@@ -91,7 +91,7 @@ void board_set_default(Board* board)
     board->player1 = player_create(WHITE, 0);
     board->player2 = player_create(BLACK, 0);
 
-    board_add_piece_at(board, piece_create(LANCE, BLACK), 0, 0);
+    board_add_piece_at(board, piece_create(ROOK, BLACK), 0, 0);
     board_add_piece_at(board, piece_create(KNIGHT, BLACK), 1, 0);
     board_add_piece_at(board, piece_create(BISHOP, BLACK), 2, 0);
     board_add_piece_at(board, piece_create(QUEEN, BLACK), 3, 0);

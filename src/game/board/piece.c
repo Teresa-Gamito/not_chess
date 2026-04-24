@@ -81,7 +81,10 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
             return can_king_move(src_col, src_row, dst_col, dst_row);
             break;
         case LANCE:
-            return can_lance_move(src_col, src_row, dst_col, dst_row);
+            if (color == BLACK)
+                return can_lance_move(src_col, src_row, dst_col, dst_row);
+            else if (color == WHITE)
+                return can_lance_move(src_col, -src_row, dst_col, -dst_row);
         default:
             break;
     }
