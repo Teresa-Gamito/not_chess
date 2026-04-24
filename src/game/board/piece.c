@@ -11,6 +11,7 @@ struct Piece
 
 static bool can_pawn_move(bool has_moved, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_bishop_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row);
@@ -79,6 +80,12 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
             break;
         case KING:
             return can_king_move(src_col, src_row, dst_col, dst_row);
+            break;
+        case LANCE:
+            if (color == BLACK)
+                return can_lance_move(src_col, src_row, dst_col, dst_row);
+            else if (color == WHITE)
+                return can_lance_move(src_col, -src_row, dst_col, -dst_row);
         default:
             break;
     }
@@ -102,6 +109,14 @@ static bool can_pawn_move(bool has_moved, int src_col, int src_row, int dst_col,
 static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row)
 {
     if (src_col == dst_col || src_row == dst_row)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (src_col == dst_col && src_row < dst_row)
     {
         return true;
     }
@@ -152,6 +167,7 @@ bool piece_requires_clear_path(const Piece* piece)
         case ROOK:
         case BISHOP:
         case QUEEN:
+        case LANCE:
             return true;
 
         case KNIGHT:
@@ -197,6 +213,7 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
         case BISHOP:
         case QUEEN:
         case KING:
+        case LANCE:
         default:
             return piece_can_move_to(piece, src_col, src_row, dst_col, dst_row);
             break;
@@ -270,6 +287,8 @@ int piece_get_points(const Piece* piece)
             return POINTS_QUEEN;
         case KING:
             return POINTS_KING;
+        case LANCE:
+            return POINTS_LANCE;
         default:
             return 0;
     }

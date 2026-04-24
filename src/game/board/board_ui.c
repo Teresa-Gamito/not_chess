@@ -212,6 +212,9 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
             case KING:
                 return TEXTURE_WHITE_KING;
                 break;
+            case LANCE:
+                return TEXTURE_WHITE_LANCE;
+                break;
             default:
                 return 0;
                 break;
@@ -238,6 +241,9 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
                 break;
             case KING:
                 return TEXTURE_BLACK_KING;
+                break;
+            case LANCE:
+                return TEXTURE_BLACK_LANCE;
                 break;
             default:
                 return 0;
