@@ -126,6 +126,9 @@ void board_set_default(Board* board)
     board_add_piece_at(board, piece_create(PAWN, WHITE), 5, 6);
     board_add_piece_at(board, piece_create(PAWN, WHITE), 6, 6);
     board_add_piece_at(board, piece_create(PAWN, WHITE), 7, 6);
+
+    board_add_piece_at(board, piece_create(LANCE, BLACK), 2, 2);
+    board_add_piece_at(board, piece_create(LANCE, WHITE), 5, 5);
 }
 
 
