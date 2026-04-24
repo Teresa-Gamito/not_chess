@@ -7,6 +7,8 @@
 #include "game/tree/tree_ui.h"
 
 // #define PLAYER_STARTING_POINTS 0
+#define FONT_PATH "assets/arialceb.ttf"
+#define FONT_SIZE 16.0f
 
 typedef struct GameState GameState;
 

@@ -1,4 +1,6 @@
 #include "include/game/board/board.h"
+#include "game/board/piece.h"
+#include "helper_functions/error_handling.h"
 
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
@@ -253,6 +255,7 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
         {
             return;
         }
+        piece_destroy(board_get_piece_at(board, dst_col, dst_row));
     }
 
     board->pieces[dst_col + dst_row * board->col_num] = board->pieces[src_col + src_row * board->col_num];
@@ -277,13 +280,12 @@ bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col
     return true;
 
 }
-void board_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col)
+void board_piece_capture(Board* board, Piece* piece)
 {
-    (void) src_col;
-    (void) src_row;
-    Piece* dst_piece = board_get_piece_at(board, dst_col, dst_row);
+    verify(piece == NULL, "Piece does not exist");
+
     Player* player = board_get_active_player(board);
-    player_add_points(player, piece_get_points(dst_piece));
+    player_add_points(player, piece_get_points(piece));
 }
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -427,4 +429,13 @@ Player* board_get_opponent(const Board* board)
     verify(board == NULL, "Board does not exist");
 
     return *board->active_player == board->player1 ? board->player2 : board->player1;
+}
+
+Player* board_get_player_white(const Board* board)
+{
+    return board->player1;
+}
+Player* board_get_player_black(const Board* board)
+{
+    return board->player2;
 }

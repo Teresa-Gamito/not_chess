@@ -1,4 +1,5 @@
 #include "include/game/board/piece.h"
+#include "helper_functions/error_handling.h"
 
 struct Piece 
 {
@@ -253,6 +254,7 @@ Color piece_get_color(const Piece* piece)
 }
 int piece_get_points(const Piece* piece)
 {
+    verify(piece == NULL, "Piece does not exist");
     PieceType type = piece_get_type(piece);
     switch (type) 
     {

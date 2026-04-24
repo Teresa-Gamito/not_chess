@@ -22,6 +22,8 @@ AppState* app_create()
     AppState* app = (AppState*)SDL_malloc(sizeof(AppState));
     verify(app == NULL, "AppState could not be created: malloc");
     
+    TTF_Init();
+
     app->sdl_window = SDL_CreateWindow(
         APP_NAME,
         APP_WINDOW_WIDTH,
@@ -49,6 +51,7 @@ void app_destroy(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
 
+    TTF_Quit();
     SDL_DestroyWindow(app->sdl_window);
     SDL_DestroyRenderer(app->sdl_renderer);
 

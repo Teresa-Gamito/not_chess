@@ -1,4 +1,5 @@
 #include "include/game/board/board_ui.h"
+#include "game/board/board.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -15,7 +16,6 @@ struct BoardUI
     Window* window;
 
     Tile* selected_tile;
-
     Vector* tasks;
 };
 
@@ -34,9 +34,7 @@ BoardUI* board_ui_create(
     BoardUI* ui = SDL_malloc(sizeof(BoardUI));
     verify(ui == NULL, "BoardUI could not be created: malloc");
 
-    SDL_Log("%d", board);
     ui->board = board;
-    SDL_Log("%d", ui->board);
 
     SDL_Texture* background_texture = SDL_CreateTextureFromPNG(
         renderer, 
@@ -335,7 +333,7 @@ static int try_piece_capture(BoardUI* ui, int src_col, int src_row, int dst_col,
         return 0;
     }
 
-    board_piece_capture(board, src_col, src_row, dst_col, dst_row);
+    board_piece_capture(board, board_get_piece_at(board, dst_col, dst_row));
     board_piece_move_to(board, src_col, src_row, dst_col, dst_row);
     ui->selected_tile = NULL;
     board_ui_update(ui);
@@ -470,7 +468,6 @@ Window* board_ui_get_window(const BoardUI* ui)
 Board* board_ui_get_board(const BoardUI* ui)
 {
     verify(ui == NULL, "BoardUI does not exist");
-    SDL_Log("%d", ui->board);
 
     return ui->board;
 }

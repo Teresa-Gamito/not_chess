@@ -29,7 +29,7 @@ bool board_has_piece_at(const Board* board, int col, int row);
 Piece* board_get_piece_at(const Board* board, int col, int row);
 
 bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col);
-void board_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col);
+void board_piece_capture(Board* board, Piece* piece);
 
 bool board_can_piece_move_to(Board *board, int src_col, int src_row, int dst_col, int dst_row);
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
@@ -50,3 +50,5 @@ void advance_turn(Board* board);
 bool is_player_side_of_board(const Board* board, const Player* player, int row);
 Player* board_get_active_player(const Board* board);
 Player* board_get_opponent(const Board* board);
+Player* board_get_player_white(const Board* board);
+Player* board_get_player_black(const Board* board);

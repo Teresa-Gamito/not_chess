@@ -1,9 +1,4 @@
 #include "include/game/tree/node.h"
-#include "game/board/board.h"
-#include "game/board/board_ui.h"
-#include "game/board/player.h"
-#include "helper_functions/error_handling.h"
-#include "helper_functions/typeops.h"
 
 typedef enum NodeState
 {

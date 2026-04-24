@@ -1,4 +1,6 @@
 #include "include/game/tree/tree_ui.h"
+#include "game/board/board.h"
+#include "game/board/board_ui.h"
 
 struct TreeUI
 {
@@ -6,12 +8,13 @@ struct TreeUI
     Window* window;
 
     Board* board;
+    BoardUI* board_ui;
 };
 
 TreeUI* tree_ui_create(
     SDL_Renderer* renderer, 
     Tree* tree,
-    Board* board,
+    BoardUI* board_ui,
     float x, 
     float y, 
     float width, 
@@ -35,18 +38,12 @@ TreeUI* tree_ui_create(
         TREE_TEXTURES_COUNT
     );
 
-    ui->board = board;
+    ui->board = board_ui_get_board(board_ui);
+    ui->board_ui = board_ui;
 
     tree_ui_update(ui);
 
     return ui;
-}
-
-void tree_ui_set_default(TreeUI* ui, BoardUI* board_ui)
-{
-    Window* window = ui->window;
-
-
 }
 
 void tree_ui_destroy(TreeUI* ui)
@@ -81,6 +78,7 @@ static void tree_ui_set_nodes(TreeUI* ui)
             button_pressed
         );
         button_set_size(button, 90, 90);
+        button_set_on_left_click_fn(button, node_purchase, ui->board_ui, node);
         window_add_button(window, button, 5, 5 + (100 * i));
 
         Sprite* sprite = sprite_create(texture_add_pawn);

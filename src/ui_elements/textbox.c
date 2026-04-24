@@ -1,4 +1,6 @@
 #include "include/ui_elements/textbox.h"
+#include "helper_functions/error_handling.h"
+#include <SDL3/SDL_stdinc.h>
 
 struct Textbox
 {
@@ -158,13 +160,12 @@ static void textbox_update_texture(SDL_Renderer* renderer, Textbox* textbox)
         *textbox->color,
         textbox->max_width
     );
-    if (surface == NULL)
-    {
-        SDL_Log("Surface could not be created");
-        return;
-    }
+    verify(surface == NULL, "Surface could not be created");
+
     textbox->texture = SDL_CreateTextureFromSurface(renderer, surface);
+
     SDL_DestroySurface(surface);
+
     SDL_GetTextureSize(
         textbox->texture, 
         &textbox->width,
@@ -176,10 +177,6 @@ void textbox_set_text(SDL_Renderer* renderer, Textbox* textbox, const char* text
     verify(renderer == NULL, "Renderer does not exist");
     verify(textbox == NULL, "Textbox does not exist");
 
-    if (textbox->text != NULL) 
-    {
-        SDL_free(textbox->text);
-    }
     textbox->text = SDL_strdup(text);
     textbox_update_texture(renderer, textbox);
 }

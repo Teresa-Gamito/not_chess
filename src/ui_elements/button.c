@@ -1,6 +1,4 @@
 #include "include/ui_elements/button.h"
-#include "helper_functions/error_handling.h"
-#include <SDL3/SDL_log.h>
 
 typedef enum ButtonState
 {

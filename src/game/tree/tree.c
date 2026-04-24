@@ -1,8 +1,4 @@
 #include "include/game/tree/tree.h"
-#include "game/board/task.h"
-#include "game/tree/node.h"
-#include "helper_functions/vector.h"
-#include <SDL3/SDL_stdinc.h>
 
 struct Tree
 {

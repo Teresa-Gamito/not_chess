@@ -13,9 +13,9 @@ typedef struct TreeUI TreeUI;
 
 
 TreeUI* tree_ui_create(
-    SDL_Renderer* renderer,
+    SDL_Renderer* renderer, 
     Tree* tree,
-    Board* board,
+    BoardUI* board_ui,
     float x, 
     float y, 
     float width, 
