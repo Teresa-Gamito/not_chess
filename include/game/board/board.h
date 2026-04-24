@@ -2,19 +2,19 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <stdbool.h>
-#include "include/helper_functions/error_handling.h"
-#include "include/helper_functions/helper_functions.h"
-#include "include/game/board/piece.h"
-#include "include/game/board/tile.h"
-
-#define BOARD_STARTING_COL_NUM 8
-#define BOARD_STARTING_ROW_NUM 8
+#include "helper_functions/error_handling.h"
+#include "helper_functions/helper_functions.h"
+#include "game/board/player.h"
+#include "game/board/piece.h"
+#include "game/board/tile.h"
 
 typedef struct Board Board;
 
 // ========== board ==========
 Board* board_create(int col_num, int row_num);
 void board_destroy(Board* board);
+
+void board_set_default(Board* board);
 
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
@@ -45,3 +45,8 @@ Tile* board_get_tile_at(const Board* board, int col, int row);
 int board_tile_get_col(const Board* board, const Tile* tile);
 int board_tile_get_row(const Board* board, const Tile* tile);
 
+// ========== player ==========
+void advance_turn(Board* board);
+bool is_player_side_of_board(const Board* board, const Player* player, int row);
+Player* board_get_active_player(const Board* board);
+Player* board_get_opponent(const Board* board);

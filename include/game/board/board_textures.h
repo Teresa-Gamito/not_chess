@@ -1,14 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_stdinc.h>
-#include "include/ui_elements/window.h"
-#include "include/game/board/board.h"
-#include "include/helper_functions/error_handling.h"
-#include "include/helper_functions/helper_functions.h"
-#include "include/helper_functions/vector.h"
-#include "include/ui_elements/button.h"
-
 #define TEXTURE_DEFAULT_SIZE_PX 16
 
 #define PATH_TEXTURE_WHITE_PAWN                 "assets/sprites/white_pawn.png"
@@ -33,13 +24,6 @@
 #define PATH_TEXTURE_TILE_CAPTURE               "assets/sprites/tile_capture.png"
 
 #define PATH_TEXTURE_WINDOW_BOARD_BACKGROUND    "assets/sprites/tile_black.png"
-
-typedef struct BoardUI BoardUI;
-
-typedef enum Task
-{
-    TASK_ADD_PAWN,
-} Task;
 
 typedef enum BoardTextures
 {
@@ -90,24 +74,3 @@ static const char* board_textures[] =
     PATH_TEXTURE_TILE_VALID,
     PATH_TEXTURE_TILE_CAPTURE
 };
-
-BoardUI* board_ui_create(
-    SDL_Renderer* renderer, 
-    Board* board, 
-    float x, 
-    float y, 
-    float width, 
-    float height
-);
-void board_ui_destroy(BoardUI* ui);
-void board_ui_update(BoardUI* ui);
-
-void select_tile(void* board_ui, void* tile);
-void deselect_tile(void* board_ui, void* x);
-
-bool board_ui_has_task(BoardUI* ui);
-void board_ui_task_complete_first(BoardUI* ui);
-Task board_ui_get_task_first(BoardUI* ui);
-void board_ui_add_task(BoardUI* ui, Task task);
-
-Window* board_ui_get_window(BoardUI* ui);

@@ -7,9 +7,9 @@
 #include "include/game/gamestate.h"
 
 #define APP_NAME "!Chess"
-#define APP_WINDOW_WIDTH 1000
-#define APP_WINDOW_HEIGHT 1000
-#define APP_WINDOW_FLAGS SDL_WINDOW_RESIZABLE
+#define APP_WINDOW_WIDTH 960
+#define APP_WINDOW_HEIGHT 540
+#define APP_WINDOW_FLAGS 0
 
 typedef struct AppState AppState;
 

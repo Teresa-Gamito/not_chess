@@ -1,5 +1,4 @@
 #include "include/helper_functions/vector.h"
-#include "helper_functions/error_handling.h"
 
 struct Vector
 {
@@ -87,14 +86,14 @@ int vector_get_count(const Vector* vector)
 
     return vector->count;
 }
-void* vector_get_at(Vector* vector, int index)
+void* vector_get_at(const Vector* vector, int index)
 {
     verify(vector == NULL, "Vector does not exist");
     verify(index < 0 && index >= vector->count, "Invalid index");
 
     return vector->data[index];
 }
-TypeOps* vector_get_item_ops(Vector* vector)
+TypeOps* vector_get_item_ops(const Vector* vector)
 {
     verify(vector == NULL, "Vector does not exist");
 

@@ -14,5 +14,5 @@ void vector_destroy_content(Vector* vector);
 void vector_destroy_item(Vector* vector, void* item);
 
 int vector_get_count(const Vector* vector);
-void* vector_get_at(Vector* vector, int index);
-TypeOps* vector_get_item_ops(Vector* vector);
+void* vector_get_at(const Vector* vector, int index);
+TypeOps* vector_get_item_ops(const Vector* vector);

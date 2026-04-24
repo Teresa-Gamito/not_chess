@@ -9,6 +9,10 @@ struct Board
 
     Tile** tiles;
     Piece** pieces;
+
+    Player* player1;
+    Player* player2;
+    Player** active_player;
 };
 
 Board* board_create(int col_num, int row_num)
@@ -35,6 +39,11 @@ Board* board_create(int col_num, int row_num)
             board->pieces[col + row * board->col_num] = NULL;
         }
     }
+
+    board->player1 = NULL;
+    board->player2 = NULL;
+    board->active_player = &board->player1;
+
     return board;
 }
 
@@ -63,9 +72,59 @@ void board_destroy(Board* board)
     SDL_free(board->tiles);
     SDL_free(board->pieces);
 
+    if (board->player1 != NULL) 
+    {
+        player_destroy(board->player1);
+    }
+    if (board->player2 != NULL) 
+    {
+        player_destroy(board->player2);
+    }
+
     SDL_free(board);
 }
 
+void board_set_default(Board* board)
+{
+    verify(board == NULL, "Board does not exist");
+
+    board->player1 = player_create(WHITE, 0);
+    board->player2 = player_create(BLACK, 0);
+
+    board_add_piece_at(board, piece_create(ROOK, BLACK), 0, 0);
+    board_add_piece_at(board, piece_create(KNIGHT, BLACK), 1, 0);
+    board_add_piece_at(board, piece_create(BISHOP, BLACK), 2, 0);
+    board_add_piece_at(board, piece_create(QUEEN, BLACK), 3, 0);
+    board_add_piece_at(board, piece_create(KING, BLACK), 4, 0);
+    board_add_piece_at(board, piece_create(BISHOP, BLACK), 5, 0);
+    board_add_piece_at(board, piece_create(KNIGHT, BLACK), 6, 0);
+    board_add_piece_at(board, piece_create(ROOK, BLACK), 7, 0);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 0, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 1, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 2, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 3, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 4, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 5, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 6, 1);
+    board_add_piece_at(board, piece_create(PAWN, BLACK), 7, 1);
+
+    board_add_piece_at(board, piece_create(ROOK, WHITE), 0, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, WHITE), 1, 7);
+    board_add_piece_at(board, piece_create(BISHOP, WHITE), 2, 7);
+    board_add_piece_at(board, piece_create(QUEEN, WHITE), 3, 7);
+    board_add_piece_at(board, piece_create(KING, WHITE), 4, 7);
+    board_add_piece_at(board, piece_create(BISHOP, WHITE), 5, 7);
+    board_add_piece_at(board, piece_create(KNIGHT, WHITE), 6, 7);
+    board_add_piece_at(board, piece_create(ROOK, WHITE), 7, 7);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 0, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 1, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 2, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 3, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 4, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 5, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 6, 6);
+    board_add_piece_at(board, piece_create(PAWN, WHITE), 7, 6);
+}
 
 
 bool board_can_add_piece_at(Board* board, int col, int row)
@@ -74,7 +133,11 @@ bool board_can_add_piece_at(Board* board, int col, int row)
     verify(col < 0 || col > board->col_num, "Invalid board position");
     verify(row < 0 || row > board->row_num, "Invalid board position");
 
-    return !board_has_piece_at(board, col, row);
+    if (board_has_piece_at(board, col, row))
+    {
+        return false;
+    }
+    return true;
 }
 void board_add_piece_at(Board* board, Piece* piece, int col, int row)
 {
@@ -165,6 +228,7 @@ bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col
     {
         return false;
     }
+
     return true;
 }
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
@@ -215,7 +279,11 @@ bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col
 }
 void board_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col)
 {
-
+    (void) src_col;
+    (void) src_row;
+    Piece* dst_piece = board_get_piece_at(board, dst_col, dst_row);
+    Player* player = board_get_active_player(board);
+    player_add_points(player, piece_get_points(dst_piece));
 }
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -320,125 +388,43 @@ int board_get_row_num(const Board* board)
     return board->row_num;
 }
 
-
-
-// ==============================
-// Board UI
-// ==============================
-/*
-void board_select_tile(void* arg1_board, void* arg2_tile)
-{
-    Board* board = (Board*)arg1_board;
-    verify(board == NULL, "Board does not exist");
-
-    Tile* new_tile = (Tile*)arg2_tile;
-    Tile* old_tile = board->selected_tile;
-
-    if (new_tile == old_tile)
-    {
-        board->selected_tile = NULL;
-        board_ui_update(board);
-        return;
-    }
-
-    board->selected_tile = new_tile;
-    tile_ui_set_selected(board->selected_tile);
-    board_ui_update(board);
-
-    if (new_tile == NULL) return;
-    if (old_tile == NULL) return;
-
-    int old_col = board_tile_get_col(board, old_tile);
-    int old_row = board_tile_get_row(board, old_tile);
-    int new_col = board_tile_get_col(board, new_tile);
-    int new_row = board_tile_get_row(board, new_tile);
-
-    if (!board_has_piece_at(board, old_col, old_row)) 
-    {
-        return;
-    }
-    if (board_piece_can_move_to(board, old_col, old_row, new_col, new_row))
-    {
-        board_piece_move_to(board, old_col, old_row, new_col, new_row);
-        return;
-    }
-
-    if (!board_has_piece_at(board, new_col, new_row))
-    {
-        return;
-    }
-    if (board_piece_can_capture(board, old_col, old_row, new_col, new_row))
-    {
-        board_piece_capture(board, new_col, new_row);
-        board_piece_move_to(board, old_col, old_row, new_col, new_row);
-    }
-}
-void board_piece_capture(Board* board, int col, int row)
-{
-    // TODO: add points
-    board_piece_remove(board, col, row);
-}
-static void board_ui_update(Board* board)
+void advance_turn(Board* board)
 {
     verify(board == NULL, "Board does not exist");
 
-    Window* window = board_get_window(board);
-
-    BoardTextures texture_index_selected = TEXTURE_TILE_SELECTED;
-    BoardTextures texture_index_valid = TEXTURE_TILE_VALID;
-    BoardTextures texture_index_capture = TEXTURE_TILE_CAPTURE;
-
-    SDL_Texture* texture_selected = window_get_texture(window, texture_index_selected);
-    SDL_Texture* texture_valid = window_get_texture(window, texture_index_valid);
-    SDL_Texture* texture_capture = window_get_texture(window, texture_index_capture);
-
-    Tile* tile;
-    for (int col = 0; col < board->col_num; col++)
+    if (*board->active_player == board->player1)
     {
-        for (int row = 0; row < board->row_num; row++)
-        {
-            tile = board_get_tile_at(board, col, row);
-            board_tile_set_ui(board, tile);
-            tile_set_ui_textures(tile, texture_selected, texture_valid, texture_capture);
-        }
+        board->active_player = &board->player2;
+    }
+    else
+    {
+        board->active_player = &board->player1;
     }
 }
-static void board_tile_set_ui(Board* board, Tile* tile)
+bool is_player_side_of_board(const Board* board, const Player* player, int row)
 {
-    if (board->selected_tile == NULL)
-    {
-        tile_ui_set_none(tile);
-        return;
-    }
-    if (board->selected_tile == tile)
-    {
-        return;
-    }
+    verify(board == NULL, "Board does not exist");
+    verify(player == NULL, "Player does not exist");
 
-    int src_col = board_tile_get_col(board, board->selected_tile);
-    int src_row = board_tile_get_row(board, board->selected_tile);
-    int dst_col = board_tile_get_col(board, tile);
-    int dst_row = board_tile_get_row(board, tile);
-
-    if (!board_has_piece_at(board, src_col, src_row))
+    if (player_get_color(player) == WHITE && row >= board_get_row_num(board) / 2)
     {
-        tile_ui_set_none(tile);
-        return;
+        return true;
     }
-
-    if (board_has_piece_at(board, dst_col, dst_row))
+    if (player_get_color(player) == BLACK && row + 1 <= board_get_row_num(board) / 2)
     {
-        if (board_piece_can_capture(board, src_col, src_row, dst_col, dst_row))
-        {
-            tile_ui_set_capture(tile);
-            return;
-        }
+        return true;
     }
-    if (board_piece_can_move_to(board, src_col, src_row, dst_col, dst_row))
-    {
-        tile_ui_set_valid(tile);
-        return;
-    }
-    tile_ui_set_none(tile);
+    return false;
 }
-*/
+Player* board_get_active_player(const Board* board)
+{
+    verify(board == NULL, "Board does not exist");
+
+    return *board->active_player;
+}
+Player* board_get_opponent(const Board* board)
+{
+    verify(board == NULL, "Board does not exist");
+
+    return *board->active_player == board->player1 ? board->player2 : board->player1;
+}

@@ -1,20 +1,12 @@
 #include "include/game/board/piece.h"
-#include <SDL3/SDL_stdinc.h>
-
-struct PieceProperties
-{
-    bool has_moved;
-};
 
 struct Piece 
 {
     PieceType type;
-    PieceColor color;
-    PieceProperties* properties;
+    Color color;
+
+    bool has_moved;
 };
-
-
-static void piece_set_properties(Piece* piece);
 
 static bool can_pawn_move(bool has_moved, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row);
@@ -29,10 +21,10 @@ static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
 
 
 // ========== create ==========
-Piece* piece_create(PieceType type, PieceColor color) 
+Piece* piece_create(PieceType type, Color color) 
 {
     verify(type < 0 || type > PIECE_TYPE_COUNT, "Invalid PieceType");
-    verify(color < 0 || color > PIECE_COLOR_COUNT, "Invalid PieceColor");
+    verify(color != WHITE && color != BLACK, "Invalid Color");
 
     Piece* piece = SDL_malloc(sizeof(Piece));
     verify(piece == NULL, "Piece could not be created: malloc");
@@ -40,16 +32,9 @@ Piece* piece_create(PieceType type, PieceColor color)
     piece->type = type;
     piece->color = color;
 
-    piece->properties = SDL_malloc(sizeof(PieceProperties));
-    verify(piece->properties == NULL, "PieceProperties could not be created: malloc");
-    piece_set_properties(piece);
+    piece->has_moved = false;
 
     return piece;
-}
-static void piece_set_properties(Piece* piece)
-{
-    PieceProperties* properties = piece->properties;
-    properties->has_moved = false;
 }
 
 
@@ -58,8 +43,6 @@ static void piece_set_properties(Piece* piece)
 void piece_destroy(Piece* piece) 
 {
     verify(piece == NULL, "Piece does not exist");
-    
-    SDL_free(piece->properties);
 
     SDL_free(piece);
 }
@@ -71,14 +54,14 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
     verify(piece == NULL, "Piece does not exist");
 
     PieceType type = piece_get_type(piece);
-    PieceColor color = piece_get_color(piece);
+    Color color = piece_get_color(piece);
     bool has_moved = piece_has_moved(piece);
     switch(type)
     {
         case PAWN:
-            if (color == PIECE_BLACK)
+            if (color == BLACK)
                 return can_pawn_move(has_moved, src_col, src_row, dst_col, dst_row);
-            else if (color == PIECE_WHITE)
+            else if (color == WHITE)
                 return can_pawn_move(has_moved, src_col, -src_row, dst_col, -dst_row);
             break;
         case ROOK:
@@ -198,13 +181,13 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
     verify(piece == NULL, "Piece does not exist");
 
     PieceType type = piece_get_type(piece);
-    PieceColor color = piece_get_color(piece);
+    Color color = piece_get_color(piece);
     switch (type) 
     {
         case PAWN:
-            if (color == PIECE_BLACK)
+            if (color == BLACK)
                 return can_pawn_capture(src_col, src_row, dst_col, dst_row);
-            else if (color == PIECE_WHITE)
+            else if (color == WHITE)
                 return can_pawn_capture(src_col, -src_row, dst_col, -dst_row);
             break;
 
@@ -239,10 +222,10 @@ void piece_set_type(Piece* piece, PieceType type)
 
     piece->type = type;
 }
-void piece_set_colour(Piece* piece, PieceColor color)
+void piece_set_colour(Piece* piece, Color color)
 {
     verify(piece == NULL, "Piece does not exist");
-    verify(color < 0 || color > PIECE_COLOR_COUNT, "Invalid PieceColor");
+    verify(color != WHITE || color != BLACK, "Invalid PieceColor");
 
     piece->color = color;
 }
@@ -250,7 +233,7 @@ void piece_set_moved(Piece* piece)
 {
     verify(piece == NULL, "Piece does not exist");
 
-    piece->properties->has_moved = true;
+    piece->has_moved = true;
 }
 
 
@@ -262,15 +245,37 @@ PieceType piece_get_type(const Piece* piece)
 
     return piece->type;
 }
-PieceColor piece_get_color(const Piece* piece)
+Color piece_get_color(const Piece* piece)
 {
     verify(piece == NULL, "Piece does not exist");
 
     return piece->color;
 }
+int piece_get_points(const Piece* piece)
+{
+    PieceType type = piece_get_type(piece);
+    switch (type) 
+    {
+        case PAWN:
+            return POINTS_PAWN;
+        case ROOK:
+            return POINTS_ROOK;
+        case KNIGHT:
+            return POINTS_KNIGHT;
+        case BISHOP:
+            return POINTS_BISHOP;
+        case QUEEN:
+            return POINTS_QUEEN;
+        case KING:
+            return POINTS_KING;
+        default:
+            return 0;
+    }
+    return 0;
+}
 bool piece_has_moved(const Piece* piece)
 {
     verify(piece == NULL, "Piece does not exist");
 
-    return piece->properties->has_moved;
+    return piece->has_moved;
 }
