@@ -1,3 +1,5 @@
+// tiles on the board
+// responsible for its own properties
 #pragma once
 
 #include <SDL3/SDL_render.h>

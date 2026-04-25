@@ -1,3 +1,5 @@
+// pieces on the board
+// responsible for its own movement and capturing mechanics
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

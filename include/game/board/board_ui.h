@@ -1,3 +1,4 @@
+// responsible for rendering and processing input for the board
 #pragma once
 
 #include <SDL3/SDL_render.h>

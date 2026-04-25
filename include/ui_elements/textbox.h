@@ -1,3 +1,4 @@
+// renders a textbox with the desired text
 #pragma once
 
 #include <SDL3_ttf/SDL_ttf.h>

@@ -1,3 +1,4 @@
+// responsible for processing the board and interactions between pieces and tiles
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

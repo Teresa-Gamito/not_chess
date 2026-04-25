@@ -1,5 +1,4 @@
 // get the input from the player and store it in a state
-
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

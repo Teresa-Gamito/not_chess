@@ -1,3 +1,5 @@
+// used to verify invalid parameters
+// exits the game in case of error
 #pragma once
 
 #include <stdbool.h>

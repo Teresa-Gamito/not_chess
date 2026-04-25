@@ -1,3 +1,4 @@
+// responsible for processing, updating and rendering all of the aspects of the app
 #pragma once
 
 #include <SDL3/SDL_render.h>

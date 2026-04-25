@@ -1,3 +1,5 @@
+// tasks for the game
+// responsible for managing interactions between the tree and the board
 #pragma once
 
 #include "include/helper_functions/helper_functions.h"

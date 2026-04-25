@@ -1,3 +1,4 @@
+// renders a single sprite
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

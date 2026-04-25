@@ -1,3 +1,4 @@
+// responsible for rendering and processing input for the tree
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

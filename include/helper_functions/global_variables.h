@@ -1,3 +1,4 @@
+// holder for global variables
 #pragma once
 
 #include <stdbool.h>

@@ -1,6 +1,6 @@
-// Windows defined within the game
-// Window != SDL_Window, SDL_Window is a desktop window while Window is a in-game window as the screen is devided into multiple sections
-
+// holder for sprites, buttons and textboxes,
+// is its own window inside the game
+// only renders objects inside of the window
 #pragma once
 
 #include <SDL3/SDL_rect.h>

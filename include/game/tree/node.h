@@ -1,3 +1,6 @@
+// nodes on the tree
+// can be purchased to change the game flow
+// TODO: abstract
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>

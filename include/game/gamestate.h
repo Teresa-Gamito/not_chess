@@ -1,3 +1,4 @@
+// responsible for processing, updating and rendering the game
 #pragma once
 
 #include <SDL3/SDL_render.h>

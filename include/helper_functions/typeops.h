@@ -1,3 +1,4 @@
+// operations related to its own type
 #pragma once
 
 typedef struct TypeOps

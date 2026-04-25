@@ -1,3 +1,4 @@
+// preset SDL_Colors
 #pragma once
 
 #include <SDL3/SDL_pixels.h>

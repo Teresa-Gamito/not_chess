@@ -1,3 +1,6 @@
+// player, capturing points and color
+// player 1 is white
+// player 2 is black
 #pragma once
 
 #include "helper_functions/error_handling.h"

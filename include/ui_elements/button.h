@@ -1,6 +1,4 @@
-// TODO:
-// - add comments
-
+// processes input from the player when pressing with a mouse
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
