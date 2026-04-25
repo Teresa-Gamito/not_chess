@@ -14,11 +14,7 @@ BUILD_DIR := build
 ASSET_DIRS := assets assets/sounds assets/sprites
 
 # INDIVIDUAL FILES TO INCLUDE IN THE BUILD PATH
-ifdef IS_MSYS2
 ASSET_FILES := SDL3.dll SDL3_ttf.dll
-else
-ASSET_FILES :=
-endif
 
 # ---------------- Platform detection ----------------
 UNAME_S := $(shell uname -s)
