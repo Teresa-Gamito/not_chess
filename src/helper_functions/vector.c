@@ -62,18 +62,14 @@ void vector_destroy_item(Vector* vector, void* item)
             break;
         }
     }
+    if (index == -1) return;
 
     vector->ops->destroy(vector->data[index]);
 
-    for (int i = index; i < vector->count - 2; i++)
+    for (int i = index; i < vector->count - 1; i++)
     {
         vector->data[i] = vector->data[i + 1];
     }
-    // SDL_memmove(
-    //     vector->data[index],
-    //     vector->data[index + 1],
-    //     (vector->count - index - 1) * sizeof(void*)
-    // );
     vector->count--;
     size_t new_size = sizeof(void*) * vector->count;
     vector->data = SDL_realloc(vector->data, new_size);

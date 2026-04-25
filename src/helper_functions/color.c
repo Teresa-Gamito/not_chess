@@ -10,4 +10,18 @@ SDL_Color color_black()
     SDL_Color color = {0, 0, 0, 255};
     return color;
 }
-
+SDL_Color color_red()
+{
+    SDL_Color color = {255, 0, 0, 255};
+    return color;
+}
+SDL_Color color_green()
+{
+    SDL_Color color = {0, 255, 0, 255};
+    return color;
+}
+SDL_Color color_blue()
+{
+    SDL_Color color = {0, 0, 255, 255};
+    return color;
+}

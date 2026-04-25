@@ -1,10 +1,27 @@
 #include "include/game/tree/tree_ui.h"
 #include "appstate.h"
 #include "game/board/board_ui.h"
+#include "game/board/player.h"
+#include "game/tree/node.h"
+#include "game/tree/tree_textures.h"
+#include "helper_functions/color.h"
+#include "helper_functions/error_handling.h"
+#include "helper_functions/global_variables.h"
+#include "ui_elements/textbox.h"
 #include "ui_elements/window.h"
+#include <SDL3/SDL_pixels.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_stdinc.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 struct TreeUI
 {
+    SDL_Renderer* renderer;
+
+    TTF_Font* font;
+    SDL_Color* red;
+    SDL_Color* green;
+
     Tree* tree;
     Window* window;
 
@@ -24,6 +41,17 @@ TreeUI* tree_ui_create(
 {
     TreeUI* ui = SDL_malloc(sizeof(TreeUI));
     verify(ui == NULL, "TreeUI could not be created: malloc");
+
+    ui->renderer = renderer;
+
+    ui->font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
+    verify(ui->font == NULL, "TTF_Font could not be opened");
+    ui->red = SDL_malloc(sizeof(SDL_Color));
+    verify(ui->red == NULL, "SDL_Color could not be created: malloc");
+    *ui->red = color_red();
+    ui->green = SDL_malloc(sizeof(SDL_Color));
+    verify(ui->green == NULL, "SDL_Color could not be created: malloc");
+    *ui->green = color_green();
 
     ui->tree = tree;
 
@@ -49,6 +77,9 @@ TreeUI* tree_ui_create(
 
 void tree_ui_destroy(TreeUI* ui)
 {
+    TTF_CloseFont(ui->font);
+    SDL_free(ui->red);
+    SDL_free(ui->green);
     window_destroy(ui->window);
     SDL_free(ui);
 }
@@ -62,6 +93,7 @@ static void tree_ui_set_nodes(TreeUI* ui)
 {
     Tree* tree = ui->tree;
     Window* window = ui->window;
+    SDL_Renderer* renderer = ui->renderer;
     
     SDL_Texture* button_idle = NULL;
     SDL_Texture* button_hovered = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_HOVERED);
@@ -75,6 +107,9 @@ static void tree_ui_set_nodes(TreeUI* ui)
     Node* node;
     Button* button;
     Sprite* sprite;
+    Textbox* textbox;
+    SDL_Color* color;
+    char* text;
 
     // button 1 - add pawn
     index = 0;
@@ -98,6 +133,22 @@ static void tree_ui_set_nodes(TreeUI* ui)
     sprite_set_size(sprite, size, size);
     window_add_sprite(window, sprite, 0, size * index);
 
+    SDL_asprintf(&text, "COST: %d", node_get_cost(node));
+    if (node_can_purchase(node, player_get_points(player)))
+        color = ui->green;
+    else
+        color = ui->red;
+    textbox = textbox_create(
+        renderer, 
+        ui->font, 
+        color,
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
+
     // button 2 - expand board
     index = 1;
     button = button_create(
@@ -119,6 +170,22 @@ static void tree_ui_set_nodes(TreeUI* ui)
     sprite = sprite_create(texture_node);
     sprite_set_size(sprite, size, size);
     window_add_sprite(window, sprite, 0, size * index);
+
+    SDL_asprintf(&text, "COST: %d", node_get_cost(node));
+    if (node_can_purchase(node, player_get_points(player)))
+        color = ui->green;
+    else
+        color = ui->red;
+    textbox = textbox_create(
+        renderer, 
+        ui->font, 
+        color,
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
 
     // button 3 - add lance
     index = 2;
@@ -142,6 +209,59 @@ static void tree_ui_set_nodes(TreeUI* ui)
     sprite_set_size(sprite, size, size);
     window_add_sprite(window, sprite, 0, size * index);
 
+    SDL_asprintf(&text, "COST: %d", node_get_cost(node));
+    if (node_can_purchase(node, player_get_points(player)))
+        color = ui->green;
+    else
+        color = ui->red;
+    textbox = textbox_create(
+        renderer, 
+        ui->font, 
+        color,
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
+
+    // button 4 - add lance
+    index = 3;
+    button = button_create(
+        button_idle,
+        button_hovered,
+        button_pressed
+    );
+    button_set_size(button, size, size);
+    node = tree_get_node_at(tree, index);
+    button_set_on_left_click_fn(
+        button, 
+        node_purchase, 
+        ui->board_ui, 
+        node
+    );
+    window_add_button(window, button, 0, size * index);
+
+    texture_node = window_get_texture(ui->window, TEXTURE_NODE_SACRIFICE);
+    sprite = sprite_create(texture_node);
+    sprite_set_size(sprite, size, size);
+    window_add_sprite(window, sprite, 0, size * index);
+
+    SDL_asprintf(&text, "COST: %d", node_get_cost(node));
+    if (node_can_purchase(node, player_get_points(player)))
+        color = ui->green;
+    else
+        color = ui->red;
+    textbox = textbox_create(
+        renderer, 
+        ui->font, 
+        color,
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
 }
 void tree_ui_update(TreeUI* ui)
 {

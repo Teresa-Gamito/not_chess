@@ -1,9 +1,7 @@
 #include "include/appstate.h"
-
-int g_app_window_width = APP_WINDOW_WIDTH;
-int g_app_window_height = APP_WINDOW_HEIGHT;
-float g_app_scale = 1;
-int g_app_sprite_size_px = 16;
+#include "game/gamestate.h"
+#include "helper_functions/global_variables.h"
+#include "inputstate.h"
 
 struct AppState
 {
@@ -79,6 +77,10 @@ void app_game_start(AppState* app)
 void app_update(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
+
+    InputState* input = app->input;
+    GameState* game = app->gamestate;
+
     SDL_GetWindowSize(app->sdl_window, &g_app_window_width, &g_app_window_height);
     if (APP_WINDOW_WIDTH / APP_WINDOW_HEIGHT < g_app_window_width / g_app_window_height)
     {
@@ -89,7 +91,15 @@ void app_update(AppState* app)
         g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
     }
 
-    game_update(app_get_inputstate(app), app_get_gamestate(app));
+    if (input_get_key_pressed(input, SDL_SCANCODE_1))
+    {
+        infinite_points = !infinite_points;
+    }
+    if (input_get_key_pressed(input, SDL_SCANCODE_2))
+    {
+        can_purchace_multiple_times = !can_purchace_multiple_times;
+    }
+    game_update(input, game);
 }
 
 

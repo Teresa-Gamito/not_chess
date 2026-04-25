@@ -1,4 +1,6 @@
 #include "include/game/tree/node.h"
+#include "game/board/task.h"
+#include "helper_functions/global_variables.h"
 
 typedef enum NodeState
 {
@@ -45,11 +47,11 @@ bool node_can_purchase(const Node* node, int player_points)
 {
     verify(node == NULL, "Node does not exist");
 
-    if (player_points < node->cost)
+    if (player_points < node->cost && !infinite_points)
     {
         return false;
     }
-    if (node->state != AVAILABLE)
+    if (node->state != AVAILABLE && !can_purchace_multiple_times)
     {
         return false;
     }
@@ -71,6 +73,10 @@ void node_purchase(void* board_ui, void* node_to_purchase)
         return;
     }
 
+    if (*node->task == TASK_SACRIFICE)
+    {
+        board_ui_add_task(ui, *node->task);
+    }
     board_ui_add_task(ui, *node->task);
 
     player_add_points(player, -node->cost);

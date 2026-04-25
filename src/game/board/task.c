@@ -1,4 +1,7 @@
 #include "include/game/board/task.h"
+#include "game/board/board.h"
+#include "game/board/piece.h"
+#include "game/board/player.h"
 
 
 Vector* task_list_create()
@@ -57,7 +60,7 @@ bool task_is_valid_tile__addPawn(Board* board, int col, int row)
     }
     if (!is_player_side_of_board(board, player, row))
     {
-        return 0;
+        return false;
     }
     return true;
 }
@@ -101,7 +104,7 @@ bool task_is_valid_tile__addLance(Board* board, int col, int row)
     }
     if (!is_player_side_of_board(board, player, row))
     {
-        return 0;
+        return false;
     }
     return true;
 }
@@ -119,4 +122,32 @@ int task__addLance(Board* board, int col, int row)
     board_add_piece_at(board, piece, col, row);
     return 1;
 
+}
+
+bool task_is_valid_tile__sacrifice(Board* board, int col, int row)
+{
+    Player* player = board_get_active_player(board);
+    Color player_color = player_get_color(player);
+
+    if (!board_has_piece_at(board, col, row))
+    {
+        return false;
+    }
+    Piece* piece = board_get_piece_at(board, col, row);
+    Color piece_color = piece_get_color(piece);
+    if (piece_color != player_color)
+    {
+        return false;
+    }
+    return true;
+}
+int task__sacrifice(Board* board, int col, int row)
+{
+    if (!task_is_valid_tile__sacrifice(board, col, row))
+    {
+        return 0;
+    }
+    Piece* piece = board_get_piece_at(board, col, row);
+    board_piece_remove(board, col, row);
+    return 1;
 }

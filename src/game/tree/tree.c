@@ -22,6 +22,8 @@ void tree_set_default(Tree* tree)
     tree_add_node(tree, node);
     node = node_create(TASK_ADD_LANCE, 3);
     tree_add_node(tree, node);
+    node = node_create(TASK_SACRIFICE, 5);
+    tree_add_node(tree, node);
 }
 
 void tree_destroy(Tree* tree)

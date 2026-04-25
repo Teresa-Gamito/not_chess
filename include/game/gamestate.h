@@ -13,10 +13,6 @@
 #include "ui_elements/textbox.h"
 #include "ui_elements/window.h"
 
-// #define PLAYER_STARTING_POINTS 0
-#define FONT_PATH "assets/arialceb.ttf"
-#define FONT_SIZE 32.0f
-
 typedef struct GameState GameState;
 
 GameState* gamestate_create();

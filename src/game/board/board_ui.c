@@ -1,4 +1,5 @@
 #include "include/game/board/board_ui.h"
+#include "game/board/task.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -360,8 +361,8 @@ static int try_task(BoardUI* ui, int col, int row)
     {
         return 0;
     }
-
     task_complete_first(ui->tasks);
+
     board_ui_update(ui);
     advance_turn(board);
 
@@ -380,6 +381,8 @@ void select_tile(void* board_ui, void* tile)
 
     if (try_task(ui, new_col, new_row))
     {
+        ui->selected_tile = NULL;
+        board_ui_update(ui);
         return;
     }
 
@@ -436,6 +439,9 @@ static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row
         case TASK_ADD_LANCE:
             return task_is_valid_tile__addLance(board, col, row);
 
+        case TASK_SACRIFICE:
+            return task_is_valid_tile__sacrifice(board, col, row);
+
         default:
             return false;
     }
@@ -459,6 +465,8 @@ static int do_task(BoardUI* ui, Task task, int col, int row)
         case TASK_ADD_LANCE:
             return task__addLance(board, col, row);
 
+        case TASK_SACRIFICE:
+            return task__sacrifice(board, col, row);
         default:
             return 0;
     }

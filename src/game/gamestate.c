@@ -2,7 +2,10 @@
 #include "appstate.h"
 #include "game/board/board_ui.h"
 #include "game/tree/tree_ui.h"
+#include "helper_functions/global_variables.h"
+#include "ui_elements/textbox.h"
 #include "ui_elements/window.h"
+#include <SDL3/SDL_stdinc.h>
 
 static void player_window_update(SDL_Renderer* renderer, GameState* gamestate);
 
@@ -114,7 +117,7 @@ void game_start(SDL_Renderer* renderer, GameState* gamestate)
     gamestate->player_info = window_create(
         window_get_x(tree_window) + window_get_width(tree_window),
         0,
-        window_get_x(tree_window) + window_get_width(tree_window),
+        g_app_window_width - window_get_x(tree_window) + window_get_width(tree_window),
         (float)g_app_window_height,
         NULL
     );
@@ -131,46 +134,87 @@ static void player_window_update(SDL_Renderer* renderer, GameState* gamestate)
 
     Textbox* textbox;
     char* turn;
+    Player* player;
+    char* text;
 
     // player white
-    turn = board_get_player_white(board) == board_get_active_player(board) ? "--->  " : "        ";
-    Player* player1 = board_get_player_white(board);
-    char* text_player_1 = NULL;
+    player = board_get_player_white(board);
+    turn = player == board_get_active_player(board) ? "--->  " : "        ";
     SDL_asprintf(
-        &text_player_1, 
+        &text, 
         "%sWHITE  |  CAPTURING POINTS: %d", 
         turn, 
-        player_get_points(player1)
+        player_get_points(player)
     );
     textbox = textbox_create(
         renderer, 
         gamestate->font, 
         gamestate->text_color, 
-        "",
+        text,
         window_get_width(window), 
         TEXT_LEFT_ALIGNED
     );
-    textbox_set_text(renderer, textbox, text_player_1);
+    SDL_free(text);
     window_add_textbox(window, textbox, 10, 10);
 
     // player black
-    turn = board_get_player_black(board) == board_get_active_player(board) ? "--->  " : "        ";
-    Player* player2 = board_get_player_black(board);
-    char* text_player_2 = NULL;
+    player = board_get_player_black(board);
+    turn = player == board_get_active_player(board) ? "--->  " : "        ";
     SDL_asprintf(
-        &text_player_2, 
+        &text, 
         "%sBLACK  |  CAPTURING POINTS: %d", 
         turn, 
-        player_get_points(player2)
+        player_get_points(player)
     );
     textbox = textbox_create(
         renderer, 
         gamestate->font, 
         gamestate->text_color, 
-        "",
+        text,
         window_get_width(window), 
         TEXT_LEFT_ALIGNED
     );
-    textbox_set_text(renderer, textbox, text_player_2);
+    SDL_free(text);
     window_add_textbox(window, textbox, 10, 70);
+
+    SDL_asprintf(
+        &text, 
+        "Infinite points: %d", 
+        infinite_points
+    );
+    textbox = textbox_create(
+        renderer, 
+        gamestate->font, 
+        gamestate->text_color, 
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(
+        window, 
+        textbox, 
+        g_app_window_width - window_get_x(window),
+        window_get_height(window) - textbox_get_height(textbox)
+    );
+    SDL_asprintf(
+        &text, 
+        "Can buy more upgrades: %d", 
+        can_purchace_multiple_times
+    );
+    textbox = textbox_create(
+        renderer, 
+        gamestate->font, 
+        gamestate->text_color, 
+        text,
+        window_get_width(window), 
+        TEXT_RIGHT_ALIGNED
+    );
+    SDL_free(text);
+    window_add_textbox(
+        window, 
+        textbox, 
+        g_app_window_width - window_get_x(window),
+        window_get_height(window) - textbox_get_height(textbox) - 40
+    );
 }

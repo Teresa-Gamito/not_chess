@@ -21,8 +21,10 @@ TreeUI* tree_ui_create(
     float width, 
     float height
 );
+
 void tree_ui_destroy(TreeUI* ui);
+
+void tree_ui_update(TreeUI* ui);
 
 Window* tree_ui_get_window(TreeUI* ui);
 
-void tree_ui_update(TreeUI* ui);

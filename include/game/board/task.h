@@ -10,6 +10,7 @@ typedef enum Task
     TASK_ADD_PAWN,
     TASK_EXPAND_BOARD,
     TASK_ADD_LANCE,
+    TASK_SACRIFICE,
 
     TASK_COUNT
 } Task;
@@ -30,3 +31,6 @@ bool task_is_valid_tile__expandBoard(Board* board);
 // task add lance
 bool task_is_valid_tile__addLance(Board* board, int col, int row);
 int task__addLance(Board* board, int col, int row);
+// task sacrifice
+int task__sacrifice(Board* board, int col, int row);
+bool task_is_valid_tile__sacrifice(Board* board, int col, int row);
