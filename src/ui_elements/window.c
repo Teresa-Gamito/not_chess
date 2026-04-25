@@ -1,4 +1,5 @@
 #include "include/ui_elements/window.h"
+#include "helper_functions/error_handling.h"
 
 struct Window {
     float x;
@@ -17,15 +18,16 @@ struct Window {
 };
 
 Window* window_create(
-    double x, 
-    double y, 
-    double width, 
-    double height, 
+    float x,
+    float y,
+    float width,
+    float height,
     SDL_Texture* background_texture)
 {
     verify(width < 0 || height < 0, "Invalid size");
 
     Window* window = SDL_malloc(sizeof(Window));
+    verify(window == NULL, "Window could not be created: malloc");
 
     window->x = x;
     window->y = y;
@@ -33,13 +35,13 @@ Window* window_create(
     window->height = height;
     window->scale = 1;
 
-    window->texture_background = background_texture;
-
     window->sprites = vector_create(sprite_ops());
     window->buttons = vector_create(button_ops());
     window->textboxes = vector_create(textbox_ops());
 
     window->textures = vector_create(SDL_Texture_ops());
+
+    window->texture_background = background_texture;
 
     return window;
 }
@@ -191,6 +193,15 @@ void window_render(SDL_Renderer* renderer, Window* window)
 {
     verify(window == NULL, "Window does not exist");
     verify(renderer == NULL, "Renderer does not exist");
+
+    SDL_Rect rect =
+        {
+            window_get_x(window),
+            window_get_y(window),
+            window_get_width(window),
+            window_get_height(window)
+        };
+    SDL_SetRenderClipRect(renderer, &rect);
 
     window_render_background(renderer, window);
 
@@ -368,29 +379,33 @@ void window_textbox_set_position(Window* window, Textbox* textbox, float x, floa
 
 
 
-double window_get_x(const Window* window)
+float window_get_x(const Window* window)
 {
     verify(window == NULL, "Window does not exist");
 
     return window->x;
 }
-double window_get_y(const Window* window)
+float window_get_y(const Window* window)
 {
     verify(window == NULL, "Window does not exist");
 
     return window->y;
 }
-double window_get_width(const Window* window)
+float window_get_width(const Window* window)
 {
     verify(window == NULL, "Window does not exist");
 
     return window->width;
 }
-double window_get_height(const Window* window)
+float window_get_height(const Window* window)
 {
     verify(window == NULL, "Window does not exist");
 
     return window->height;
+}
+float window_get_scale(const Window* window)
+{
+    return window->scale;
 }
 SDL_FRect window_get_frect(const Window* window)
 {

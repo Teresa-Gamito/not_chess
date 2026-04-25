@@ -16,10 +16,10 @@ typedef struct Window Window;
 
 // ========== create ==========
 Window* window_create(
-    double x, 
-    double y, 
-    double width, 
-    double height, 
+    float x, 
+    float y, 
+    float width, 
+    float height, 
     SDL_Texture* background_texture
 );
 void window_load_textures(
@@ -55,9 +55,10 @@ void window_button_set_position(Window* window, Button* button, float x, float y
 void window_textbox_set_position(Window* window, Textbox* textbox, float x, float y);
 
 // ========== get ==========
-double window_get_x(const Window* window);
-double window_get_y(const Window* window);
-double window_get_width(const Window* window);
-double window_get_height(const Window* window);
+float window_get_x(const Window* window);
+float window_get_y(const Window* window);
+float window_get_width(const Window* window);
+float window_get_height(const Window* window);
+float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);

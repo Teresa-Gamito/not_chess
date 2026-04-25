@@ -1,17 +1,8 @@
 #include "include/game/gamestate.h"
 #include "appstate.h"
-#include "game/board/board.h"
-#include "game/board/board_textures.h"
-#include "game/board/player.h"
-#include "game/tree/node.h"
-#include "helper_functions/color.h"
-#include "helper_functions/error_handling.h"
-#include "helper_functions/helper_functions.h"
-#include "ui_elements/textbox.h"
+#include "game/board/board_ui.h"
+#include "game/tree/tree_ui.h"
 #include "ui_elements/window.h"
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 static void player_window_update(SDL_Renderer* renderer, GameState* gamestate);
 
@@ -54,7 +45,10 @@ void gamestate_destroy(GameState* gamestate)
 
     board_destroy(gamestate->board);
     board_ui_destroy(gamestate->board_ui);
-    TTF_CloseFont(gamestate->font);
+    if (gamestate->font != NULL) 
+    {
+        TTF_CloseFont(gamestate->font);
+    }
     SDL_free(gamestate);
 
 }
@@ -102,6 +96,7 @@ void game_start(SDL_Renderer* renderer, GameState* gamestate)
         (float)g_app_window_height,
         (float)g_app_window_height
     );
+    Window* board_window = board_ui_get_window(gamestate->board_ui);
 
     gamestate->tree = tree_create();
     tree_set_default(gamestate->tree);
@@ -109,19 +104,21 @@ void game_start(SDL_Renderer* renderer, GameState* gamestate)
         renderer,
         gamestate->tree,
         gamestate->board_ui,
-        (float)g_app_window_height,
+        window_get_width(board_ui_get_window(gamestate->board_ui)),
         0,
-        100,
+        (float)g_app_window_height / 5,
         (float)g_app_window_height
     );
+    Window* tree_window = tree_ui_get_window(gamestate->tree_ui);
 
     gamestate->player_info = window_create(
-        (float)g_app_window_height + 100,
+        window_get_x(tree_window) + window_get_width(tree_window),
         0,
-        500,
+        window_get_x(tree_window) + window_get_width(tree_window),
         (float)g_app_window_height,
         NULL
     );
+    Window* player_info_window = gamestate->player_info;
 
     player_window_update(renderer, gamestate);
 }
@@ -133,13 +130,18 @@ static void player_window_update(SDL_Renderer* renderer, GameState* gamestate)
     window_destroy_content(window);
 
     Textbox* textbox;
+    char* turn;
 
-    char turn;
-    turn = board_get_player_white(board) == board_get_active_player(board) ? '-' : ' ';
-
+    // player white
+    turn = board_get_player_white(board) == board_get_active_player(board) ? "--->  " : "        ";
     Player* player1 = board_get_player_white(board);
     char* text_player_1 = NULL;
-    SDL_asprintf(&text_player_1, "%cWHITE    CAPTURING POINTS: %d", turn, player_get_points(player1));
+    SDL_asprintf(
+        &text_player_1, 
+        "%sWHITE  |  CAPTURING POINTS: %d", 
+        turn, 
+        player_get_points(player1)
+    );
     textbox = textbox_create(
         renderer, 
         gamestate->font, 
@@ -149,13 +151,18 @@ static void player_window_update(SDL_Renderer* renderer, GameState* gamestate)
         TEXT_LEFT_ALIGNED
     );
     textbox_set_text(renderer, textbox, text_player_1);
-    SDL_free(text_player_1);
     window_add_textbox(window, textbox, 10, 10);
 
-    turn = board_get_player_black(board) == board_get_active_player(board) ? '-' : ' ';
+    // player black
+    turn = board_get_player_black(board) == board_get_active_player(board) ? "--->  " : "        ";
     Player* player2 = board_get_player_black(board);
     char* text_player_2 = NULL;
-    SDL_asprintf(&text_player_2, "%cBLACK    CAPTURING POINTS: %d", turn, player_get_points(player2));
+    SDL_asprintf(
+        &text_player_2, 
+        "%sBLACK  |  CAPTURING POINTS: %d", 
+        turn, 
+        player_get_points(player2)
+    );
     textbox = textbox_create(
         renderer, 
         gamestate->font, 
@@ -165,6 +172,5 @@ static void player_window_update(SDL_Renderer* renderer, GameState* gamestate)
         TEXT_LEFT_ALIGNED
     );
     textbox_set_text(renderer, textbox, text_player_2);
-    SDL_free(text_player_2);
-    window_add_textbox(window, textbox, 10, 40);
+    window_add_textbox(window, textbox, 10, 70);
 }

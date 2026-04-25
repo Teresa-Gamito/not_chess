@@ -39,6 +39,8 @@ int board_piece_get_row(const Board* board, const Piece* piece);
 
 
 // ========== tile ==========
+void board_expand(Board* board);
+
 bool board_has_tile_at(const Board* board, int col, int row);
 Tile* board_get_tile_at(const Board* board, int col, int row);
 

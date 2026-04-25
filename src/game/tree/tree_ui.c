@@ -1,6 +1,7 @@
 #include "include/game/tree/tree_ui.h"
-#include "game/board/board.h"
+#include "appstate.h"
 #include "game/board/board_ui.h"
+#include "ui_elements/window.h"
 
 struct TreeUI
 {
@@ -61,30 +62,86 @@ static void tree_ui_set_nodes(TreeUI* ui)
 {
     Tree* tree = ui->tree;
     Window* window = ui->window;
-
-    SDL_Texture* button_idle = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_IDLE);
+    
+    SDL_Texture* button_idle = NULL;
     SDL_Texture* button_hovered = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_HOVERED);
     SDL_Texture* button_pressed = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_PRESSED);
 
-    SDL_Texture* texture_add_pawn = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
+    float size = window_get_height(board_ui_get_window(ui->board_ui)) / 5;
 
-    for (int i = 0; i < tree_get_node_count(tree); i++)
-    {
-        Node* node = tree_get_node_at(tree, i);
+    Player* player = board_get_active_player(ui->board);
+    SDL_Texture* texture_node;
+    int index;
+    Node* node;
+    Button* button;
+    Sprite* sprite;
 
-        Button* button = button_create(
-            button_idle,
-            button_hovered,
-            button_pressed
-        );
-        button_set_size(button, 90, 90);
-        button_set_on_left_click_fn(button, node_purchase, ui->board_ui, node);
-        window_add_button(window, button, 5, 5 + (100 * i));
+    // button 1 - add pawn
+    index = 0;
+    button = button_create(
+        button_idle,
+        button_hovered,
+        button_pressed
+    );
+    button_set_size(button, size, size);
+    node = tree_get_node_at(tree, 0);
+    button_set_on_left_click_fn(
+        button, 
+        node_purchase, 
+        ui->board_ui, 
+        node
+    );
+    window_add_button(window, button, 0, size * index);
 
-        Sprite* sprite = sprite_create(texture_add_pawn);
-        sprite_set_size(sprite, 90, 90);
-        window_add_sprite(window, sprite, 5, 5 + (100 * i));
-    }
+    texture_node = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
+    sprite = sprite_create(texture_node);
+    sprite_set_size(sprite, size, size);
+    window_add_sprite(window, sprite, 0, size * index);
+
+    // button 2 - expand board
+    index = 1;
+    button = button_create(
+        button_idle,
+        button_hovered,
+        button_pressed
+    );
+    button_set_size(button, size, size);
+    node = tree_get_node_at(tree, 1);
+    button_set_on_left_click_fn(
+        button, 
+        node_purchase, 
+        ui->board_ui, 
+        node
+    );
+    window_add_button(window, button, 0, size * index);
+
+    texture_node = window_get_texture(ui->window, TEXTURE_NODE_EXPAND_BOARD);
+    sprite = sprite_create(texture_node);
+    sprite_set_size(sprite, size, size);
+    window_add_sprite(window, sprite, 0, size * index);
+
+    // button 3 - add lance
+    index = 2;
+    button = button_create(
+        button_idle,
+        button_hovered,
+        button_pressed
+    );
+    button_set_size(button, size, size);
+    node = tree_get_node_at(tree, index);
+    button_set_on_left_click_fn(
+        button, 
+        node_purchase, 
+        ui->board_ui, 
+        node
+    );
+    window_add_button(window, button, 0, size * index);
+
+    texture_node = window_get_texture(ui->window, TEXTURE_NODE_ADD_LANCE);
+    sprite = sprite_create(texture_node);
+    sprite_set_size(sprite, size, size);
+    window_add_sprite(window, sprite, 0, size * index);
+
 }
 void tree_ui_update(TreeUI* ui)
 {

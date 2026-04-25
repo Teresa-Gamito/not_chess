@@ -1,5 +1,4 @@
 #include "include/game/board/board_ui.h"
-#include "game/board/board.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -429,12 +428,16 @@ static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row
     switch (task) 
     {
         case TASK_ADD_PAWN:
-            return task_is_valid_tile__addPawn(ui->board, col, row);
-            break;
+            return task_is_valid_tile__addPawn(board, col, row);
+
+        case TASK_EXPAND_BOARD:
+            return task_is_valid_tile__expandBoard(board);
+
+        case TASK_ADD_LANCE:
+            return task_is_valid_tile__addLance(board, col, row);
 
         default:
             return false;
-            break;
     }
     return false;
 }
@@ -443,15 +446,21 @@ static int do_task(BoardUI* ui, Task task, int col, int row)
 {
     verify(ui == NULL, "BoardUI does not exist");
 
+    Board* board = ui->board;
+
     switch (task)
     {
         case TASK_ADD_PAWN:
-            return task__addPawn(ui->board, col, row);
-            break;
+            return task__addPawn(board, col, row);
+
+        case TASK_EXPAND_BOARD:
+            return task__expandBoard(board, ui->window);
+
+        case TASK_ADD_LANCE:
+            return task__addLance(board, col, row);
 
         default:
             return 0;
-            break;
     }
     return 0;
 }

@@ -51,13 +51,14 @@ void app_destroy(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
 
-    TTF_Quit();
     SDL_DestroyWindow(app->sdl_window);
     SDL_DestroyRenderer(app->sdl_renderer);
 
     input_destroy(app->input);
 
     gamestate_destroy(app->gamestate);
+
+    TTF_Quit();
 
     SDL_free(app);
 }

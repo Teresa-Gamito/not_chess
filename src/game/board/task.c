@@ -1,6 +1,4 @@
 #include "include/game/board/task.h"
-#include "game/board/piece.h"
-#include "helper_functions/error_handling.h"
 
 
 Vector* task_list_create()
@@ -76,4 +74,49 @@ int task__addPawn(Board* board, int col, int row)
     piece_set_moved(piece);
     board_add_piece_at(board, piece, col, row);
     return 1;
+}
+
+bool task_is_valid_tile__expandBoard(Board* board)
+{
+    (void)board;
+    return true;
+}
+int task__expandBoard(Board* board, Window* window)
+{
+    int old_col_num = board_get_col_num(board);
+    board_expand(board);
+    int new_col_num = board_get_col_num(board);
+    float new_scale = window_get_scale(window) * old_col_num / new_col_num;
+    window_set_scale(window, new_scale);
+    return 1;
+}
+
+bool task_is_valid_tile__addLance(Board* board, int col, int row)
+{
+    Player* player = board_get_active_player(board);
+
+    if (!board_can_add_piece_at(board, col, row))
+    {
+        return false;
+    }
+    if (!is_player_side_of_board(board, player, row))
+    {
+        return 0;
+    }
+    return true;
+}
+int task__addLance(Board* board, int col, int row)
+{
+    Player* player = board_get_active_player(board);
+    Color player_color = player_get_color(player);
+
+    if (!task_is_valid_tile__addLance(board, col, row))
+    {
+        return 0;
+    }
+    Piece* piece = piece_create(LANCE, player_color);
+    piece_set_moved(piece);
+    board_add_piece_at(board, piece, col, row);
+    return 1;
+
 }

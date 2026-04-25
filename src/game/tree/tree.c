@@ -15,15 +15,12 @@ Tree* tree_create()
 
 void tree_set_default(Tree* tree)
 {
-    Node* node = node_create(TASK_ADD_PAWN, 1);
-    tree_add_node(tree, node);
+    Node* node;
     node = node_create(TASK_ADD_PAWN, 1);
     tree_add_node(tree, node);
-    node = node_create(TASK_ADD_PAWN, 1);
+    node = node_create(TASK_EXPAND_BOARD, 3);
     tree_add_node(tree, node);
-    node = node_create(TASK_ADD_PAWN, 1);
-    tree_add_node(tree, node);
-    node = node_create(TASK_ADD_PAWN, 1);
+    node = node_create(TASK_ADD_LANCE, 3);
     tree_add_node(tree, node);
 }
 

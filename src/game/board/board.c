@@ -1,6 +1,4 @@
 #include "include/game/board/board.h"
-#include "game/board/piece.h"
-#include "helper_functions/error_handling.h"
 
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
@@ -127,8 +125,8 @@ void board_set_default(Board* board)
     board_add_piece_at(board, piece_create(PAWN, WHITE), 6, 6);
     board_add_piece_at(board, piece_create(PAWN, WHITE), 7, 6);
 
-    board_add_piece_at(board, piece_create(LANCE, BLACK), 2, 2);
-    board_add_piece_at(board, piece_create(LANCE, WHITE), 5, 5);
+    // board_add_piece_at(board, piece_create(LANCE, BLACK), 2, 2);
+    // board_add_piece_at(board, piece_create(LANCE, WHITE), 5, 5);
 }
 
 
@@ -334,7 +332,81 @@ static bool board_piece_has_clear_path(const Board* board, int src_col, int src_
 }
 
 
+static void board_add_col(Board* board)
+{
+    board->col_num++;
+    int col_num = board->col_num;
+    int row_num = board->row_num;
 
+    // allocate more space
+    size_t new_size;
+    new_size = board->row_num * board->col_num * sizeof(Tile*);
+    board->tiles = SDL_realloc(board->tiles, new_size);
+    new_size = board->row_num * board->col_num * sizeof(Piece*);
+    board->pieces = SDL_realloc(board->pieces, new_size);
+
+    // add empty slots
+    for (int row = 0; row < row_num; row++)
+    {
+        Tile* tile = tile_create(TILE_NONE);
+        board->tiles[(col_num - 1) * row_num + row] = tile;
+        board->pieces[(col_num - 1) * row_num + row] = NULL;
+    }
+
+    // adjust piece position
+    int old_pos;
+    int new_pos;
+    for (int i = col_num * row_num - 1; i >= col_num; i--)
+    {
+        old_pos = i - (i / col_num);
+        new_pos = i;
+        board->pieces[new_pos] = board->pieces[old_pos];
+        board->pieces[old_pos] = NULL;
+    }
+}
+static void board_add_row(Board* board)
+{
+    board->row_num++;
+
+    size_t new_size;
+    new_size = board->row_num * board->col_num * sizeof(Tile*);
+    board->tiles = SDL_realloc(board->tiles, new_size);
+    new_size = board->row_num * board->col_num * sizeof(Piece*);
+    board->pieces = SDL_realloc(board->pieces, new_size);
+
+    for (int col = 0; col < board->col_num; col++)
+    {
+        Tile* tile = tile_create(TILE_NONE);
+        board->tiles[col + ((board->row_num - 1) * board->col_num)] = tile;
+        board->pieces[col + ((board->row_num - 1) * board->col_num)] = NULL;
+    }
+}
+void board_expand(Board* board)
+{
+    board_add_col(board);
+    board_add_col(board);
+    board_add_row(board);
+    board_add_row(board);
+
+    int col_num = board->col_num;
+    int row_num = board->row_num;
+
+    for (int col = col_num - 2; col >= 1 ; col--)
+    {
+        for (int row = row_num - 2; row >= 1 ; row--)
+        {
+            int old_col = col - 1;
+            int old_row = row - 1;
+            int new_col = col;
+            int new_row = row;
+
+            int old_pos = old_col + old_row * col_num;
+            int new_pos = new_col + new_row * col_num;
+            board->pieces[new_pos] = board->pieces[old_pos];
+            board->pieces[old_pos] = NULL;
+        }
+    }
+}
 Tile* board_get_tile_at(const Board* board, int col, int row)
 {
     verify(board == NULL, "Board does not exist");
