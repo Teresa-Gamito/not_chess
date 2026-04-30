@@ -19,18 +19,13 @@ struct Button
     float y;
     float width;
     float height;
+    float anchor_x;
+    float anchor_y;
+    float scale;
 
-    void (*on_left_click)(void* arg1, void* arg2);
-    void* l_arg1;
-    void* l_arg2;
-
-    void (*on_right_click)(void* arg1, void* arg2);
-    void* r_arg1;
-    void* r_arg2;
-
-    void (*on_middle_click)(void* arg1, void* arg2);
-    void* m_arg1;
-    void* m_arg2;
+    void (*on_click[MOUSE_BUTTON_COUNT])(void* arg1, void* arg2);
+    void* arg1[MOUSE_BUTTON_COUNT];
+    void* arg2[MOUSE_BUTTON_COUNT];
 };
 
 Button* button_create(
@@ -48,53 +43,41 @@ Button* button_create(
 
     button->state = IDLE;
 
-    button->on_left_click = NULL;
-    button->l_arg1 = NULL;
-    button->l_arg2 = NULL;
-
-    button->on_right_click = NULL;
-    button->r_arg1 = NULL;
-    button->r_arg2 = NULL;
-
-    button->on_middle_click = NULL;
-    button->m_arg1 = NULL;
-    button->m_arg2 = NULL;
+    for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+    {
+        button->on_click[i] = NULL;
+        button->arg1[i] = NULL;
+        button->arg2[i] = NULL;
+    }
 
     float w = 0;
     float h = 0;
-
-    if (texture_idle != NULL)
-    {
-        SDL_GetTextureSize(button->textures[IDLE], &w, &h);
-    }
+    SDL_GetTextureSize(button->textures[IDLE], &w, &h);
 
     button->x = 0;
     button->y = 0;
     button->width = w;
     button->height = h;
+    button->anchor_x = 0;
+    button->anchor_y = 0;
+    button->scale = 1;
 
     return button;
 }
 
 void button_destroy(Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     SDL_free(button);
 }
 
 void button_render(SDL_Renderer* renderer, const Button* button)
 {
-    verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(button == NULL, "Button does not exist");
+    verify_renderer(renderer);
+    verify_button(button);
 
-    SDL_FRect frect =
-        {
-            button->x,
-            button->y,
-            button->width,
-            button->height,
-        };
+    SDL_FRect frect = button_get_frect(button);
     SDL_RenderTexture(
         renderer, 
         button->textures[button->state], 
@@ -105,27 +88,21 @@ void button_render(SDL_Renderer* renderer, const Button* button)
 
 static void button_set_state(const InputState* input, Button* button)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(button == NULL, "Button does not exist");
-
-    double mouse_x = input_get_mouse_x(input);
-    double mouse_y = input_get_mouse_y(input);
-    bool mouse_left_down = input_get_mouse_left_down(input);
-    bool mouse_right_down = input_get_mouse_right_down(input);
-    bool mouse_middle_down = input_get_mouse_middle_down(input);
-    SDL_FRect frect =
-        {
-            button->x,
-            button->y,
-            button->width,
-            button->height
-        };
+    double mouse_x = mouse_get_x(input);
+    double mouse_y = mouse_get_y(input);
+    SDL_FRect frect = button_get_frect(button);
     if (point_intersects_rect(mouse_x, mouse_y, &frect))
     {
-        if ((mouse_left_down && button->on_left_click != NULL) || 
-            (mouse_right_down && button->on_right_click != NULL) ||
-            (mouse_middle_down && button->on_middle_click != NULL))
+        for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
         {
+            if (!mouse_get_down(input, i))
+            {
+                continue;
+            }
+            if (button->on_click[i] == NULL)
+            {
+                continue;
+            }
             button->state = PRESSED;
             return;
         }
@@ -136,45 +113,25 @@ static void button_set_state(const InputState* input, Button* button)
 }
 static void button_press(const InputState* input, Button* button)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(button == NULL, "Button does not exist");
-
-    bool mouse_left_released = input_get_mouse_left_released(input);
-    bool mouse_right_released = input_get_mouse_right_released(input);
-    bool mouse_middle_released = input_get_mouse_middle_released(input);
-
-    if (mouse_left_released)
+    int i;
+    for (i = 0; i < MOUSE_BUTTON_COUNT; i++)
     {
-        if(button->on_left_click != NULL)
+        if (!mouse_get_released(input, i))
         {
-            button_set_state(input, button);
-            button->on_left_click(button->l_arg1, button->l_arg2);
-            return;
+            continue;
         }
-    }
-    if (mouse_right_released)
-    {
-        if(button->on_right_click != NULL)
+        if (button->on_click[i] == NULL)
         {
-            button_set_state(input, button);
-            button->on_right_click(button->r_arg1, button->r_arg2);
-            return;
+            continue;
         }
-    }
-    if (mouse_middle_released)
-    {
-        if(button->on_middle_click != NULL)
-        {
-            button_set_state(input, button);
-            button->on_middle_click(button->m_arg1, button->m_arg2);
-            return;
-        }
+        button->on_click[i](button->arg1[i], button->arg2[i]);
+        return;
     }
 }
 void button_update(const InputState* input, Button* button)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(button == NULL, "Button does not exist");
+    verify_input(input);
+    verify_button(button);
 
     if (button->state == PRESSED)
     {
@@ -186,126 +143,131 @@ void button_update(const InputState* input, Button* button)
 
 void button_set_position(Button* button, float x, float y)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     button->x = x;
     button->y = y;
 }
+void button_set_anchor(Button* button, float anchor_x, float anchor_y)
+{
+    verify_button(button);
+
+    button->anchor_x = anchor_x;
+    button->anchor_y = anchor_y;
+}
 
 void button_set_size(Button* button, float width, float height)
 {
-    verify(button == NULL, "Button does not exist");
-    verify(width < 0 || height < 0, "Invalid size");
+    verify_button(button);
+    verify_size(width, height);
 
     button->width = width;
     button->height = height;
 }
+void button_set_scale(Button* button, float scale)
+{
+    verify_button(button);
+
+    button->scale = scale;
+}
 
 void button_set_texture_idle(Button* button, SDL_Texture* texture)
 {
+    verify_button(button);
+
     button->textures[IDLE] = texture;
 }
 void button_set_texture_hovered(Button* button, SDL_Texture* texture)
 {
+    verify_button(button);
+
     button->textures[HOVERED] = texture;
 }
 void button_set_texture_pressed(Button* button, SDL_Texture* texture)
 {
+    verify_button(button);
+
     button->textures[PRESSED] = texture;
 }
 void button_set_texture_all(Button* button, SDL_Texture* texture)
 {
+    verify_button(button);
+
     button_set_texture_idle(button, texture);
     button_set_texture_hovered(button, texture);
     button_set_texture_pressed(button, texture);
 }
 
-void button_set_on_left_click_fn(
-    Button* button, 
-    void (*func)(void* arg1, void* arg2), 
-    void* l_arg1, 
-    void* l_arg2
+void button_set_on_click_fn(
+    Button* button,
+    MouseButton mouse_button,
+    void (*on_click_fn)(void* arg1, void* arg2), 
+    void* arg1, 
+    void* arg2
 )
 {
-    button->on_left_click = func;
-    button->l_arg1 = l_arg1;
-    button->l_arg2 = l_arg2;
-}
-void button_set_on_right_click_fn(
-    Button* button, 
-    void (*func)(void* arg1, void* arg2), 
-    void* r_arg1, 
-    void* r_arg2
-)
-{
-    button->on_right_click = func;
-    button->r_arg1 = r_arg1;
-    button->r_arg2 = r_arg2;
-}
-void button_set_on_middle_click_fn(
-    Button* button, 
-    void (*func)(void* arg1, void* arg2), 
-    void* m_arg1, 
-    void* m_arg2
-)
-{
-    button->on_middle_click = func;
-    button->m_arg1 = m_arg1;
-    button->m_arg2 = m_arg2;
+    button->on_click[mouse_button] = on_click_fn;
+    button->arg1[mouse_button] = arg1;
+    button->arg2[mouse_button] = arg2;
 }
 
 float button_get_x(const Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     return button->x;
 }
 float button_get_y(const Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     return button->y;
 }
 float button_get_width(const Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     return button->width;
 }
 float button_get_height(const Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     return button->height;
 }
 SDL_FRect button_get_frect(const Button* button)
 {
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
 
     SDL_FRect frect =
         {
-            button->x,
-            button->y,
-            button->width,
-            button->height,
+            button->x * button->scale + button->anchor_x,
+            button->y * button->scale + button->anchor_y,
+            button->width * button->scale,
+            button->height * button->scale,
         };
     return frect;
 }
 
 
 
-static void destroy(void* b)
+static void destroy(void* button)
 {
-    Button* button = (Button*)b;
-    verify(button == NULL, "Button does not exist");
+    verify_button(button);
     button_destroy(button);
 }
 static TypeOps ops =
     {
         destroy
-        // is_equal,
     };
 TypeOps* button_ops()
 {
     return &ops;
+}
+
+
+
+void verify_button(const Button* button)
+{
+    verify(button == NULL, "Button does not exist");
 }

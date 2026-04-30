@@ -1,7 +1,4 @@
 #include "include/appstate.h"
-#include "game/gamestate.h"
-#include "helper_functions/global_variables.h"
-#include "inputstate.h"
 
 struct AppState
 {
@@ -91,11 +88,11 @@ void app_update(AppState* app)
         g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
     }
 
-    if (input_get_key_pressed(input, SDL_SCANCODE_1))
+    if (keyboard_get_pressed(input, SDL_SCANCODE_1))
     {
         infinite_points = !infinite_points;
     }
-    if (input_get_key_pressed(input, SDL_SCANCODE_2))
+    if (keyboard_get_pressed(input, SDL_SCANCODE_2))
     {
         can_purchace_multiple_times = !can_purchace_multiple_times;
     }

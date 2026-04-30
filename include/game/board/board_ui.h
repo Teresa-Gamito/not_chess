@@ -34,3 +34,5 @@ void board_ui_add_task(BoardUI* ui, Task task);
 
 Window* board_ui_get_window(const BoardUI* ui);
 Board* board_ui_get_board(const BoardUI* ui);
+
+void verify_board_ui(const BoardUI* ui);

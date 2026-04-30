@@ -5,7 +5,9 @@
 #include <stdbool.h>
 #include "helper_functions/error_handling.h"
 #include "helper_functions/helper_functions.h"
+#include "helper_functions/vector.h"
 #include "game/board/player.h"
+#include "game/board/color.h"
 #include "game/board/piece.h"
 #include "game/board/tile.h"
 
@@ -55,3 +57,10 @@ Player* board_get_active_player(const Board* board);
 Player* board_get_opponent(const Board* board);
 Player* board_get_player_white(const Board* board);
 Player* board_get_player_black(const Board* board);
+
+
+// ========== errors ==========
+void verify_board_pos(const Board* board, int col, int row);
+void verify_board(const Board* board);
+void verify_piece(const Piece* piece);
+void verify_tile(const Tile* piece);

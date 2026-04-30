@@ -32,7 +32,9 @@ void textbox_destroy(Textbox* textbox);
 void textbox_render(SDL_Renderer* renderer, const Textbox* textbox);
 
 void textbox_set_position(Textbox* textbox, float x, float y);
+void textbox_set_anchor(Textbox* textbox, float anchor_x, float anchor_y);
 void textbox_set_size(Textbox* textbox, float width, float height);
+void textbox_set_scale(Textbox* textbox, float scale);
 void textbox_set_max_width(Textbox* textbox, int max_width);
 void textbox_set_alignment(Textbox* textbox, TextAlignment alignment);
 void textbox_set_color(Textbox* textbox, SDL_Color* color);
@@ -50,3 +52,5 @@ SDL_Color* textbox_get_color(const Textbox* textbox);
 TTF_Font* textbox_get_font(const Textbox* textbox);
 
 TypeOps* textbox_ops();
+
+void verify_textbox(const Textbox* textbox);

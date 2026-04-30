@@ -1,18 +1,4 @@
 #include "include/game/tree/tree_ui.h"
-#include "appstate.h"
-#include "game/board/board_ui.h"
-#include "game/board/player.h"
-#include "game/tree/node.h"
-#include "game/tree/tree_textures.h"
-#include "helper_functions/color.h"
-#include "helper_functions/error_handling.h"
-#include "helper_functions/global_variables.h"
-#include "ui_elements/textbox.h"
-#include "ui_elements/window.h"
-#include <SDL3/SDL_pixels.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3_ttf/SDL_ttf.h>
 
 struct TreeUI
 {
@@ -120,8 +106,9 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, 0);
-    button_set_on_left_click_fn(
+    button_set_on_click_fn(
         button, 
+        MOUSE_LEFT, 
         node_purchase, 
         ui->board_ui, 
         node
@@ -158,8 +145,9 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, 1);
-    button_set_on_left_click_fn(
+    button_set_on_click_fn(
         button, 
+        MOUSE_LEFT, 
         node_purchase, 
         ui->board_ui, 
         node
@@ -196,8 +184,9 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, index);
-    button_set_on_left_click_fn(
+    button_set_on_click_fn(
         button, 
+        MOUSE_LEFT, 
         node_purchase, 
         ui->board_ui, 
         node
@@ -234,8 +223,9 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, index);
-    button_set_on_left_click_fn(
+    button_set_on_click_fn(
         button, 
+        MOUSE_LEFT, 
         node_purchase, 
         ui->board_ui, 
         node

@@ -20,26 +20,34 @@ Player* player_create(Color color, int starting_points)
 
 void player_destroy(Player* player)
 {
-    verify(player == NULL, "Player does not exist");
+    verify_player(player);
 
     SDL_free(player);
 }
 
 void player_add_points(Player* player, int points)
 {
-    verify(player == NULL, "Player does not exist");
+    verify_player(player);
+
     player->capturing_points += points;
 }
 
 int player_get_points(const Player* player)
 {
-    verify(player == NULL, "Player does not exist");
+    verify_player(player);
 
     return player->capturing_points;
 }
 Color player_get_color(const Player* player)
 {
-    verify(player == NULL, "Player does not exist");
+    verify_player(player);
 
     return player->color;
+}
+
+
+
+void verify_player(const Player* player)
+{
+    verify(player == NULL, "Player does not exist");
 }

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
+#include "helper_functions/typeops.h"
 #include "include/game/board/color.h"
 #include "include/helper_functions/error_handling.h"
 
@@ -57,3 +58,5 @@ bool piece_can_capture(
     int dst_col, 
     int dst_row
 );
+
+TypeOps* piece_ops();

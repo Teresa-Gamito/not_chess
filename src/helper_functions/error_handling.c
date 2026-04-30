@@ -8,6 +8,15 @@ void verify(bool statement, const char* error_msg)
     SDL_Log("%s", error_msg);
     SDL_Quit();
     exit(1);
-#endif
+    #endif
 }
 
+void verify_size(int width, int height)
+{
+    verify(width < 0, "Invalid width");
+    verify(height < 0, "Invalid height");
+}
+void verify_renderer(const SDL_Renderer* renderer)
+{
+    verify(renderer == NULL, "SDL_Renderer does not exist");
+}

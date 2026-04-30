@@ -6,20 +6,11 @@ typedef struct MouseState
     double x;
     double y;
     // left button
-    bool left_down;
-    bool left_pressed;
-    bool left_released;
-    // right button
-    bool right_down;
-    bool right_pressed;
-    bool right_released;
-    // middle button
-    bool middle_down;
-    bool middle_pressed;
-    bool middle_released;
+    bool down[MOUSE_BUTTON_COUNT];
+    bool pressed[MOUSE_BUTTON_COUNT];
+    bool released[MOUSE_BUTTON_COUNT];
     // mouse wheel
-    bool wheel_up;
-    bool wheel_down;
+    float wheel;
 } MouseState;
 
 typedef struct KeyboardState
@@ -35,9 +26,9 @@ struct InputState {
     KeyboardState* key;
 };
 
+static void verify_keyboard_key(SDL_Scancode key);
+static void verify_mouse_button(MouseButton button);
 
-
-// ========== create ==========
 InputState* input_create()
 {
     InputState* input = SDL_malloc(sizeof(InputState));
@@ -49,39 +40,26 @@ InputState* input_create()
     return input;
 }
 
-
-// ========== destroy ==========
 void input_destroy(InputState* input)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
 
     SDL_free(input->mouse);
     SDL_free(input->key);
     SDL_free(input);
 }
 
-
-// ========== clear state ==========
 static void mouse_clear(MouseState* mouse)
 {
-    verify(mouse == NULL, "MouseState does not exist");
-
-    mouse->left_pressed = false;
-    mouse->left_released = false;
-
-    mouse->right_pressed = false;
-    mouse->right_released = false;
-
-    mouse->middle_pressed = false;
-    mouse->middle_released = false;
-
-    mouse->wheel_up = false;
-    mouse->wheel_down = false;
+    for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+    {
+        mouse->pressed[i] = false;
+        mouse->released[i] = false;
+    }
+    mouse->wheel = 0;
 }
 static void keyboard_clear(KeyboardState* key)
 {
-    verify(key == NULL, "KeyboardState does not exist");
-
     for (int i = 0; i < SDL_SCANCODE_COUNT; i++)
     {
         key->pressed[i] = false;
@@ -90,6 +68,8 @@ static void keyboard_clear(KeyboardState* key)
 }
 void input_begin_frame(InputState* input)
 {
+    verify_input(input);
+
     mouse_clear(input->mouse);
     keyboard_clear(input->key);
 }
@@ -98,70 +78,60 @@ void input_begin_frame(InputState* input)
 // ========== update ==========
 static void mouse_update(MouseState* mouse, const SDL_Event* event)
 {
-    verify(mouse == NULL, "MouseState does not exist");
-    verify(event == NULL, "SDL_Event does not exist");
-
     if (event->type == SDL_EVENT_MOUSE_MOTION)
     {
         mouse->x = event->motion.x;
         mouse->y = event->motion.y;
     }
 
+    if (event->type == SDL_EVENT_MOUSE_WHEEL)
+    {
+        mouse->wheel = event->wheel.y;
+    }
+
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
     {
         if (event->button.button == SDL_BUTTON_LEFT)
         {
-            if (!mouse->left_down) mouse->left_pressed = true;
-            mouse->left_down = true;
+            if (!mouse->down[MOUSE_LEFT]) mouse->down[MOUSE_LEFT] = true;
+            mouse->down[MOUSE_LEFT] = true;
         }
         if (event->button.button == SDL_BUTTON_RIGHT)
         {
-            if (!mouse->right_down) mouse->right_pressed = true;
-            mouse->right_down = true;
+            if (!mouse->down[MOUSE_RIGHT]) mouse->down[MOUSE_RIGHT] = true;
+            mouse->down[MOUSE_RIGHT] = true;
         }
         if (event->button.button == SDL_BUTTON_MIDDLE)
         {
-            if (!mouse->middle_down) mouse->middle_pressed = true;
-            mouse->middle_down = true;
+            if (!mouse->down[MOUSE_MIDDLE]) mouse->down[MOUSE_MIDDLE] = true;
+            mouse->down[MOUSE_MIDDLE] = true;
         }
+        return;
     }
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
     {
         if (event->button.button == SDL_BUTTON_LEFT)
         {
-            mouse->left_down = false;
-            mouse->left_released = true;
+            mouse->down[MOUSE_LEFT] = false;
+            mouse->released[MOUSE_LEFT] = true;
         }
         if (event->button.button == SDL_BUTTON_RIGHT)
         {
-            mouse->right_down = false;
-            mouse->right_released = true;
+            mouse->down[MOUSE_RIGHT] = false;
+            mouse->released[MOUSE_RIGHT] = true;
         }
         if (event->button.button == SDL_BUTTON_MIDDLE)
         {
-            mouse->middle_down = false;
-            mouse->middle_released = true;
+            mouse->down[MOUSE_MIDDLE] = false;
+            mouse->released[MOUSE_MIDDLE] = true;
         }
+        return;
     }
 
-    if (event->type == SDL_EVENT_MOUSE_WHEEL)
-    {
-        if (event->wheel.mouse_x < 0)
-        {
-            mouse->wheel_down = true;
-        }
-        else if (event->wheel.mouse_x > 0)
-        {
-            mouse->wheel_up = true;
-        }
-    }
 }
 static void keyboard_update(KeyboardState* key, const SDL_Event* event)
 {
-    verify(key == NULL, "KeyboardState does not exist");
-    verify(event == NULL, "SDL_Event does not exist");
-
     if (event->type == SDL_EVENT_KEY_DOWN)
     {
         if (!event->key.repeat && !key->down[event->key.scancode])
@@ -169,18 +139,20 @@ static void keyboard_update(KeyboardState* key, const SDL_Event* event)
             key->pressed[event->key.scancode] = true;
         }
         key->down[event->key.scancode] = true;
+        return;
     }
 
     if (event->type == SDL_EVENT_KEY_UP)
     {
         key->down[event->key.scancode] = false;
         key->released[event->key.scancode] = true;
+        return;
     }
 }
 void input_update(InputState* input, const SDL_Event* event)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(event == NULL, "SDL_Event does not exist");
+    verify_input(input);
+    verify_event(event);
 
     keyboard_update(input->key, event);
     mouse_update(input->mouse, event);
@@ -188,106 +160,85 @@ void input_update(InputState* input, const SDL_Event* event)
 
 
 // ========== mouse ==========
-double input_get_mouse_x(const InputState* input)
+float mouse_get_x(const InputState* input)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
 
     return input->mouse->x;
 }
-double input_get_mouse_y(const InputState* input)
+float mouse_get_y(const InputState* input)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
 
     return input->mouse->y;
 }
-
-bool input_get_mouse_left_down(const InputState* input)
+bool mouse_get_down(const InputState* input, MouseButton button)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
+    verify_mouse_button(button);
 
-    return input->mouse->left_down;
+    return input->mouse->down[button];
 }
-bool input_get_mouse_left_pressed(const InputState* input)
+bool mouse_get_pressed(const InputState* input, MouseButton button)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
+    verify_mouse_button(button);
 
-    return input->mouse->left_pressed;
+    return input->mouse->pressed[button];
 }
-bool input_get_mouse_left_released(const InputState* input)
+bool mouse_get_released(const InputState* input, MouseButton button)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
+    verify_mouse_button(button);
 
-    return input->mouse->left_released;
+    return input->mouse->released[button];
 }
-bool input_get_mouse_right_down(const InputState* input)
+float mouse_get_wheel(const InputState* input)
 {
-    verify(input == NULL, "InputState does not exist");
+    verify_input(input);
 
-    return input->mouse->right_down;
-}
-bool input_get_mouse_right_pressed(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->right_pressed;
-}
-bool input_get_mouse_right_released(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->right_released;
-}
-bool input_get_mouse_middle_down(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->middle_down;
-}
-bool input_get_mouse_middle_pressed(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->middle_pressed;
-}
-bool input_get_mouse_middle_released(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->middle_released;
-}
-bool input_get_mouse_wheel_up(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->wheel_up;
-}
-bool input_get_mouse_wheel_down(const InputState* input)
-{
-    verify(input == NULL, "InputState does not exist");
-
-    return input->mouse->wheel_down;
+    return input->mouse->wheel;
 }
 
 
 // ========== keyboard ==========
-bool input_get_key_down(const InputState* input, const SDL_Scancode scancode)
+bool keyboard_get_down(const InputState* input, SDL_Scancode key)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(scancode < 0 || scancode >= SDL_SCANCODE_COUNT, "InputState does not exist");
+    verify_input(input);
+    verify_keyboard_key(key);
 
-    return input->key->down[scancode];
+    return input->key->down[key];
 }
-bool input_get_key_pressed(const InputState* input, const SDL_Scancode scancode)
+bool keyboard_get_pressed(const InputState* input, SDL_Scancode key)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(scancode < 0 || scancode >= SDL_SCANCODE_COUNT, "InputState does not exist");
+    verify_input(input);
+    verify_keyboard_key(key);
 
-    return input->key->pressed[scancode];
+    return input->key->pressed[key];
 }
-bool input_get_key_released(const InputState* input, const SDL_Scancode scancode)
+bool keyboard_get_released(const InputState* input, SDL_Scancode key)
+{
+    verify_input(input);
+    verify_keyboard_key(key);
+
+    return input->key->released[key];
+}
+
+
+
+static void verify_keyboard_key(SDL_Scancode key)
+{
+    verify(key < 0 || key >= SDL_SCANCODE_COUNT, "Invalid keyboard key");
+}
+static void verify_mouse_button(MouseButton button)
+{
+    verify(button < 0 || button >= MOUSE_BUTTON_COUNT, "Invalid mouse button");
+}
+void verify_input(const InputState* input)
 {
     verify(input == NULL, "InputState does not exist");
-    verify(scancode < 0 || scancode >= SDL_SCANCODE_COUNT, "InputState does not exist");
-
-    return input->key->released[scancode];
+}
+void verify_event(const SDL_Event* event)
+{
+    verify(event == NULL, "SDL_Event does not exist");
 }

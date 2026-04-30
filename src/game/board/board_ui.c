@@ -1,5 +1,4 @@
 #include "include/game/board/board_ui.h"
-#include "game/board/task.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -151,8 +150,20 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
         texture,
         texture
     );
-    button_set_on_left_click_fn(button, select_tile, ui, tile);
-    button_set_on_right_click_fn(button, deselect_tile, ui, 0);
+    button_set_on_click_fn(
+        button,
+        MOUSE_LEFT,
+        select_tile,
+        ui,
+        tile
+    );
+    button_set_on_click_fn(
+        button, 
+        MOUSE_RIGHT, 
+        deselect_tile,
+        ui, 
+        0
+    );
     button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
     window_add_button(
         window, 

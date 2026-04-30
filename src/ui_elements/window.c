@@ -1,11 +1,12 @@
 #include "include/ui_elements/window.h"
-#include "helper_functions/error_handling.h"
 
 struct Window {
     float x;
     float y;
     float width;
     float height;
+    float anchor_x;
+    float anchor_y;
     float scale;
 
     Vector* sprites;
@@ -15,7 +16,16 @@ struct Window {
     Vector* textures;
 
     SDL_Texture* texture_background;
+
+    bool is_draggable;
+    float mouse_x;
+    float mouse_y;
+    bool is_zoomable;
+    bool is_scrollable_vertical;
+    bool is_scrollable_horizontal;
 };
+
+static void window_elements_update_anchor(Window* window);
 
 Window* window_create(
     float x,
@@ -24,7 +34,7 @@ Window* window_create(
     float height,
     SDL_Texture* background_texture)
 {
-    verify(width < 0 || height < 0, "Invalid size");
+    verify_size(width, height);
 
     Window* window = SDL_malloc(sizeof(Window));
     verify(window == NULL, "Window could not be created: malloc");
@@ -33,6 +43,8 @@ Window* window_create(
     window->y = y;
     window->width = width;
     window->height = height;
+    window->anchor_x = x;
+    window->anchor_y = y;
     window->scale = 1;
 
     window->sprites = vector_create(sprite_ops());
@@ -43,14 +55,20 @@ Window* window_create(
 
     window->texture_background = background_texture;
 
+    window->is_draggable = true;
+    window->is_zoomable = true;
+    window->is_scrollable_vertical = false;
+    window->is_scrollable_horizontal = false;
+    window->mouse_x = 0;
+    window->mouse_y = 0;
+
     return window;
 }
 
 void window_load_textures(SDL_Renderer* renderer, Window* window, const char** paths, int size)
 {
-    verify(renderer == NULL, "Renderer does not exist");
-    verify(window == NULL, "Window does not exist");
-    verify(size < 0, "Invalid size");
+    verify_window(window);
+    verify_renderer(renderer);
 
     for (int i = 0; i < size; i++)
     {
@@ -60,79 +78,47 @@ void window_load_textures(SDL_Renderer* renderer, Window* window, const char** p
 }
 void window_add_sprite(Window* window, Sprite* sprite, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_window(window);
+    verify_sprite(sprite);
 
     vector_add(window->sprites, sprite);
 
-    sprite_set_position(
-        sprite, 
-        window_get_x(window) + (x * window->scale),
-        window_get_y(window) + (y * window->scale)
-    );
-    sprite_set_size(
-        sprite, 
-        sprite_get_width(sprite) * window->scale, 
-        sprite_get_height(sprite) * window->scale
-    );
+    sprite_set_position(sprite, x, y);
+    sprite_set_anchor(sprite, window->anchor_x, window->anchor_y);
+    sprite_set_scale(sprite, window->scale);
 }
 void window_add_button(Window* window, Button* button, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(button == NULL, "Button does not exist");
+    verify_window(window);
+    verify_button(button);
 
     vector_add(window->buttons, button);
 
-    button_set_position(
-        button, 
-        window_get_x(window) + (x * window->scale),
-        window_get_y(window) + (y * window->scale)
-    );
-    button_set_size(
-        button, 
-        button_get_width(button) * window->scale, 
-        button_get_height(button) * window->scale
-    );
+    button_set_position(button, x, y);
+    button_set_anchor(button, window->anchor_x, window->anchor_y);
+    button_set_scale(button, window->scale);
 }
 void window_add_textbox(Window* window, Textbox* textbox, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(textbox == NULL, "Textbox does not exist");
+    verify_window(window);
+    verify_textbox(textbox);
 
     vector_add(window->textboxes, textbox);
 
-    textbox_set_position(
-        textbox, 
-        window_get_x(window) + (x * window->scale),
-        window_get_y(window) + (y * window->scale)
-    );
-    textbox_set_size(
-        textbox, 
-        textbox_get_width(textbox) * window->scale, 
-        textbox_get_height(textbox) * window->scale
-    );
+    textbox_set_position(textbox, x, y);
+    textbox_set_anchor(textbox, window->anchor_x, window->anchor_y);
+    textbox_set_scale(textbox, window->scale);
 }
 
 void window_destroy(Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
-    if (window->sprites != NULL)
-    {
-        vector_destroy(window->sprites);
-    }
-    if (window->buttons != NULL)
-    {
-        vector_destroy(window->buttons);
-    }
-    if (window->textboxes != NULL)
-    {
-        vector_destroy(window->textboxes);
-    }
-    if (window->textures != NULL)
-    {
-        vector_destroy(window->textures);
-    }
+    vector_destroy(window->sprites);
+    vector_destroy(window->buttons);
+    vector_destroy(window->textboxes);
+    vector_destroy(window->textures);
+
     if (window->texture_background != NULL)
     {
         SDL_DestroyTexture(window->texture_background);
@@ -142,7 +128,7 @@ void window_destroy(Window* window)
 }
 void window_destroy_content(Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     vector_destroy_content(window->sprites);
     vector_destroy_content(window->buttons);
@@ -150,38 +136,29 @@ void window_destroy_content(Window* window)
 }
 void window_destroy_sprite(Window* window, Sprite* sprite)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_window(window);
+    verify_sprite(sprite);
 
     vector_destroy_item(window->sprites, sprite);
 }
 void window_destroy_button(Window* window, Button* button)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(button == NULL, "Button does not exist");
+    verify_window(window);
+    verify_button(button);
 
     vector_destroy_item(window->sprites, button);
 }
 void window_destroy_textbox(Window* window, Textbox* textbox)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(textbox == NULL, "Textbox does not exist");
+    verify_window(window);
+    verify_textbox(textbox);
 
     vector_destroy_item(window->sprites, textbox);
 }
 
 static void window_render_background(SDL_Renderer* renderer, const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(renderer == NULL, "Renderer does not exist");
-
-    SDL_FRect frect =
-        {
-            window->x,
-            window->y,
-            window->width,
-            window->height
-        };
+    SDL_FRect frect = window_get_frect(window);
     SDL_RenderTexture(
         renderer, 
         window->texture_background, 
@@ -189,10 +166,10 @@ static void window_render_background(SDL_Renderer* renderer, const Window* windo
         &frect
     );
 }
-void window_render(SDL_Renderer* renderer, Window* window)
+void window_render(SDL_Renderer* renderer, const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(renderer == NULL, "Renderer does not exist");
+    verify_renderer(renderer);
+    verify_window(window);
 
     SDL_Rect rect =
         {
@@ -206,136 +183,148 @@ void window_render(SDL_Renderer* renderer, Window* window)
     window_render_background(renderer, window);
 
     for (int i = 0; i < vector_get_count(window->sprites); i++)
-        sprite_render(renderer, (Sprite*)vector_get_at(window->sprites, i));
+        sprite_render(renderer, vector_get_at(window->sprites, i));
 
     for (int i = 0; i < vector_get_count(window->buttons); i++)
-        button_render(renderer, (Button*)vector_get_at(window->buttons, i));
+        button_render(renderer, vector_get_at(window->buttons, i));
 
     for (int i = 0; i < vector_get_count(window->textboxes); i++)
-        textbox_render(renderer, (Textbox*)vector_get_at(window->textboxes, i));
+        textbox_render(renderer, vector_get_at(window->textboxes, i));
 }
 
+static void window_drag(const InputState* input, Window* window)
+{
+    if (!window->is_draggable)
+    {
+        return;
+    }
+
+    float mouse_x = mouse_get_x(input);
+    float mouse_y = mouse_get_y(input);
+    SDL_FRect frect = window_get_frect(window);
+    if (!point_intersects_rect(mouse_x, mouse_y, &frect))
+    {
+        return;
+    }
+
+    if (!mouse_get_down(input, MOUSE_RIGHT))
+    {
+        window->mouse_x = mouse_x;
+        window->mouse_y = mouse_y;
+        return;
+    }
+    int new_x = mouse_x - window->mouse_x;
+    int new_y = mouse_y - window->mouse_y;
+    window->anchor_x += new_x;
+    window->anchor_y += new_y;
+    window_elements_update_anchor(window);
+    window->mouse_x = mouse_x;
+    window->mouse_y = mouse_y;
+}
+static void window_zoom(const InputState* input, Window* window)
+{
+    if (!window->is_zoomable)
+    {
+        return;
+    }
+
+    float mouse_x = mouse_get_x(input);
+    float mouse_y = mouse_get_y(input);
+    SDL_FRect frect = window_get_frect(window);
+    if (!point_intersects_rect(mouse_x, mouse_y, &frect))
+    {
+        return;
+    }
+    float mouse_wheel = mouse_get_wheel(input);
+    if (mouse_wheel == 0)
+    {
+        return;
+    }
+    float window_width = window_get_width(window);
+    float new_scale = window_get_scale(window) + mouse_wheel;
+    // TODO: fix
+    if (new_scale < 4) new_scale = 4;
+    if (new_scale > 12) new_scale = 12;
+    window_set_scale(window, new_scale);
+}
 void window_update(const InputState* input, Window* window)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(input == NULL, "InputState does not exist");
+    verify_window(window);
+    verify_input(input);
+
+    window_zoom(input, window);
+    window_drag(input, window);
 
     for (int i = 0; i < vector_get_count(window->buttons); i++)
+    {
         button_update(input, (Button*)vector_get_at(window->buttons, i));
+    }
 }
 
-static void window_sprites_update_position(Window* window, float new_window_x, float new_window_y)
+static void window_elements_update_anchor(Window* window)
 {
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->sprites); i++)
     {
         Sprite* sprite = vector_get_at(window->sprites, i);
-        sprite_set_position(
-            sprite, 
-            sprite_get_x(sprite) - window_get_x(window) + new_window_x, 
-            sprite_get_y(sprite) - window_get_y(window) + new_window_y
-        );
+        sprite_set_anchor(sprite, window->anchor_x, window->anchor_y);
     }
-}
-static void window_buttons_update_position(Window* window, float new_window_x, float new_window_y)
-{
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
-        button_set_position(
-            button,
-            button_get_x(button) - window_get_x(window) + new_window_x, 
-            button_get_y(button) - window_get_y(window) + new_window_y 
-        );
+        button_set_anchor(button, window->anchor_x, window->anchor_y);
     }
-}
-static void window_textboxes_update_position(Window* window, float new_window_x, float new_window_y)
-{
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->textboxes); i++)
     {
         Textbox* textbox = vector_get_at(window->textboxes, i);
-        textbox_set_position(
-            textbox,
-            textbox_get_x(textbox) - window_get_x(window) + new_window_x,
-            textbox_get_y(textbox) - window_get_y(window) + new_window_y 
-        );
+        textbox_set_anchor(textbox, window->anchor_x, window->anchor_y);
     }
 }
 void window_set_position(Window* window, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
-    window_sprites_update_position(window, x, y);
-    window_buttons_update_position(window, x, y);
-    window_textboxes_update_position(window, x, y);
+    window->anchor_x += window->x - x;
+    window->anchor_y += window->y - y;
     window->x = x;
     window->y = y;
+    window_elements_update_anchor(window);
 }
 void window_set_size(Window* window, float width, float height)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(width < 0 || height < 0, "Invalid size");
+    verify_window(window);
+    verify_size(width, height);
 
     window->width = width;
     window->height = height;
 }
-static void window_sprites_update_size(Window* window, float new_scale)
+static void window_elements_set_scale(Window* window, float scale)
 {
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->sprites); i++)
     {
         Sprite* sprite = vector_get_at(window->sprites, i);
-        sprite_set_size(
-            sprite, 
-            sprite_get_width(sprite) / window->scale * new_scale,
-            sprite_get_height(sprite) / window->scale * new_scale
-        );
+        sprite_set_scale(sprite, scale);
     }
-}
-static void window_buttons_update_size(Window* window, float new_scale)
-{
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
-        button_set_size(
-            button, 
-            button_get_width(button) / window->scale * new_scale,
-            button_get_height(button) / window->scale * new_scale
-        );
+        button_set_scale(button, scale);
     }
-}
-static void window_textboxes_update_size(Window* window, float new_scale)
-{
-    verify(window == NULL, "Window does not exist");
-
     for (int i = 0; i < vector_get_count(window->textboxes); i++)
     {
         Textbox* textbox = vector_get_at(window->textboxes, i);
-        textbox_set_size(
-            textbox, 
-            textbox_get_width(textbox) / window->scale * new_scale,
-            textbox_get_height(textbox) / window->scale * new_scale
-        );
+        textbox_set_scale(textbox, scale);
     }
 }
 void window_set_scale(Window* window, float scale)
 {
-    window_sprites_update_size(window, scale);
-    window_buttons_update_size(window, scale);
-    window_textboxes_update_size(window, scale);
+    verify_window(window);
+
     window->scale = scale;
+    window_elements_set_scale(window, scale);
 }
 void window_update_background_texture(Window* window, SDL_Texture* texture)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     if (window->texture_background != NULL)
     {
@@ -346,8 +335,8 @@ void window_update_background_texture(Window* window, SDL_Texture* texture)
 }
 void window_sprite_set_position(Window* window, Sprite* sprite, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_window(window);
+    verify_sprite(sprite);
 
     float sprite_x = window_get_x(window) - sprite_get_x(sprite) + x;
     float sprite_y = window_get_y(window) - sprite_get_y(sprite) + y;
@@ -356,8 +345,8 @@ void window_sprite_set_position(Window* window, Sprite* sprite, float x, float y
 }
 void window_button_set_position(Window* window, Button* button, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(button == NULL, "Button does not exist");
+    verify_window(window);
+    verify_button(button);
 
     float button_x = window_get_x(window) - button_get_x(button) + x;
     float button_y = window_get_y(window) - button_get_y(button) + y;
@@ -366,8 +355,8 @@ void window_button_set_position(Window* window, Button* button, float x, float y
 }
 void window_textbox_set_position(Window* window, Textbox* textbox, float x, float y)
 {
-    verify(window == NULL, "Window does not exist");
-    verify(textbox == NULL, "Textbox does not exist");
+    verify_window(window);
+    verify_textbox(textbox);
 
     float textbox_x = window_get_x(window) - textbox_get_x(textbox) + x;
     float textbox_y = window_get_y(window) - textbox_get_y(textbox) + y;
@@ -377,39 +366,39 @@ void window_textbox_set_position(Window* window, Textbox* textbox, float x, floa
 
 
 
-
-
 float window_get_x(const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     return window->x;
 }
 float window_get_y(const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     return window->y;
 }
 float window_get_width(const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     return window->width;
 }
 float window_get_height(const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     return window->height;
 }
 float window_get_scale(const Window* window)
 {
+    verify_window(window);
+
     return window->scale;
 }
 SDL_FRect window_get_frect(const Window* window)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     SDL_FRect frect =
         {
@@ -423,7 +412,14 @@ SDL_FRect window_get_frect(const Window* window)
 }
 SDL_Texture* window_get_texture(const Window* window, int index)
 {
-    verify(window == NULL, "Window does not exist");
+    verify_window(window);
 
     return vector_get_at(window->textures, index);
+}
+
+
+
+void verify_window(const Window* window)
+{
+    verify(window == NULL, "Window does not exist");
 }

@@ -1,5 +1,6 @@
 #include "include/game/board/board.h"
 
+static const int translate_position(const Board* board, int col, int row);
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
 struct Board
@@ -7,8 +8,8 @@ struct Board
     int col_num;
     int row_num;
 
-    Tile** tiles;
-    Piece** pieces;
+    Vector* tiles;
+    Vector* pieces;
 
     Player* player1;
     Player* player2;
@@ -23,11 +24,8 @@ Board* board_create(int col_num, int row_num)
     board->col_num = col_num;
     board->row_num = row_num;
 
-    board->tiles = SDL_calloc(col_num * row_num, sizeof(Tile*));
-    verify(board->tiles == NULL, "Tiles could not be created: malloc");
-
-    board->pieces = SDL_calloc(col_num * row_num, sizeof(Piece*));
-    verify(board->pieces == NULL, "Pieces could not be created: malloc");
+    board->tiles = vector_create(tile_ops());
+    board->pieces = vector_create(piece_ops());
 
     Tile* tile;
     for (int col = 0; col < col_num; col++)
@@ -35,13 +33,13 @@ Board* board_create(int col_num, int row_num)
         for (int row = 0; row < row_num; row++)
         {
             tile = tile_create(TILE_NONE);
-            board->tiles[col + row * board->col_num] = tile;
-            board->pieces[col + row * board->col_num] = NULL;
+            vector_add(board->tiles, tile);
+            vector_add(board->pieces, NULL);
         }
     }
 
-    board->player1 = NULL;
-    board->player2 = NULL;
+    board->player1 = player_create(WHITE, 0);
+    board->player2 = player_create(BLACK, 0);
     board->active_player = &board->player1;
 
     return board;
@@ -51,45 +49,18 @@ void board_destroy(Board* board)
 {
     verify(board == NULL, "Board does not exist");
 
-    int col_num = board->col_num;
-    int row_num = board->row_num;
+    vector_destroy(board->tiles);
+    vector_destroy(board->pieces);
 
-    for (int col = 0; col < col_num; col++)
-    {
-        for (int row = 0; row < row_num; row++)
-        {
-            Tile* tile = board_get_tile_at(board, col, row);
-            tile_destroy(tile);
-
-            if (!board_has_piece_at(board, col, row))
-            {
-                continue;
-            }
-            Piece* piece = board_get_piece_at(board, col, row);
-            piece_destroy(piece);
-        }
-    }
-    SDL_free(board->tiles);
-    SDL_free(board->pieces);
-
-    if (board->player1 != NULL) 
-    {
-        player_destroy(board->player1);
-    }
-    if (board->player2 != NULL) 
-    {
-        player_destroy(board->player2);
-    }
+    player_destroy(board->player1);
+    player_destroy(board->player2);
 
     SDL_free(board);
 }
 
 void board_set_default(Board* board)
 {
-    verify(board == NULL, "Board does not exist");
-
-    board->player1 = player_create(WHITE, 0);
-    board->player2 = player_create(BLACK, 0);
+    verify_board(board);
 
     board_add_piece_at(board, piece_create(ROOK, BLACK), 0, 0);
     board_add_piece_at(board, piece_create(KNIGHT, BLACK), 1, 0);
@@ -124,17 +95,13 @@ void board_set_default(Board* board)
     board_add_piece_at(board, piece_create(PAWN, WHITE), 5, 6);
     board_add_piece_at(board, piece_create(PAWN, WHITE), 6, 6);
     board_add_piece_at(board, piece_create(PAWN, WHITE), 7, 6);
-
-    // board_add_piece_at(board, piece_create(LANCE, BLACK), 2, 2);
-    // board_add_piece_at(board, piece_create(LANCE, WHITE), 5, 5);
 }
 
 
 bool board_can_add_piece_at(Board* board, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
+    verify_board(board);
+    verify_board_pos(board, col, row);
 
     if (board_has_piece_at(board, col, row))
     {
@@ -144,78 +111,61 @@ bool board_can_add_piece_at(Board* board, int col, int row)
 }
 void board_add_piece_at(Board* board, Piece* piece, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(piece == NULL, "Piece does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
-    verify(board_has_piece_at(board, col, row), "Could not add piece, position already occupied");
+    verify_board(board);
+    verify_piece(piece);
+    verify_board_pos(board, col, row);
+    verify(!board_can_add_piece_at(board, col, row), "Could not add piece, position already occupied");
 
-    board->pieces[col + row * board->col_num] = piece;
+    const int pos = translate_position(board, col, row);
+    vector_set_at(board->pieces, piece, pos);
 }
 void board_piece_remove(Board* board, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
+    verify_board(board);
+    verify_board_pos(board, col, row);
     verify(!board_has_piece_at(board, col, row), "Piece does not exist");
 
     Piece* piece = board_get_piece_at(board, col, row);
     piece_destroy(piece);
-    board->pieces[col + row * board->col_num] = NULL;
+    const int pos = translate_position(board, col, row);
+    vector_set_at(board->pieces, NULL, pos);
 }
 bool board_has_piece_at(const Board* board, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col >= board->col_num , "Invalid position");
-    verify(row < 0 || row >= board->row_num , "Invalid position");
+    verify_board(board);
+    verify_board_pos(board, col, row);
 
     return board_get_piece_at(board, col, row) != NULL;
 }
 Piece* board_get_piece_at(const Board* board, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
+    verify_board(board);
+    verify_board_pos(board, col, row);
 
-    return board->pieces[col + row * board->col_num];
+    const int pos = translate_position(board, col, row);
+    return vector_get_at(board->pieces, pos);
 }
 int board_piece_get_col(const Board* board, const Piece* piece)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(piece == NULL, "Piece does not exist");
+    verify_board(board);
+    verify_piece(piece);
 
-    for (int col = 0; col < board->col_num; col++)
-    {
-        for (int row = 0; row < board->row_num; row++)
-        {
-            if (piece == board_get_piece_at(board, col, row))
-            {
-                return col;
-            }
-        }
-    }
-    return 0;
+    const int pos = vector_item_get_index(board->pieces, piece);
+    return pos % board->col_num;
 }
 int board_piece_get_row(const Board* board, const Piece* piece)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(piece == NULL, "Piece does not exist");
+    verify_board(board);
+    verify_piece(piece);
 
-    for (int col = 0; col < board->col_num; col++)
-    {
-        for (int row = 0; row < board->row_num; row++)
-        {
-            if (piece == board_get_piece_at(board, col, row))
-            {
-                return row;
-            }
-        }
-    }
-    return 0;
+    const int pos = vector_item_get_index(board->pieces, piece);
+    return pos / board->col_num;
 }
 bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(board == NULL, "Board does not exist");
+    verify_board(board);
+    verify_board_pos(board, src_col, src_row);
+    verify_board_pos(board, dst_col, dst_row);
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
 
     Piece* piece = board_get_piece_at(board, src_col, src_row);
@@ -236,11 +186,9 @@ bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col
 }
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
-    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
-    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
-    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify_board(board);
+    verify_board_pos(board, src_col, src_row);
+    verify_board_pos(board, dst_col, dst_row);
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
 
     Piece* piece = board_get_piece_at(board, src_col, src_row);
@@ -259,8 +207,11 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
         piece_destroy(board_get_piece_at(board, dst_col, dst_row));
     }
 
-    board->pieces[dst_col + dst_row * board->col_num] = board->pieces[src_col + src_row * board->col_num];
-    board->pieces[src_col + src_row * board->col_num] = NULL;
+    int src_pos = translate_position(board, src_col, src_row);
+    vector_set_at(board->pieces, NULL, src_pos);
+    int dst_pos = translate_position(board, dst_col, dst_row);
+    vector_set_at(board->pieces, piece, dst_pos);
+
     piece_set_moved(piece);
 }
 bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
@@ -290,11 +241,9 @@ void board_piece_capture(Board* board, Piece* piece)
 }
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(src_col < 0 || src_col >= board->col_num , "Invalid position");
-    verify(src_row < 0 || src_row >= board->row_num , "Invalid position");
-    verify(dst_col < 0 || dst_col >= board->col_num , "Invalid position");
-    verify(dst_row < 0 || dst_row >= board->row_num , "Invalid position");
+    verify_board(board);
+    verify_board_pos(board, src_col, src_row);
+    verify_board_pos(board, dst_col, dst_row);
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
 
     Piece* piece = board_get_piece_at(board, src_col, src_row);
@@ -338,19 +287,11 @@ static void board_add_col(Board* board)
     int col_num = board->col_num;
     int row_num = board->row_num;
 
-    // allocate more space
-    size_t new_size;
-    new_size = board->row_num * board->col_num * sizeof(Tile*);
-    board->tiles = SDL_realloc(board->tiles, new_size);
-    new_size = board->row_num * board->col_num * sizeof(Piece*);
-    board->pieces = SDL_realloc(board->pieces, new_size);
-
-    // add empty slots
     for (int row = 0; row < row_num; row++)
     {
         Tile* tile = tile_create(TILE_NONE);
-        board->tiles[(col_num - 1) * row_num + row] = tile;
-        board->pieces[(col_num - 1) * row_num + row] = NULL;
+        vector_add(board->tiles, tile);
+        vector_add(board->pieces, NULL);
     }
 
     // adjust piece position
@@ -360,29 +301,30 @@ static void board_add_col(Board* board)
     {
         old_pos = i - (i / col_num);
         new_pos = i;
-        board->pieces[new_pos] = board->pieces[old_pos];
-        board->pieces[old_pos] = NULL;
+        Piece* piece = vector_get_at(board->pieces, old_pos);
+        vector_set_at(board->pieces, piece, new_pos);
+        vector_set_at(board->pieces, NULL, old_pos);
     }
 }
 static void board_add_row(Board* board)
 {
+    verify_board(board);
+
     board->row_num++;
+    int col_num = board->col_num;
+    int row_num = board->row_num;
 
-    size_t new_size;
-    new_size = board->row_num * board->col_num * sizeof(Tile*);
-    board->tiles = SDL_realloc(board->tiles, new_size);
-    new_size = board->row_num * board->col_num * sizeof(Piece*);
-    board->pieces = SDL_realloc(board->pieces, new_size);
-
-    for (int col = 0; col < board->col_num; col++)
+    for (int col = 0; col < col_num; col++)
     {
         Tile* tile = tile_create(TILE_NONE);
-        board->tiles[col + ((board->row_num - 1) * board->col_num)] = tile;
-        board->pieces[col + ((board->row_num - 1) * board->col_num)] = NULL;
+        vector_add(board->tiles, tile);
+        vector_add(board->pieces, NULL);
     }
 }
 void board_expand(Board* board)
 {
+    verify_board(board);
+
     board_add_col(board);
     board_add_col(board);
     board_add_row(board);
@@ -391,6 +333,7 @@ void board_expand(Board* board)
     int col_num = board->col_num;
     int row_num = board->row_num;
 
+    // adjust piece position
     for (int col = col_num - 2; col >= 1 ; col--)
     {
         for (int row = row_num - 2; row >= 1 ; row--)
@@ -402,72 +345,59 @@ void board_expand(Board* board)
 
             int old_pos = old_col + old_row * col_num;
             int new_pos = new_col + new_row * col_num;
-            board->pieces[new_pos] = board->pieces[old_pos];
-            board->pieces[old_pos] = NULL;
+            Piece* piece = vector_get_at(board->pieces, old_pos);
+            vector_set_at(board->pieces, piece, new_pos);
+            vector_set_at(board->pieces, NULL, old_pos);
         }
     }
 }
 Tile* board_get_tile_at(const Board* board, int col, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(col < 0 || col > board->col_num, "Invalid board position");
-    verify(row < 0 || row > board->row_num, "Invalid board position");
+    verify_board(board);
+    verify_board_pos(board, col, row);
 
-    return board->tiles[col + row * board->col_num];
+    const int pos = translate_position(board, col, row);
+    return vector_get_at(board->tiles, pos);
 }
 int board_tile_get_col(const Board* board, const Tile* tile)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(tile == NULL, "Tile does not exist");
+    verify_board(board);
+    verify_tile(tile);
 
-    for (int col = 0; col < board->col_num; col++)
-    {
-        for (int row = 0; row < board->row_num; row++)
-        {
-            if (tile == board_get_tile_at(board, col, row))
-            {
-                return col;
-            }
-        }
-    }
-    return 0;
+    const int pos = vector_item_get_index(board->tiles, tile);
+    return pos % board->col_num;
 }
 int board_tile_get_row(const Board* board, const Tile* tile)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(tile == NULL, "Tile does not exist");
+    verify_board(board);
+    verify_tile(tile);
 
-    for (int col = 0; col < board->col_num; col++)
-    {
-        for (int row = 0; row < board->row_num; row++)
-        {
-            if (tile == board_get_tile_at(board, col, row))
-            {
-                return row;
-            }
-        }
-    }
-    return 0;
+    const int pos = vector_item_get_index(board->tiles, tile);
+    return pos / board->col_num;
 }
 
 
 
 int board_get_col_num(const Board* board)
 {
-    verify(board == NULL, "Board does not exist");
+    verify_board(board);
 
     return board->col_num;
 }
 int board_get_row_num(const Board* board)
 {
-    verify(board == NULL, "Board does not exist");
+    verify_board(board);
 
     return board->row_num;
+}
+static const int translate_position(const Board* board, int col, int row)
+{
+    return col + row * board->col_num;
 }
 
 void advance_turn(Board* board)
 {
-    verify(board == NULL, "Board does not exist");
+    verify_board(board);
 
     if (*board->active_player == board->player1)
     {
@@ -480,8 +410,8 @@ void advance_turn(Board* board)
 }
 bool is_player_side_of_board(const Board* board, const Player* player, int row)
 {
-    verify(board == NULL, "Board does not exist");
-    verify(player == NULL, "Player does not exist");
+    verify_board(board);
+    verify_player(player);
 
     if (player_get_color(player) == WHITE && row >= board_get_row_num(board) / 2)
     {
@@ -495,22 +425,42 @@ bool is_player_side_of_board(const Board* board, const Player* player, int row)
 }
 Player* board_get_active_player(const Board* board)
 {
-    verify(board == NULL, "Board does not exist");
-
+    verify_board(board);
     return *board->active_player;
 }
 Player* board_get_opponent(const Board* board)
 {
-    verify(board == NULL, "Board does not exist");
-
+    verify_board(board);
     return *board->active_player == board->player1 ? board->player2 : board->player1;
 }
 
 Player* board_get_player_white(const Board* board)
 {
+    verify_board(board);
     return board->player1;
 }
 Player* board_get_player_black(const Board* board)
 {
+    verify_board(board);
     return board->player2;
+}
+
+
+
+void verify_board_pos(const Board* board, int col, int row)
+{
+    verify(col < 0 || col >= board->col_num, "Invalid column");
+    verify(row < 0 || row >= board->row_num, "Invalid row");
+}
+void verify_board(const Board* board)
+{
+    verify(board == NULL, "Board does not exist");
+}
+void verify_piece(const Piece* piece)
+{
+    verify(piece == NULL, "Piece does not exist");
+}
+void verify_tile(const Tile* tile)
+{
+    verify(tile == NULL, "Tile does not exist");
 }

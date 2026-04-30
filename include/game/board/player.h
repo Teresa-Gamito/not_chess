@@ -16,3 +16,5 @@ void player_add_points(Player* player, int points);
 
 int player_get_points(const Player* player);
 Color player_get_color(const Player* player);
+
+void verify_player(const Player* player);

@@ -6,11 +6,12 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
-#include "include/ui_elements/sprite.h"
-#include "include/ui_elements/button.h"
-#include "include/ui_elements/textbox.h"
-#include "include/helper_functions/vector.h"
-#include "include/helper_functions/error_handling.h"
+#include "ui_elements/sprite.h"
+#include "ui_elements/button.h"
+#include "ui_elements/textbox.h"
+#include "helper_functions/vector.h"
+#include "helper_functions/error_handling.h"
+#include "helper_functions/global_variables.h"
 
 typedef struct Window Window;
 
@@ -40,7 +41,7 @@ void window_destroy_button(Window *window, Button* button);
 void window_destroy_textbox(Window *window, Textbox* textbox);
 
 // ========== render ==========
-void window_render(SDL_Renderer* renderer, Window* window);
+void window_render(SDL_Renderer* renderer, const Window* window);
 
 // ========== update ==========
 void window_update(const InputState* input, Window* window);
@@ -62,3 +63,5 @@ float window_get_height(const Window* window);
 float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);
+
+void verify_window(const Window* window);

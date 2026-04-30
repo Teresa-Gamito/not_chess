@@ -6,6 +6,9 @@ struct Sprite {
     float y;
     float width;
     float height;
+    float anchor_x;
+    float anchor_y;
+    float scale;
 };
 
 Sprite* sprite_create(SDL_Texture* texture)
@@ -27,30 +30,26 @@ Sprite* sprite_create(SDL_Texture* texture)
     sprite->y = 0;
     sprite->width = w;
     sprite->height = h;
+    sprite->anchor_x = 0;
+    sprite->anchor_y = 0;
+    sprite->scale = 1;
 
     return sprite;
 }
 
 void sprite_destroy(Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     SDL_free(sprite);
 }
 
 void sprite_render(SDL_Renderer* renderer, const Sprite* sprite)
 {
-    verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_renderer(renderer);
+    verify_sprite(sprite);
 
-    SDL_FRect frect =
-        {
-            sprite->x,
-            sprite->y,
-            sprite->width,
-            sprite->height
-        };
-
+    SDL_FRect frect = sprite_get_frect(sprite);
     SDL_RenderTexture(
         renderer,
         sprite->texture,
@@ -59,87 +58,105 @@ void sprite_render(SDL_Renderer* renderer, const Sprite* sprite)
     );
 }
 
-void sprite_set_position(Sprite* sprite, const float x, const float y)
+void sprite_set_position(Sprite* sprite, float x, float y)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     sprite->x = x;
     sprite->y = y;
 }
-void sprite_set_size(Sprite* sprite, const float width, const float height)
+void sprite_set_anchor(Sprite* sprite, float anchor_x, float anchor_y)
 {
-    verify(sprite == NULL, "Sprite does not exist");
-    verify(width < 0 || height < 0, "Invalid size");
+    verify_sprite(sprite);
+
+    sprite->anchor_x = anchor_x;
+    sprite->anchor_y = anchor_y;
+}
+void sprite_set_size(Sprite* sprite, float width, float height)
+{
+    verify_sprite(sprite);
+    verify_size(width, height);
 
     sprite->width = width;
     sprite->height = height;
 }
+void sprite_set_scale(Sprite* sprite, float scale)
+{
+    verify_sprite(sprite);
+
+    sprite->scale = scale;
+}
 void sprite_set_texture(Sprite* sprite, SDL_Texture* texture)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     sprite->texture = texture;
 }
 
 float sprite_get_x(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     return sprite->x;
 }
 float sprite_get_y(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     return sprite->y;
 }
 float sprite_get_width(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     return sprite->width;
 }
 float sprite_get_height(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     return sprite->height;
 }
 SDL_FRect sprite_get_frect(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     SDL_FRect frect =
         {
-            sprite->x,
-            sprite->y,
-            sprite->width,
-            sprite->height
+            sprite->x * sprite->scale + sprite->anchor_x,
+            sprite->y * sprite->scale + sprite->anchor_y,
+            sprite->width * sprite->scale,
+            sprite->height * sprite->scale,
         };
     return frect;
 }
 SDL_Texture* sprite_get_texture(const Sprite* sprite)
 {
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     return sprite->texture;
 }
 
 
 
-static void destroy(void* s)
+static void destroy(void* sprite)
 {
-    Sprite* sprite = (Sprite*)s;
-    verify(sprite == NULL, "Sprite does not exist");
+    verify_sprite(sprite);
 
     sprite_destroy(sprite);
 }
 static TypeOps ops =
     {
         destroy
-        // is_equal
     };
 TypeOps* sprite_ops()
 {
     return &ops;
+}
+
+
+
+void verify_sprite(const Sprite* sprite)
+{
+    verify(sprite == NULL, "Sprite does not exist");
 }

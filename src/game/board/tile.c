@@ -34,3 +34,18 @@ TileType tile_get_type(const Tile* tile)
 {
     return tile->type;
 }
+
+
+
+static void destroy(void* tile)
+{
+    tile_destroy(tile);
+}
+static TypeOps ops =
+    {
+        destroy
+    };
+TypeOps* tile_ops()
+{
+    return &ops;
+}

@@ -1,5 +1,4 @@
 #include "include/game/board/piece.h"
-#include "helper_functions/error_handling.h"
 
 struct Piece 
 {
@@ -299,4 +298,19 @@ bool piece_has_moved(const Piece* piece)
     verify(piece == NULL, "Piece does not exist");
 
     return piece->has_moved;
+}
+
+
+
+static void destroy(void* piece)
+{
+    piece_destroy(piece);
+}
+static TypeOps ops =
+    {
+        destroy
+    };
+TypeOps* piece_ops()
+{
+    return &ops;
 }

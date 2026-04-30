@@ -9,6 +9,8 @@
 #include "game/tree/tree_textures.h"
 #include "game/board/board_ui.h"
 #include "game/tree/tree.h"
+#include "helper_functions/color.h"
+#include "helper_functions/global_variables.h"
 
 typedef struct TreeUI TreeUI;
 
