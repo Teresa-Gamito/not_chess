@@ -136,7 +136,6 @@ void button_update(const InputState* input, Button* button)
     if (button->state == PRESSED)
     {
         button_press(input, button);
-        return;
     }
     button_set_state(input, button);
 }

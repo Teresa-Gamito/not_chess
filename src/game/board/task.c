@@ -147,7 +147,6 @@ int task__sacrifice(Board* board, int col, int row)
     {
         return 0;
     }
-    Piece* piece = board_get_piece_at(board, col, row);
     board_piece_remove(board, col, row);
     return 1;
 }

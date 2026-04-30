@@ -18,21 +18,18 @@ struct Window {
     SDL_Texture* texture_background;
 
     bool is_draggable;
-    float mouse_x;
-    float mouse_y;
     bool is_zoomable;
-    bool is_scrollable_vertical;
-    bool is_scrollable_horizontal;
+    bool is_scrollable;
 };
-
-static void window_elements_update_anchor(Window* window);
 
 Window* window_create(
     float x,
     float y,
     float width,
     float height,
-    SDL_Texture* background_texture)
+    SDL_Texture* background_texture,
+    WindowFlags flags
+)
 {
     verify_size(width, height);
 
@@ -55,12 +52,9 @@ Window* window_create(
 
     window->texture_background = background_texture;
 
-    window->is_draggable = true;
-    window->is_zoomable = true;
-    window->is_scrollable_vertical = false;
-    window->is_scrollable_horizontal = false;
-    window->mouse_x = 0;
-    window->mouse_y = 0;
+    window->is_scrollable = flags &1;
+    window->is_zoomable = (flags >> 1) & 1;
+    window->is_draggable = (flags >> 2) & 1;
 
     return window;
 }
@@ -183,13 +177,20 @@ void window_render(SDL_Renderer* renderer, const Window* window)
     window_render_background(renderer, window);
 
     for (int i = 0; i < vector_get_count(window->sprites); i++)
-        sprite_render(renderer, vector_get_at(window->sprites, i));
-
+    {
+        Sprite* sprite = vector_get_at(window->sprites, i);
+        sprite_render(renderer, sprite);
+    }
     for (int i = 0; i < vector_get_count(window->buttons); i++)
-        button_render(renderer, vector_get_at(window->buttons, i));
-
+    {
+        Button* button = vector_get_at(window->buttons, i);
+        button_render(renderer, button);
+    }
     for (int i = 0; i < vector_get_count(window->textboxes); i++)
-        textbox_render(renderer, vector_get_at(window->textboxes, i));
+    {
+        Textbox* textbox = vector_get_at(window->textboxes, i);
+        textbox_render(renderer, textbox);
+    }
 }
 
 static void window_drag(const InputState* input, Window* window)
@@ -201,25 +202,23 @@ static void window_drag(const InputState* input, Window* window)
 
     float mouse_x = mouse_get_x(input);
     float mouse_y = mouse_get_y(input);
-    SDL_FRect frect = window_get_frect(window);
-    if (!point_intersects_rect(mouse_x, mouse_y, &frect))
-    {
-        return;
-    }
+    static float window_mouse_x;
+    static float window_mouse_y;
 
     if (!mouse_get_down(input, MOUSE_RIGHT))
     {
-        window->mouse_x = mouse_x;
-        window->mouse_y = mouse_y;
+        window_mouse_x = mouse_x;
+        window_mouse_y = mouse_y;
         return;
     }
-    int new_x = mouse_x - window->mouse_x;
-    int new_y = mouse_y - window->mouse_y;
-    window->anchor_x += new_x;
-    window->anchor_y += new_y;
-    window_elements_update_anchor(window);
-    window->mouse_x = mouse_x;
-    window->mouse_y = mouse_y;
+
+    int new_x = mouse_x - window_mouse_x;
+    int new_y = mouse_y - window_mouse_y;
+    // TODO: clamp drag
+    window_set_anchor(window, window->anchor_x + new_x, window->anchor_y + new_y);
+
+    window_mouse_x = mouse_x;
+    window_mouse_y = mouse_y;
 }
 static void window_zoom(const InputState* input, Window* window)
 {
@@ -228,6 +227,40 @@ static void window_zoom(const InputState* input, Window* window)
         return;
     }
 
+    float mouse_wheel = mouse_get_wheel(input);
+    if (mouse_wheel == 0)
+    {
+        return;
+    }
+    float new_scale = window_get_scale(window) + mouse_wheel;
+    // TODO: clamp zoom
+    if (new_scale < 4) new_scale = 4;
+    if (new_scale > 12) new_scale = 12;
+    window_set_scale(window, new_scale);
+}
+static void window_scroll(const InputState* input, Window* window)
+{
+    if (!window->is_scrollable)
+    {
+        return;
+    }
+
+    float mouse_wheel = mouse_get_wheel(input);
+    if (mouse_wheel == 0)
+    {
+        return;
+    }
+    window_set_anchor(
+        window,
+        window->anchor_x,
+        window->anchor_y + mouse_wheel * window->scale * WINDOW_SCROLL_FACTOR
+    );
+}
+void window_update(const InputState* input, Window* window)
+{
+    verify_window(window);
+    verify_input(input);
+
     float mouse_x = mouse_get_x(input);
     float mouse_y = mouse_get_y(input);
     SDL_FRect frect = window_get_frect(window);
@@ -235,32 +268,29 @@ static void window_zoom(const InputState* input, Window* window)
     {
         return;
     }
-    float mouse_wheel = mouse_get_wheel(input);
-    if (mouse_wheel == 0)
-    {
-        return;
-    }
-    float window_width = window_get_width(window);
-    float new_scale = window_get_scale(window) + mouse_wheel;
-    // TODO: fix
-    if (new_scale < 4) new_scale = 4;
-    if (new_scale > 12) new_scale = 12;
-    window_set_scale(window, new_scale);
-}
-void window_update(const InputState* input, Window* window)
-{
-    verify_window(window);
-    verify_input(input);
-
     window_zoom(input, window);
     window_drag(input, window);
+    window_scroll(input, window);
 
     for (int i = 0; i < vector_get_count(window->buttons); i++)
     {
-        button_update(input, (Button*)vector_get_at(window->buttons, i));
+        Button* button = vector_get_at(window->buttons, i);
+        button_update(input, button);
     }
 }
 
+void window_set_position(Window* window, float x, float y)
+{
+    verify_window(window);
+
+    window_set_anchor(
+        window,
+        window->anchor_x + window->x - x,
+        window->anchor_y + window->y - y
+    );
+    window->x = x;
+    window->y = y;
+}
 static void window_elements_update_anchor(Window* window)
 {
     for (int i = 0; i < vector_get_count(window->sprites); i++)
@@ -279,14 +309,11 @@ static void window_elements_update_anchor(Window* window)
         textbox_set_anchor(textbox, window->anchor_x, window->anchor_y);
     }
 }
-void window_set_position(Window* window, float x, float y)
+void window_set_anchor(Window* window, float anchor_x, float anchor_y)
 {
-    verify_window(window);
+    window->anchor_x = anchor_x;
+    window->anchor_y = anchor_y;
 
-    window->anchor_x += window->x - x;
-    window->anchor_y += window->y - y;
-    window->x = x;
-    window->y = y;
     window_elements_update_anchor(window);
 }
 void window_set_size(Window* window, float width, float height)
@@ -322,6 +349,7 @@ void window_set_scale(Window* window, float scale)
     window->scale = scale;
     window_elements_set_scale(window, scale);
 }
+
 void window_update_background_texture(Window* window, SDL_Texture* texture)
 {
     verify_window(window);
@@ -333,36 +361,7 @@ void window_update_background_texture(Window* window, SDL_Texture* texture)
     }
     window->texture_background = texture;
 }
-void window_sprite_set_position(Window* window, Sprite* sprite, float x, float y)
-{
-    verify_window(window);
-    verify_sprite(sprite);
 
-    float sprite_x = window_get_x(window) - sprite_get_x(sprite) + x;
-    float sprite_y = window_get_y(window) - sprite_get_y(sprite) + y;
-
-    sprite_set_position(sprite, sprite_x, sprite_y);
-}
-void window_button_set_position(Window* window, Button* button, float x, float y)
-{
-    verify_window(window);
-    verify_button(button);
-
-    float button_x = window_get_x(window) - button_get_x(button) + x;
-    float button_y = window_get_y(window) - button_get_y(button) + y;
-
-    button_set_position(button, button_x, button_y);
-}
-void window_textbox_set_position(Window* window, Textbox* textbox, float x, float y)
-{
-    verify_window(window);
-    verify_textbox(textbox);
-
-    float textbox_x = window_get_x(window) - textbox_get_x(textbox) + x;
-    float textbox_y = window_get_y(window) - textbox_get_y(textbox) + y;
-
-    textbox_set_position(textbox, textbox_x, textbox_y);
-}
 
 
 

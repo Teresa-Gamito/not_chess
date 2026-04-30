@@ -1,6 +1,3 @@
-// holder for sprites, buttons and textboxes,
-// is its own window inside the game
-// only renders objects inside of the window
 #pragma once
 
 #include <SDL3/SDL_rect.h>
@@ -13,6 +10,13 @@
 #include "helper_functions/error_handling.h"
 #include "helper_functions/global_variables.h"
 
+#define WINDOW_SCROLL_FACTOR 3
+
+typedef Uint8 WindowFlags;
+#define WINDOW_SCROLLABLE       1
+#define WINDOW_ZOOMABLE         2
+#define WINDOW_DRAGGABLE        4
+
 typedef struct Window Window;
 
 // ========== create ==========
@@ -21,7 +25,8 @@ Window* window_create(
     float y, 
     float width, 
     float height, 
-    SDL_Texture* background_texture
+    SDL_Texture* background_texture,
+    WindowFlags flags
 );
 void window_load_textures(
     SDL_Renderer* renderer, 
@@ -48,6 +53,7 @@ void window_update(const InputState* input, Window* window);
 
 // ========== set ==========
 void window_set_position(Window* window, float x, float y);
+void window_set_anchor(Window* window, float anchor_x, float anchor_y);
 void window_set_size(Window* window, float width, float height);
 void window_set_scale(Window* window, float scale);
 void window_update_background_texture(Window* window, SDL_Texture* texture);

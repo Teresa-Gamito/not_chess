@@ -6,7 +6,7 @@
 #define APP_NAME "!Chess"
 #define APP_WINDOW_WIDTH 1920
 #define APP_WINDOW_HEIGHT 1080
-#define APP_WINDOW_FLAGS SDL_WINDOW_RESIZABLE
+#define APP_WINDOW_FLAGS 0
 
 #define FONT_PATH "assets/arialceb.ttf"
 #define FONT_SIZE 32.0f

@@ -100,6 +100,7 @@ void game_start(SDL_Renderer* renderer, GameState* gamestate)
         (float)g_app_window_height
     );
     Window* board_window = board_ui_get_window(gamestate->board_ui);
+    (void)board_window;
 
     gamestate->tree = tree_create();
     tree_set_default(gamestate->tree);
@@ -119,10 +120,11 @@ void game_start(SDL_Renderer* renderer, GameState* gamestate)
         0,
         g_app_window_width - window_get_x(tree_window) + window_get_width(tree_window),
         (float)g_app_window_height,
-        NULL
+        NULL,
+        0
     );
     Window* player_info_window = gamestate->player_info;
-
+    (void)player_info_window;
     player_window_update(renderer, gamestate);
 }
 

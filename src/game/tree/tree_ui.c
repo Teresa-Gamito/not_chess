@@ -45,7 +45,14 @@ TreeUI* tree_ui_create(
         renderer, 
         PATH_TEXTURE_WINDOW_TREE_BACKGROUND
     );
-    ui->window = window_create(x, y, width, height, background_texture);
+    ui->window = window_create(
+        x, 
+        y, 
+        width, 
+        height, 
+        background_texture,
+        WINDOW_SCROLLABLE
+    );
     window_load_textures(
         renderer, 
         ui->window, 

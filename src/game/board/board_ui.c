@@ -1,4 +1,5 @@
 #include "include/game/board/board_ui.h"
+#include "ui_elements/window.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -39,7 +40,14 @@ BoardUI* board_ui_create(
         renderer, 
         PATH_TEXTURE_WINDOW_BOARD_BACKGROUND
     );
-    ui->window = window_create(x, y, width, height, background_texture);
+    ui->window = window_create(
+        x, 
+        y, 
+        width, 
+        height, 
+        background_texture,
+        WINDOW_ZOOMABLE | WINDOW_DRAGGABLE
+    );
     window_load_textures(
         renderer, 
         ui->window, 
