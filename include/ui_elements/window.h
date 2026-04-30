@@ -1,21 +1,21 @@
 #pragma once
 
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_rect.h>
 #include "ui_elements/sprite.h"
 #include "ui_elements/button.h"
 #include "ui_elements/textbox.h"
-#include "helper_functions/vector.h"
-#include "helper_functions/error_handling.h"
 #include "helper_functions/global_variables.h"
+#include "helper_functions/error_handling.h"
+#include "helper_functions/vector.h"
 
 #define WINDOW_SCROLL_FACTOR 3
 
 typedef Uint8 WindowFlags;
-#define WINDOW_SCROLLABLE       1
-#define WINDOW_ZOOMABLE         2
-#define WINDOW_DRAGGABLE        4
+#define WINDOW_SCROLLABLE       1<<0
+#define WINDOW_ZOOMABLE         1<<1
+#define WINDOW_DRAGGABLE        1<<2
 
 typedef struct Window Window;
 

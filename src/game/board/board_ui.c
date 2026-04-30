@@ -1,5 +1,9 @@
 #include "include/game/board/board_ui.h"
-#include "ui_elements/window.h"
+#include "game/board/board.h"
+#include "game/log.h"
+#include "helper_functions/error_handling.h"
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_stdinc.h>
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -17,6 +21,8 @@ struct BoardUI
 
     Tile* selected_tile;
     Vector* tasks;
+
+    GameLog* log;
 };
 
 BoardUI* board_ui_create(
@@ -28,8 +34,8 @@ BoardUI* board_ui_create(
     float height
 )
 {
-    verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(board == NULL, "Board does not exist");
+    verify_renderer(renderer);
+    verify_board(board);
 
     BoardUI* ui = SDL_malloc(sizeof(BoardUI));
     verify(ui == NULL, "BoardUI could not be created: malloc");
@@ -66,13 +72,15 @@ BoardUI* board_ui_create(
     else
         window_set_scale(ui->window, height / (row_num * TEXTURE_DEFAULT_SIZE_PX));
 
+    ui->log = gamelog_create();
+
     board_ui_update(ui);
 
     return ui;
 }
 void board_ui_destroy(BoardUI* ui)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     window_destroy(ui->window);
     task_list_destroy(ui->tasks);
@@ -80,10 +88,6 @@ void board_ui_destroy(BoardUI* ui)
 }
 static SDL_Texture* board_ui_tile_get_texture(BoardUI* ui, int new_col, int new_row)
 {
-    verify(ui == NULL, "BoardUI does not exist");
-    verify(new_col < 0 || new_col > board_get_col_num(ui->board), "Invalid position");
-    verify(new_row < 0 || new_row > board_get_row_num(ui->board), "Invalid position");
-
     if (has_task(ui->tasks))
     {
         Task task = task_get_first(ui->tasks);
@@ -134,9 +138,8 @@ static SDL_Texture* board_ui_tile_get_texture(BoardUI* ui, int new_col, int new_
 }
 static void board_ui_add_tile(BoardUI* ui, int col, int row)
 {
-    verify(ui == NULL, "BoardUI does not exist");
-    verify(col < 0 || col > board_get_col_num(ui->board), "Invalid position");
-    verify(row < 0 || row > board_get_row_num(ui->board), "Invalid position");
+    verify_board_ui(ui);
+    verify_board_pos(ui->board, col, row);
 
     Window* window = ui->window;
 
@@ -186,8 +189,6 @@ static BoardTextures tile_get_texture_index(int col, int row)
 }
 static void board_ui_add_piece(BoardUI* ui, int col, int row)
 {
-    verify(ui == NULL, "BoardUI does not exist");
-
     Board* board = ui->board;
     Window* window = ui->window;
     Piece* piece = board_get_piece_at(board, col, row);
@@ -204,8 +205,6 @@ static void board_ui_add_piece(BoardUI* ui, int col, int row)
 }
 static BoardTextures piece_get_texture_index(const Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
-
     Color color = piece_get_color(piece);
     PieceType type = piece_get_type(piece);
 
@@ -274,7 +273,7 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
 
 void board_ui_update(BoardUI* ui)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     Window* window = ui->window;
     Board* board = ui->board;
@@ -390,7 +389,7 @@ static int try_task(BoardUI* ui, int col, int row)
 void select_tile(void* board_ui, void* tile)
 {
     BoardUI* ui = (BoardUI*)board_ui;
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
     Tile* new_tile = (Tile*)tile;
     Board* board = ui->board;
     Tile* old_tile = ui->selected_tile;
@@ -423,10 +422,34 @@ void select_tile(void* board_ui, void* tile)
 
     if (try_piece_capture(ui, old_col, old_row, new_col, new_row))
     {
+        char* log_msg = NULL;
+        SDL_asprintf(
+            &log_msg, 
+            "Capture: %d-%d -> %d-%d",
+            old_col,
+            old_row,
+            new_col,
+            new_row
+        );
+        gamelog_add(ui->log, log_msg);
+        SDL_free(log_msg);
+        SDL_Log("%s", gamelog_get(ui->log));
         return;
     }
     if (try_piece_move(ui, old_col, old_row, new_col, new_row))
     {
+        char* log_msg = NULL;
+        SDL_asprintf(
+            &log_msg, 
+            "Move: %d-%d -> %d-%d",
+            old_col,
+            old_row,
+            new_col,
+            new_row
+        );
+        gamelog_add(ui->log, log_msg);
+        SDL_free(log_msg);
+        SDL_Log("%s", gamelog_get(ui->log));
         return;
     }
 
@@ -436,27 +459,27 @@ void deselect_tile(void* board_ui, void* x)
 {
     (void) x;
     BoardUI* ui = (BoardUI*)board_ui;
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
     ui->selected_tile = NULL;
     board_ui_update(ui);
 }
 
 static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+     verify_board_ui(ui);
 
     Board* board = ui->board;
 
     switch (task) 
     {
         case TASK_ADD_PAWN:
-            return task_is_valid_tile__addPawn(board, col, row);
+            return task_is_valid_tile__addPiece(board, col, row);
 
         case TASK_EXPAND_BOARD:
             return task_is_valid_tile__expandBoard(board);
 
         case TASK_ADD_LANCE:
-            return task_is_valid_tile__addLance(board, col, row);
+            return task_is_valid_tile__addPiece(board, col, row);
 
         case TASK_SACRIFICE:
             return task_is_valid_tile__sacrifice(board, col, row);
@@ -469,20 +492,20 @@ static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row
 
 static int do_task(BoardUI* ui, Task task, int col, int row)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     Board* board = ui->board;
 
     switch (task)
     {
         case TASK_ADD_PAWN:
-            return task__addPawn(board, col, row);
+            return task__addPiece(board, PAWN, col, row);
 
         case TASK_EXPAND_BOARD:
             return task__expandBoard(board, ui->window);
 
         case TASK_ADD_LANCE:
-            return task__addLance(board, col, row);
+            return task__addPiece(board, LANCE, col, row);
 
         case TASK_SACRIFICE:
             return task__sacrifice(board, col, row);
@@ -494,7 +517,7 @@ static int do_task(BoardUI* ui, Task task, int col, int row)
 
 void board_ui_add_task(BoardUI* ui, Task task)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     add_task(ui->tasks, task);
     ui->selected_tile = NULL;
@@ -503,13 +526,20 @@ void board_ui_add_task(BoardUI* ui, Task task)
 
 Window* board_ui_get_window(const BoardUI* ui)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     return ui->window;
 }
 Board* board_ui_get_board(const BoardUI* ui)
 {
-    verify(ui == NULL, "BoardUI does not exist");
+    verify_board_ui(ui);
 
     return ui->board;
+}
+
+
+
+void verify_board_ui(const BoardUI* ui)
+{
+    verify(ui == NULL, "BoardUI does not exist");
 }

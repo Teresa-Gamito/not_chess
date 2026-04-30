@@ -234,9 +234,18 @@ static void window_zoom(const InputState* input, Window* window)
     }
     float new_scale = window_get_scale(window) + mouse_wheel;
     // TODO: clamp zoom
-    if (new_scale < 4) new_scale = 4;
-    if (new_scale > 12) new_scale = 12;
+    if (new_scale < 4) 
+    {
+        window_set_scale(window, 4);
+        return;
+    }
+    if (new_scale > 12)
+    {
+        window_set_scale(window, 12);
+        return;
+    }
     window_set_scale(window, new_scale);
+    // TODO: zoom to mouse
 }
 static void window_scroll(const InputState* input, Window* window)
 {

@@ -50,7 +50,7 @@ void task_complete_first(Vector* task_list)
 
 
 
-bool task_is_valid_tile__addPawn(Board* board, int col, int row)
+bool task_is_valid_tile__addPiece(Board* board, int col, int row)
 {
     Player* player = board_get_active_player(board);
 
@@ -64,16 +64,16 @@ bool task_is_valid_tile__addPawn(Board* board, int col, int row)
     }
     return true;
 }
-int task__addPawn(Board* board, int col, int row)
+int task__addPiece(Board* board, PieceType piece_type, int col, int row)
 {
     Player* player = board_get_active_player(board);
     Color player_color = player_get_color(player);
 
-    if (!task_is_valid_tile__addPawn(board, col, row))
+    if (!task_is_valid_tile__addPiece(board, col, row))
     {
         return 0;
     }
-    Piece* piece = piece_create(PAWN, player_color);
+    Piece* piece = piece_create(piece_type, player_color);
     piece_set_moved(piece);
     board_add_piece_at(board, piece, col, row);
     return 1;
@@ -92,36 +92,6 @@ int task__expandBoard(Board* board, Window* window)
     float new_scale = window_get_scale(window) * old_col_num / new_col_num;
     window_set_scale(window, new_scale);
     return 1;
-}
-
-bool task_is_valid_tile__addLance(Board* board, int col, int row)
-{
-    Player* player = board_get_active_player(board);
-
-    if (!board_can_add_piece_at(board, col, row))
-    {
-        return false;
-    }
-    if (!is_player_side_of_board(board, player, row))
-    {
-        return false;
-    }
-    return true;
-}
-int task__addLance(Board* board, int col, int row)
-{
-    Player* player = board_get_active_player(board);
-    Color player_color = player_get_color(player);
-
-    if (!task_is_valid_tile__addLance(board, col, row))
-    {
-        return 0;
-    }
-    Piece* piece = piece_create(LANCE, player_color);
-    piece_set_moved(piece);
-    board_add_piece_at(board, piece, col, row);
-    return 1;
-
 }
 
 bool task_is_valid_tile__sacrifice(Board* board, int col, int row)

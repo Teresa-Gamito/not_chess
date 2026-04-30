@@ -1,11 +1,4 @@
 #include "include/game/gamestate.h"
-#include "appstate.h"
-#include "game/board/board_ui.h"
-#include "game/tree/tree_ui.h"
-#include "helper_functions/global_variables.h"
-#include "ui_elements/textbox.h"
-#include "ui_elements/window.h"
-#include <SDL3/SDL_stdinc.h>
 
 static void player_window_update(SDL_Renderer* renderer, GameState* gamestate);
 
@@ -44,7 +37,7 @@ GameState* gamestate_create()
 
 void gamestate_destroy(GameState* gamestate)
 {
-    verify(gamestate == NULL, "GameState does not exist");
+    verify_gamestate(gamestate);
 
     board_destroy(gamestate->board);
     board_ui_destroy(gamestate->board_ui);
@@ -58,8 +51,8 @@ void gamestate_destroy(GameState* gamestate)
 
 void game_render(SDL_Renderer* renderer, GameState* gamestate)
 {
-    verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(gamestate == NULL, "GameState does not exist");
+    verify_renderer(renderer);
+    verify_gamestate(gamestate);
 
     player_window_update(renderer, gamestate);
     window_render(renderer, board_ui_get_window(gamestate->board_ui));
@@ -69,18 +62,18 @@ void game_render(SDL_Renderer* renderer, GameState* gamestate)
 
 void game_update(InputState* input, GameState* gamestate)
 {
-    verify(input == NULL, "InputState does not exist");
-    verify(gamestate == NULL, "GameState does not exist");
+    verify_input(input);
+    verify_gamestate(gamestate);
 
-    window_update(input, board_ui_get_window(gamestate->board_ui));
     window_update(input, tree_ui_get_window(gamestate->tree_ui));
+    window_update(input, board_ui_get_window(gamestate->board_ui));
     window_update(input, gamestate->player_info);
 }
 
 void game_start(SDL_Renderer* renderer, GameState* gamestate)
 {
-    verify(renderer == NULL, "SDL_Renderer does not exist");
-    verify(gamestate == NULL, "GameState does not exist");
+    verify_renderer(renderer);
+    verify_gamestate(gamestate);
 
     gamestate->font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
     verify(gamestate->font == NULL, "Font could not be created");
@@ -219,4 +212,11 @@ static void player_window_update(SDL_Renderer* renderer, GameState* gamestate)
         g_app_window_width - window_get_x(window),
         window_get_height(window) - textbox_get_height(textbox) - 40
     );
+}
+
+
+
+void verify_gamestate(GameState* gamestate)
+{
+    verify(gamestate == NULL, "GameState does not exist");
 }

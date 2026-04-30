@@ -34,7 +34,7 @@ Button* button_create(
     SDL_Texture* texture_pressed
 )
 {
-    Button* button = (Button*)SDL_malloc(sizeof(Button));
+    Button* button = SDL_malloc(sizeof(Button));
     verify(button == NULL, "Button could not be created: malloc");
 
     button->textures[IDLE] = texture_idle;

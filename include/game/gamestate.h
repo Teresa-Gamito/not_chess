@@ -23,3 +23,5 @@ void game_render(SDL_Renderer* renderer, GameState* gamestate);
 void game_update(InputState* input, GameState* gamestate);
 
 void game_start(SDL_Renderer* renderer, GameState* gamestate);
+
+void verify_gamestate(GameState* gamestate);
