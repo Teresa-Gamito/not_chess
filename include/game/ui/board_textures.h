@@ -10,6 +10,7 @@
 #define PATH_TEXTURE_WHITE_QUEEN                "assets/sprites/piece/white/white_queen.png"
 #define PATH_TEXTURE_WHITE_KING                 "assets/sprites/piece/white/white_king.png"
 #define PATH_TEXTURE_WHITE_LANCE                "assets/sprites/piece/white/white_lance.png"
+#define PATH_TEXTURE_WHITE_PROMOTED_LANCE       "assets/sprites/piece/white/white_lance.png"
 
 #define PATH_TEXTURE_BLACK_PAWN                 "assets/sprites/piece/black/black_pawn.png"  
 #define PATH_TEXTURE_BLACK_ROOK                 "assets/sprites/piece/black/black_rook.png"  
@@ -18,6 +19,7 @@
 #define PATH_TEXTURE_BLACK_QUEEN                "assets/sprites/piece/black/black_queen.png" 
 #define PATH_TEXTURE_BLACK_KING                 "assets/sprites/piece/black/black_king.png"  
 #define PATH_TEXTURE_BLACK_LANCE                "assets/sprites/piece/black/black_lance.png"
+#define PATH_TEXTURE_BLACK_PROMOTED_LANCE       "assets/sprites/piece/black/black_lance.png"
 
 #define PATH_TEXTURE_TILE_WHITE                 "assets/sprites/tile/tile_white.png"
 #define PATH_TEXTURE_TILE_BLACK                 "assets/sprites/tile/tile_black.png"
@@ -37,7 +39,7 @@ typedef enum BoardTextures
     TEXTURE_WHITE_QUEEN,
     TEXTURE_WHITE_KING,
     TEXTURE_WHITE_LANCE,
-    
+    TEXTURE_WHITE_PROMOTED_LANCE,
 
     TEXTURE_BLACK_PAWN,
     TEXTURE_BLACK_ROOK,
@@ -46,6 +48,7 @@ typedef enum BoardTextures
     TEXTURE_BLACK_QUEEN,
     TEXTURE_BLACK_KING,
     TEXTURE_BLACK_LANCE,
+    TEXTURE_BLACK_PROMOTED_LANCE,
 
     TEXTURE_TILE_WHITE,
     TEXTURE_TILE_BLACK,
@@ -66,6 +69,7 @@ static const char* board_textures[] =
     PATH_TEXTURE_WHITE_QUEEN,
     PATH_TEXTURE_WHITE_KING,
     PATH_TEXTURE_WHITE_LANCE,
+    PATH_TEXTURE_WHITE_PROMOTED_LANCE,
 
     PATH_TEXTURE_BLACK_PAWN,
     PATH_TEXTURE_BLACK_ROOK,
@@ -74,6 +78,7 @@ static const char* board_textures[] =
     PATH_TEXTURE_BLACK_QUEEN,
     PATH_TEXTURE_BLACK_KING,
     PATH_TEXTURE_BLACK_LANCE,
+    PATH_TEXTURE_BLACK_PROMOTED_LANCE,
 
     PATH_TEXTURE_TILE_WHITE,
     PATH_TEXTURE_TILE_BLACK,

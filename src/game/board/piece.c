@@ -1,4 +1,5 @@
 #include "include/game/board/piece.h"
+#include "game/board/board.h"
 
 struct Piece 
 {
@@ -10,11 +11,12 @@ struct Piece
 
 static bool can_pawn_move(bool has_moved, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row);
-static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_bishop_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row);
 static bool can_king_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row);
+static bool can_promoted_lance_move(int src_col, int src_row, int dst_col, int dst_row);
 
 static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
 static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row);
@@ -65,27 +67,34 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
                 return can_pawn_move(has_moved, src_col, src_row, dst_col, dst_row);
             else if (color == WHITE)
                 return can_pawn_move(has_moved, src_col, -src_row, dst_col, -dst_row);
-            break;
+
         case ROOK:
             return can_rook_move(src_col, src_row, dst_col, dst_row);
-            break;
+
         case KNIGHT:
             return can_knight_move(src_col, src_row, dst_col, dst_row);
-            break;
+
         case BISHOP:
             return can_bishop_move(src_col, src_row, dst_col, dst_row);
-            break;
+
         case QUEEN:
             return can_queen_move(src_col, src_row, dst_col, dst_row);
-            break;
+
         case KING:
             return can_king_move(src_col, src_row, dst_col, dst_row);
-            break;
+
         case LANCE:
             if (color == BLACK)
                 return can_lance_move(src_col, src_row, dst_col, dst_row);
             else if (color == WHITE)
                 return can_lance_move(src_col, -src_row, dst_col, -dst_row);
+
+        case PROMOTED_LANCE:
+            if (color == BLACK)
+                return can_promoted_lance_move(src_col, src_row, dst_col, dst_row);
+            else if (color == WHITE)
+                return can_promoted_lance_move(src_col, -src_row, dst_col, -dst_row);
+
         default:
             break;
     }
@@ -114,14 +123,6 @@ static bool can_rook_move(int src_col, int src_row, int dst_col, int dst_row)
     }
     return false;
 }
-static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row)
-{
-    if (src_col == dst_col && src_row < dst_row)
-    {
-        return true;
-    }
-    return false;
-}
 static bool can_knight_move(int src_col, int src_row, int dst_col, int dst_row)
 {
     if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 2) ||
@@ -141,8 +142,8 @@ static bool can_bishop_move(int src_col, int src_row, int dst_col, int dst_row)
 }
 static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row)
 {
-    if (dst_col - src_col == dst_row - src_row || dst_row - src_row == -dst_col + src_col ||
-        src_col == dst_col || src_row == dst_row)
+    if (can_bishop_move(src_col, src_row, dst_col, dst_row) ||
+        can_rook_move(src_col, src_row, dst_col, dst_row))
     {
         return true;
     }
@@ -150,9 +151,24 @@ static bool can_queen_move(int src_col, int src_row, int dst_col, int dst_row)
 }
 static bool can_king_move(int src_col, int src_row, int dst_col, int dst_row)
 {
-    if ((SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 1) ||
-        (SDL_abs(src_col - dst_col) == 0 && SDL_abs(src_row - dst_row) == 1) ||
-        (SDL_abs(src_col - dst_col) == 1 && SDL_abs(src_row - dst_row) == 0))
+    if ((SDL_abs(src_col - dst_col) <= 1 && SDL_abs(src_row - dst_row) <= 1))
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_lance_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (src_col == dst_col && src_row < dst_row)
+    {
+        return true;
+    }
+    return false;
+}
+static bool can_promoted_lance_move(int src_col, int src_row, int dst_col, int dst_row)
+{
+    if (can_king_move(src_col, src_row, dst_col, dst_row) &&
+        !(SDL_abs(src_col - dst_col) == 1 && dst_row == src_row - 1))
     {
         return true;
     }
@@ -172,6 +188,7 @@ bool piece_requires_clear_path(const Piece* piece)
 
         case KNIGHT:
         case KING:
+        case PROMOTED_LANCE:
         default:
             return false;
     }
@@ -180,8 +197,8 @@ bool piece_requires_clear_path(const Piece* piece)
 
 bool piece_can_capture(const Piece* src_piece, const Piece* dst_piece, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(src_piece == NULL, "Piece does not exist");
-    verify(dst_piece == NULL, "Piece does not exist");
+    verify_piece(src_piece);
+    verify_piece(dst_piece);
 
     if (piece_get_color(src_piece) == piece_get_color(dst_piece))
     {
@@ -195,8 +212,6 @@ bool piece_can_capture(const Piece* src_piece, const Piece* dst_piece, int src_c
 }
 static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(piece == NULL, "Piece does not exist");
-
     PieceType type = piece_get_type(piece);
     Color color = piece_get_color(piece);
     switch (type) 
@@ -206,7 +221,6 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
                 return can_pawn_capture(src_col, src_row, dst_col, dst_row);
             else if (color == WHITE)
                 return can_pawn_capture(src_col, -src_row, dst_col, -dst_row);
-            break;
 
         case ROOK:
         case KNIGHT:
@@ -214,9 +228,9 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
         case QUEEN:
         case KING:
         case LANCE:
+        case PROMOTED_LANCE:
         default:
             return piece_can_move_to(piece, src_col, src_row, dst_col, dst_row);
-            break;
     }
     return false;
 }
@@ -239,6 +253,7 @@ void piece_promote(Piece* piece)
             break;
 
         case LANCE:
+            piece->type = PROMOTED_LANCE;
             break;
 
         default:
@@ -293,18 +308,28 @@ int piece_get_points(const Piece* piece)
     {
         case PAWN:
             return POINTS_PAWN;
+
         case ROOK:
             return POINTS_ROOK;
+
         case KNIGHT:
             return POINTS_KNIGHT;
+
         case BISHOP:
             return POINTS_BISHOP;
+
         case QUEEN:
             return POINTS_QUEEN;
+
         case KING:
             return POINTS_KING;
+
         case LANCE:
             return POINTS_LANCE;
+
+        case PROMOTED_LANCE:
+            return POINTS_PROMOTED_LANCE;
+
         default:
             return 0;
     }

@@ -1,4 +1,6 @@
 #include "include/game/ui/board_ui.h"
+#include "game/board/piece.h"
+#include "game/ui/board_textures.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -234,28 +236,30 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
         {
             case PAWN:
                 return TEXTURE_WHITE_PAWN;
-                break;
+
             case ROOK:
                 return TEXTURE_WHITE_ROOK;
-                break;
+
             case KNIGHT:
                 return TEXTURE_WHITE_KNIGHT;
-                break;
+
             case BISHOP:
                 return TEXTURE_WHITE_BISHOP;
-                break;
+
             case QUEEN:
                 return TEXTURE_WHITE_QUEEN;
-                break;
+
             case KING:
                 return TEXTURE_WHITE_KING;
-                break;
+
             case LANCE:
                 return TEXTURE_WHITE_LANCE;
-                break;
+
+            case PROMOTED_LANCE:
+                return TEXTURE_WHITE_PROMOTED_LANCE;
+
             default:
                 return 0;
-                break;
         }
     }
     else if (color == BLACK)
@@ -264,28 +268,30 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
         {
             case PAWN:
                 return TEXTURE_BLACK_PAWN;
-                break;
+
             case ROOK:
                 return TEXTURE_BLACK_ROOK;
-                break;
+
             case KNIGHT:
                 return TEXTURE_BLACK_KNIGHT;
-                break;
+
             case BISHOP:
                 return TEXTURE_BLACK_BISHOP;
-                break;
+
             case QUEEN:
                 return TEXTURE_BLACK_QUEEN;
-                break;
+
             case KING:
                 return TEXTURE_BLACK_KING;
-                break;
+
             case LANCE:
                 return TEXTURE_BLACK_LANCE;
-                break;
+
+            case PROMOTED_LANCE:
+                return TEXTURE_BLACK_PROMOTED_LANCE;
+
             default:
                 return 0;
-                break;
         }
     }
     return 0;
