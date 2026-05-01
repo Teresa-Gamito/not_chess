@@ -58,5 +58,6 @@ bool piece_can_capture(
     int dst_col, 
     int dst_row
 );
+void piece_promote(Piece* piece);
 
 TypeOps* piece_ops();

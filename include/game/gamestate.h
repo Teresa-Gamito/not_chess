@@ -6,11 +6,11 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include "helper_functions/color.h"
 #include "helper_functions/error_handling.h"
-#include "game/board/board_ui.h"
+#include "game/ui/board_ui.h"
 #include "game/board/board.h"
 #include "game/board/player.h"
 #include "game/tree/tree.h"
-#include "game/tree/tree_ui.h"
+#include "game/ui/tree_ui.h"
 #include "ui_elements/textbox.h"
 #include "ui_elements/window.h"
 

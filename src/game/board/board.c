@@ -1,6 +1,9 @@
 #include "include/game/board/board.h"
+#include "game/board/color.h"
+#include "game/board/piece.h"
+#include "game/board/player.h"
 
-static const int translate_position(const Board* board, int col, int row);
+static int translate_position(const Board* board, int col, int row);
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
 struct Board
@@ -184,6 +187,22 @@ bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col
 
     return true;
 }
+static bool board_can_piece_promote(Board* board, int col, int row)
+{
+    Player* player = board_get_active_player(board);
+    Color color = player_get_color(player);
+
+    Piece* piece = board_get_piece_at(board, col, row);
+    if (color == WHITE && row == 0)
+    {
+        return true;
+    }
+    if (color == BLACK && row == board_get_row_num(board) - 1)
+    {
+        return true;
+    }
+    return false;
+}
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify_board(board);
@@ -212,6 +231,10 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
     int dst_pos = translate_position(board, dst_col, dst_row);
     vector_set_at(board->pieces, piece, dst_pos);
 
+    if (board_can_piece_promote(board, dst_col, dst_row))
+    {
+        piece_promote(piece);
+    }
     piece_set_moved(piece);
 }
 bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
@@ -390,7 +413,7 @@ int board_get_row_num(const Board* board)
 
     return board->row_num;
 }
-static const int translate_position(const Board* board, int col, int row)
+static int translate_position(const Board* board, int col, int row)
 {
     return col + row * board->col_num;
 }

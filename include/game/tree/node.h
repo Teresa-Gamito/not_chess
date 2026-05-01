@@ -6,8 +6,8 @@
 #include <SDL3/SDL_stdinc.h>
 #include "helper_functions/typeops.h"
 #include "helper_functions/error_handling.h"
-#include "game/board/board_ui.h"
 #include "game/board/board.h"
+#include "game/ui/board_ui.h"
 #include "game/board/player.h"
 #include "game/board/task.h"
 

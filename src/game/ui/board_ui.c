@@ -1,5 +1,4 @@
-#include "include/game/board/board_ui.h"
-#include "game/board/board.h"
+#include "include/game/ui/board_ui.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);

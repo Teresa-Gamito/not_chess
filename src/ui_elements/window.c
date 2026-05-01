@@ -52,7 +52,7 @@ Window* window_create(
 
     window->texture_background = background_texture;
 
-    window->is_scrollable = flags &1;
+    window->is_scrollable = flags & 1;
     window->is_zoomable = (flags >> 1) & 1;
     window->is_draggable = (flags >> 2) & 1;
 

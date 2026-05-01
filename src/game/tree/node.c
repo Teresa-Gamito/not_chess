@@ -1,6 +1,4 @@
 #include "include/game/tree/node.h"
-#include "game/board/task.h"
-#include "helper_functions/global_variables.h"
 
 typedef enum NodeState
 {

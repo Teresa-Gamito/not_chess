@@ -21,6 +21,7 @@ static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
 
 
 
+
 // ========== create ==========
 Piece* piece_create(PieceType type, Color color) 
 {
@@ -228,6 +229,22 @@ static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
     return false;
 }
 
+void piece_promote(Piece* piece)
+{
+    PieceType type = piece_get_type(piece);
+    switch (type)
+    {
+        case PAWN:
+            piece->type = QUEEN;
+            break;
+
+        case LANCE:
+            break;
+
+        default:
+            break;
+    }
+}
 
 
 
