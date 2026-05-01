@@ -91,25 +91,26 @@ static void button_set_state(const InputState* input, Button* button)
     double mouse_x = mouse_get_x(input);
     double mouse_y = mouse_get_y(input);
     SDL_FRect frect = button_get_frect(button);
-    if (point_intersects_rect(mouse_x, mouse_y, &frect))
+    if (!point_intersects_rect(mouse_x, mouse_y, &frect))
     {
-        for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
-        {
-            if (!mouse_get_down(input, i))
-            {
-                continue;
-            }
-            if (button->on_click[i] == NULL)
-            {
-                continue;
-            }
-            button->state = PRESSED;
-            return;
-        }
-        button->state = HOVERED;
+        button->state = IDLE;
         return;
     }
-    button->state = IDLE;
+    for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
+    {
+        if (!mouse_get_down(input, i))
+        {
+            continue;
+        }
+        if (button->on_click[i] == NULL)
+        {
+            continue;
+        }
+        button->state = PRESSED;
+        return;
+    }
+    button->state = HOVERED;
+    return;
 }
 static void button_press(const InputState* input, Button* button)
 {
@@ -124,6 +125,7 @@ static void button_press(const InputState* input, Button* button)
         {
             continue;
         }
+        button_set_state(input, button);
         button->on_click[i](button->arg1[i], button->arg2[i]);
         return;
     }
@@ -136,6 +138,7 @@ void button_update(const InputState* input, Button* button)
     if (button->state == PRESSED)
     {
         button_press(input, button);
+        return;
     }
     button_set_state(input, button);
 }

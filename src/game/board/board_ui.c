@@ -1,9 +1,5 @@
 #include "include/game/board/board_ui.h"
 #include "game/board/board.h"
-#include "game/log.h"
-#include "helper_functions/error_handling.h"
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_stdinc.h>
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -140,17 +136,30 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
 {
     verify_board_ui(ui);
     verify_board_pos(ui->board, col, row);
+    Board* board = ui->board;
 
     Window* window = ui->window;
 
     int index = tile_get_texture_index(col, row);
     SDL_Texture* texture = window_get_texture(window, index);
     Sprite* sprite = sprite_create(texture);
+    int x;
+    int y;
+    if (board_get_active_player(board) == board_get_player_white(board))
+    {
+        x = col * TEXTURE_DEFAULT_SIZE_PX;
+        y = row * TEXTURE_DEFAULT_SIZE_PX;
+    }
+    else 
+    {
+        x = (board_get_col_num(board) - 1 - col) * TEXTURE_DEFAULT_SIZE_PX;
+        y = (board_get_row_num(board) - 1 - row) * TEXTURE_DEFAULT_SIZE_PX;
+    }
     window_add_sprite(
         window, 
         sprite, 
-        col * TEXTURE_DEFAULT_SIZE_PX, 
-        row * TEXTURE_DEFAULT_SIZE_PX
+        x,
+        y
     );
 
     Tile* tile = board_get_tile_at(ui->board, col, row);
@@ -179,8 +188,8 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
     window_add_button(
         window, 
         button, 
-        col * TEXTURE_DEFAULT_SIZE_PX, 
-        row * TEXTURE_DEFAULT_SIZE_PX
+        x,
+        y
     );
 }
 static BoardTextures tile_get_texture_index(int col, int row)
@@ -196,11 +205,23 @@ static void board_ui_add_piece(BoardUI* ui, int col, int row)
     int index = piece_get_texture_index(piece);
     SDL_Texture* texture = window_get_texture(window, index);
     Sprite* sprite = sprite_create(texture);
+    int x;
+    int y;
+    if (board_get_active_player(board) == board_get_player_white(board))
+    {
+        x = col * TEXTURE_DEFAULT_SIZE_PX;
+        y = row * TEXTURE_DEFAULT_SIZE_PX;
+    }
+    else 
+    {
+        x = (board_get_col_num(board) - 1 - col) * TEXTURE_DEFAULT_SIZE_PX;
+        y = (board_get_row_num(board) - 1 - row) * TEXTURE_DEFAULT_SIZE_PX;
+    }
     window_add_sprite(
         window, 
         sprite, 
-        col * TEXTURE_DEFAULT_SIZE_PX, 
-        row * TEXTURE_DEFAULT_SIZE_PX
+        x,
+        y
     );
 }
 static BoardTextures piece_get_texture_index(const Piece* piece)
@@ -285,7 +306,6 @@ void board_ui_update(BoardUI* ui)
         for (int row = 0; row < board_get_row_num(board); row++)
         {
             board_ui_add_tile(ui, col, row);
-
             if (!board_has_piece_at(board, col, row))
             {
                 continue;
@@ -330,8 +350,8 @@ static int try_piece_move(BoardUI* ui, int src_col, int src_row, int dst_col, in
 
     board_piece_move_to(board, src_col, src_row, dst_col, dst_row);
     ui->selected_tile = NULL;
-    board_ui_update(ui);
     advance_turn(board);
+    board_ui_update(ui);
     return 1;
 }
 static int try_piece_capture(BoardUI* ui, int src_col, int src_row, int dst_col, int dst_row)
@@ -360,8 +380,8 @@ static int try_piece_capture(BoardUI* ui, int src_col, int src_row, int dst_col,
     board_piece_capture(board, board_get_piece_at(board, dst_col, dst_row));
     board_piece_move_to(board, src_col, src_row, dst_col, dst_row);
     ui->selected_tile = NULL;
-    board_ui_update(ui);
     advance_turn(board);
+    board_ui_update(ui);
 
     return 1;
 }
@@ -433,7 +453,6 @@ void select_tile(void* board_ui, void* tile)
         );
         gamelog_add(ui->log, log_msg);
         SDL_free(log_msg);
-        SDL_Log("%s", gamelog_get(ui->log));
         return;
     }
     if (try_piece_move(ui, old_col, old_row, new_col, new_row))
@@ -449,7 +468,6 @@ void select_tile(void* board_ui, void* tile)
         );
         gamelog_add(ui->log, log_msg);
         SDL_free(log_msg);
-        SDL_Log("%s", gamelog_get(ui->log));
         return;
     }
 

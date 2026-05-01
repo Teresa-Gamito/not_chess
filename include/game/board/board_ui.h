@@ -13,6 +13,7 @@
 #include "game/board/player.h"
 #include "game/board/piece.h"
 #include "game/board/task.h"
+#include "game/log.h"
 
 typedef struct BoardUI BoardUI;
 
