@@ -62,5 +62,3 @@ Player* board_get_player_black(const Board* board);
 // ========== errors ==========
 void verify_board_pos(const Board* board, int col, int row);
 void verify_board(const Board* board);
-void verify_piece(const Piece* piece);
-void verify_tile(const Tile* piece);

@@ -1,4 +1,3 @@
-// textures for the board
 #pragma once
 
 #define TEXTURE_DEFAULT_SIZE_PX 16

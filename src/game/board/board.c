@@ -1,7 +1,16 @@
 #include "include/game/board/board.h"
-#include "game/board/color.h"
-#include "game/board/piece.h"
-#include "game/board/player.h"
+
+static const char board_default_layout[8][8] = 
+    {
+        { 'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R' },
+        { 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P' },
+        { '0', '0', '0', '0', '0', '0', '0', '0' },
+        { '0', '0', '0', '0', '0', '0', '0', '0' },
+        { '0', '0', '0', '0', '0', '0', '0', '0' },
+        { '0', '0', '0', '0', '0', '0', '0', '0' },
+        { 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p' },
+        { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r' },
+    };
 
 static int translate_position(const Board* board, int col, int row);
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
@@ -35,7 +44,8 @@ Board* board_create(int col_num, int row_num)
     {
         for (int row = 0; row < row_num; row++)
         {
-            tile = tile_create(TILE_NONE);
+            Color color = tile_get_default_color(col, row);
+            tile = tile_create(TILE_NONE, color);
             vector_add(board->tiles, tile);
             vector_add(board->pieces, NULL);
         }
@@ -65,39 +75,55 @@ void board_set_default(Board* board)
 {
     verify_board(board);
 
-    board_add_piece_at(board, piece_create(ROOK, BLACK), 0, 0);
-    board_add_piece_at(board, piece_create(KNIGHT, BLACK), 1, 0);
-    board_add_piece_at(board, piece_create(BISHOP, BLACK), 2, 0);
-    board_add_piece_at(board, piece_create(QUEEN, BLACK), 3, 0);
-    board_add_piece_at(board, piece_create(KING, BLACK), 4, 0);
-    board_add_piece_at(board, piece_create(BISHOP, BLACK), 5, 0);
-    board_add_piece_at(board, piece_create(KNIGHT, BLACK), 6, 0);
-    board_add_piece_at(board, piece_create(ROOK, BLACK), 7, 0);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 0, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 1, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 2, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 3, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 4, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 5, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 6, 1);
-    board_add_piece_at(board, piece_create(PAWN, BLACK), 7, 1);
+    PieceType type;
+    Color color;
+    for (int col = 0; col < board_get_col_num(board); col++)
+    {
+        for (int row = 0; row < board_get_row_num(board); row++)
+        {
+            switch (board_default_layout[row][col])
+            {
+                case 'P':
+                case 'p':
+                    type = PAWN;
+                    break;
+                case 'R':
+                case 'r':
+                    type = ROOK;
+                    break;
+                case 'N':
+                case 'n':
+                    type = KNIGHT;
+                    break;
+                case 'B':
+                case 'b':
+                    type = BISHOP;
+                    break;
+                case 'Q':
+                case 'q':
+                    type = QUEEN;
+                    break;
+                case 'K':
+                case 'k':
+                    type = KING;
+                    break;
+                case 'L':
+                case 'l':
+                    type = LANCE;
+                    break;
+                default:
+                    continue;
+            }
+            if (board_default_layout[row][col] > 'a')
+            {
+                color = WHITE;
+            }
+            else color = BLACK;
 
-    board_add_piece_at(board, piece_create(ROOK, WHITE), 0, 7);
-    board_add_piece_at(board, piece_create(KNIGHT, WHITE), 1, 7);
-    board_add_piece_at(board, piece_create(BISHOP, WHITE), 2, 7);
-    board_add_piece_at(board, piece_create(QUEEN, WHITE), 3, 7);
-    board_add_piece_at(board, piece_create(KING, WHITE), 4, 7);
-    board_add_piece_at(board, piece_create(BISHOP, WHITE), 5, 7);
-    board_add_piece_at(board, piece_create(KNIGHT, WHITE), 6, 7);
-    board_add_piece_at(board, piece_create(ROOK, WHITE), 7, 7);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 0, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 1, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 2, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 3, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 4, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 5, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 6, 6);
-    board_add_piece_at(board, piece_create(PAWN, WHITE), 7, 6);
+            Piece* piece = piece_create(type, color);
+            board_add_piece_at(board, piece, col, row);
+        }
+    }
 }
 
 
@@ -312,7 +338,8 @@ static void board_add_col(Board* board)
 
     for (int row = 0; row < row_num; row++)
     {
-        Tile* tile = tile_create(TILE_NONE);
+        Color color = tile_get_default_color(col_num - 1, row);
+        Tile* tile = tile_create(TILE_NONE, color);
         vector_add(board->tiles, tile);
         vector_add(board->pieces, NULL);
     }
@@ -339,7 +366,8 @@ static void board_add_row(Board* board)
 
     for (int col = 0; col < col_num; col++)
     {
-        Tile* tile = tile_create(TILE_NONE);
+        Color color = tile_get_default_color(col, row_num - 1);
+        Tile* tile = tile_create(TILE_NONE, color);
         vector_add(board->tiles, tile);
         vector_add(board->pieces, NULL);
     }
@@ -478,12 +506,4 @@ void verify_board_pos(const Board* board, int col, int row)
 void verify_board(const Board* board)
 {
     verify(board == NULL, "Board does not exist");
-}
-void verify_piece(const Piece* piece)
-{
-    verify(piece == NULL, "Piece does not exist");
-}
-void verify_tile(const Tile* tile)
-{
-    verify(tile == NULL, "Tile does not exist");
 }

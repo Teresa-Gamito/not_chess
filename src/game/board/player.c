@@ -1,5 +1,4 @@
 #include "include/game/board/player.h"
-#include "helper_functions/error_handling.h"
 
 struct Player
 {

@@ -1,5 +1,4 @@
 #include "include/game/board/piece.h"
-#include "game/board/board.h"
 
 struct Piece 
 {
@@ -27,7 +26,7 @@ static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
 // ========== create ==========
 Piece* piece_create(PieceType type, Color color) 
 {
-    verify(type < 0 || type > PIECE_TYPE_COUNT, "Invalid PieceType");
+    verify_piece_type(type);
     verify(color != WHITE && color != BLACK, "Invalid Color");
 
     Piece* piece = SDL_malloc(sizeof(Piece));
@@ -46,7 +45,7 @@ Piece* piece_create(PieceType type, Color color)
 // ========== destroy ==========
 void piece_destroy(Piece* piece) 
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     SDL_free(piece);
 }
@@ -55,7 +54,7 @@ void piece_destroy(Piece* piece)
 // ========== movement ==========
 bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     PieceType type = piece_get_type(piece);
     Color color = piece_get_color(piece);
@@ -65,7 +64,7 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
         case PAWN:
             if (color == BLACK)
                 return can_pawn_move(has_moved, src_col, src_row, dst_col, dst_row);
-            else if (color == WHITE)
+            else
                 return can_pawn_move(has_moved, src_col, -src_row, dst_col, -dst_row);
 
         case ROOK:
@@ -86,13 +85,13 @@ bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col
         case LANCE:
             if (color == BLACK)
                 return can_lance_move(src_col, src_row, dst_col, dst_row);
-            else if (color == WHITE)
+            else
                 return can_lance_move(src_col, -src_row, dst_col, -dst_row);
 
         case PROMOTED_LANCE:
             if (color == BLACK)
                 return can_promoted_lance_move(src_col, src_row, dst_col, dst_row);
-            else if (color == WHITE)
+            else
                 return can_promoted_lance_move(src_col, -src_row, dst_col, -dst_row);
 
         default:
@@ -176,6 +175,8 @@ static bool can_promoted_lance_move(int src_col, int src_row, int dst_col, int d
 }
 bool piece_requires_clear_path(const Piece* piece)
 {
+    verify_piece(piece);
+
     PieceType type = piece_get_type(piece);
     switch (type)
     {
@@ -245,6 +246,8 @@ static bool can_pawn_capture(int src_col, int src_row, int dst_col, int dst_row)
 
 void piece_promote(Piece* piece)
 {
+    verify_piece(piece);
+
     PieceType type = piece_get_type(piece);
     switch (type)
     {
@@ -266,21 +269,21 @@ void piece_promote(Piece* piece)
 // ========== set ==========
 void piece_set_type(Piece* piece, PieceType type) 
 {
-    verify(piece == NULL, "Piece does not exist");
-    verify(type < 0 || type > PIECE_TYPE_COUNT, "Invalid PieceType");
+    verify_piece(piece);
+    verify_piece_type(type);
 
     piece->type = type;
 }
 void piece_set_colour(Piece* piece, Color color)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
     verify(color != WHITE || color != BLACK, "Invalid PieceColor");
 
     piece->color = color;
 }
 void piece_set_moved(Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     piece->has_moved = true;
 }
@@ -290,19 +293,20 @@ void piece_set_moved(Piece* piece)
 // ========== get ==========
 PieceType piece_get_type(const Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     return piece->type;
 }
 Color piece_get_color(const Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     return piece->color;
 }
 int piece_get_points(const Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
+
     PieceType type = piece_get_type(piece);
     switch (type) 
     {
@@ -337,7 +341,7 @@ int piece_get_points(const Piece* piece)
 }
 bool piece_has_moved(const Piece* piece)
 {
-    verify(piece == NULL, "Piece does not exist");
+    verify_piece(piece);
 
     return piece->has_moved;
 }
@@ -355,4 +359,15 @@ static TypeOps ops =
 TypeOps* piece_ops()
 {
     return &ops;
+}
+
+
+
+void verify_piece(const Piece* piece)
+{
+    verify(piece == NULL, "Piece does not exist");
+}
+void verify_piece_type(PieceType type)
+{
+    verify(type < 0 || type >= PIECE_TYPE_COUNT, "Invalid PieceType");
 }

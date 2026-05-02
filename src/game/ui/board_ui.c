@@ -1,10 +1,12 @@
 #include "include/game/ui/board_ui.h"
+#include "game/board/board.h"
 #include "game/board/piece.h"
+#include "game/board/tile.h"
 #include "game/ui/board_textures.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
-static BoardTextures tile_get_texture_index(int col, int row);
+static BoardTextures tile_get_texture_index(const Tile* tile);
 static BoardTextures piece_get_texture_index(const Piece* piece);
 
 static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row);
@@ -141,7 +143,8 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
 
     Window* window = ui->window;
 
-    int index = tile_get_texture_index(col, row);
+    Tile* tile = board_get_tile_at(board, col, row);
+    int index = tile_get_texture_index(tile);
     SDL_Texture* texture = window_get_texture(window, index);
     Sprite* sprite = sprite_create(texture);
     int x;
@@ -163,7 +166,6 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
         y
     );
 
-    Tile* tile = board_get_tile_at(ui->board, col, row);
     texture = board_ui_tile_get_texture(ui, col, row);
 
     Button* button = button_create(
@@ -193,9 +195,9 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
         y
     );
 }
-static BoardTextures tile_get_texture_index(int col, int row)
+static BoardTextures tile_get_texture_index(const Tile* tile)
 {
-    return ((col + row) % 2 == 0) ? TEXTURE_TILE_WHITE : TEXTURE_TILE_BLACK;
+    return tile_get_color(tile) == WHITE ? TEXTURE_TILE_WHITE : TEXTURE_TILE_BLACK;
 }
 static void board_ui_add_piece(BoardUI* ui, int col, int row)
 {

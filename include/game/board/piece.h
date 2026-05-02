@@ -64,3 +64,6 @@ bool piece_can_capture(
 void piece_promote(Piece* piece);
 
 TypeOps* piece_ops();
+
+void verify_piece(const Piece* piece);
+void verify_piece_type(PieceType type);

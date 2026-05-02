@@ -1,7 +1,4 @@
 #include "include/game/board/task.h"
-#include "game/board/board.h"
-#include "game/board/piece.h"
-#include "game/board/player.h"
 
 
 Vector* task_list_create()
