@@ -8,7 +8,7 @@
 #define APP_WINDOW_HEIGHT 1080
 #define APP_WINDOW_FLAGS 0
 
-#define FONT_PATH "assets/arialceb.ttf"
+#define FONT_PATH "assets/fonts/arialceb.ttf"
 #define FONT_SIZE 32.0f
 
 extern int g_app_window_width;
