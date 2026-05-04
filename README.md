@@ -4,8 +4,9 @@
 turn based game
 
 ## Made by:
-**Rodrigo Valente**  |  github - @Hrodrick27
 **Teresa Gamito**  |  github - @Teresa-Gamito  |  teresacgamito@gmail.com
+
+**Rodrigo Valente**  |  github - @Hrodrick27
 
 
 
