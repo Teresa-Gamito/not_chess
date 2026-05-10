@@ -22,6 +22,8 @@ void board_set_default(Board* board);
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
 
+const char* board_get_log(const Board* board);
+
 // ========== piece ==========
 bool board_can_add_piece_at(Board* board, int col, int row);
 void board_add_piece_at(Board* board, Piece* piece, int col, int row);

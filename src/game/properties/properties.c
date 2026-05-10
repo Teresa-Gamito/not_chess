@@ -19,30 +19,6 @@ static const char* color_get_name(Color color)
     }
 }
 
-static const char* piece_type_get_name(PieceType type)
-{
-    switch (type)
-    {
-        case PAWN:
-            return "Pawn";
-        case ROOK:
-            return "Rook";
-        case KNIGHT:
-            return "Knight";
-        case BISHOP:
-            return "Bishop";
-        case QUEEN:
-            return "Queen";
-        case KING:
-            return "King";
-        case LANCE:
-            return "Lance";
-        case PROMOTED_LANCE:
-            return "Promoted Lance";
-        default:
-            return "Invalid type";
-    }
-}
 const char* get_piece_properties(const Piece* piece)
 {
     char* properties = "";

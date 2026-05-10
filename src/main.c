@@ -9,8 +9,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     AppState* app = app_create();
     *appstate = app;
-
-    app_game_start(app);
+    app_init(app);
 
     return SDL_APP_CONTINUE;
 }

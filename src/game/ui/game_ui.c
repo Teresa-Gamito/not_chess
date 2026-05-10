@@ -1,4 +1,6 @@
 #include "game/ui/game_ui.h"
+#include "inputstate.h"
+#include <SDL3/SDL_log.h>
 
 typedef enum GameUIState
 {
@@ -75,6 +77,9 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
 }
 void game_ui_update(InputState* input, GameUI* ui)
 {
+    verify(ui == NULL, "GameUI does not exist");
+    verify_input(input);
+
     if (ui->state != GAME_UI_RUNNING)
     {
         menu_update(input, ui->menu);

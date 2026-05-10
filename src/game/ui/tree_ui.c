@@ -16,6 +16,8 @@ struct TreeUI
     BoardUI* board_ui;
 };
 
+static void ui_update(TreeUI* ui);
+
 TreeUI* tree_ui_create(
     SDL_Renderer* renderer, 
     Tree* tree,
@@ -64,7 +66,7 @@ TreeUI* tree_ui_create(
     ui->board = board_ui_get_board(board_ui);
     ui->board_ui = board_ui;
 
-    tree_ui_update(ui);
+    ui_update(ui);
 
     return ui;
 }
@@ -76,6 +78,14 @@ void tree_ui_destroy(TreeUI* ui)
     SDL_free(ui->green);
     window_destroy(ui->window);
     SDL_free(ui);
+}
+void tree_ui_update(InputState* input, TreeUI* ui)
+{
+    window_update(input, ui->window);
+}
+void tree_ui_render(SDL_Renderer* renderer, TreeUI* ui)
+{
+    window_render(renderer, ui->window);
 }
 
 Window* tree_ui_get_window(TreeUI* ui)
@@ -94,7 +104,7 @@ static void tree_ui_set_nodes(TreeUI* ui)
     SDL_Texture* button_hovered = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_HOVERED);
     SDL_Texture* button_pressed = window_get_texture(ui->window, TEXTURE_TREE_BUTTON_PRESSED);
 
-    float size = window_get_height(board_ui_get_window(ui->board_ui)) / 5;
+    float size = (float)200 / 5;
 
     Player* player = board_get_active_player(ui->board);
     SDL_Texture* texture_node;
@@ -245,11 +255,11 @@ static void tree_ui_set_nodes(TreeUI* ui)
     SDL_free(text);
     window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
 }
-void tree_ui_update(InputState* input, TreeUI* ui)
+static void ui_update(TreeUI* ui)
 {
-    window_update(input, ui->window);
-}
-void tree_ui_render(SDL_Renderer* renderer, TreeUI* ui)
-{
-    window_render(renderer, ui->window);
+    Window* window = ui->window;
+
+    window_destroy_content(window);
+
+    tree_ui_set_nodes(ui);
 }

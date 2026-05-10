@@ -339,6 +339,30 @@ int piece_get_points(const Piece* piece)
     }
     return 0;
 }
+const char* piece_type_get_name(PieceType type)
+{
+    switch (type)
+    {
+        case PAWN:
+            return "Pawn";
+        case ROOK:
+            return "Rook";
+        case KNIGHT:
+            return "Knight";
+        case BISHOP:
+            return "Bishop";
+        case QUEEN:
+            return "Queen";
+        case KING:
+            return "King";
+        case LANCE:
+            return "Lance";
+        case PROMOTED_LANCE:
+            return "Promoted Lance";
+        default:
+            return "Invalid type";
+    }
+}
 bool piece_has_moved(const Piece* piece)
 {
     verify_piece(piece);

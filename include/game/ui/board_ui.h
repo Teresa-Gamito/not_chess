@@ -19,8 +19,8 @@
 typedef struct BoardUI BoardUI;
 
 BoardUI* board_ui_create(
-    Board* board,
     SDL_Renderer* renderer,
+    Board* board,
     float x,
     float y,
     float width,
@@ -33,6 +33,8 @@ void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui);
 
 void select_tile(void* board_ui, void* tile);
 void deselect_tile(void* board_ui, void* null);
+
+Board* board_ui_get_board(const BoardUI* ui);
 
 void board_ui_add_task(BoardUI* ui, Task task);
 

@@ -1,4 +1,5 @@
 #include "include/game/ui/board_ui.h"
+#include "ui_elements/window.h"
 
 static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -19,7 +20,7 @@ struct BoardUI
     Vector* tasks;
 };
 
-BoardUI* board_ui_create(Board* board, SDL_Renderer* renderer, float x, float y, float width, float height)
+BoardUI* board_ui_create(SDL_Renderer* renderer, Board* board, float x, float y, float width, float height)
 {
     verify_renderer(renderer);
     verify_board(board);
@@ -57,7 +58,7 @@ BoardUI* board_ui_create(Board* board, SDL_Renderer* renderer, float x, float y,
     // tasks
     ui->tasks = task_list_create();
 
-    // board_ui_update(ui);
+    ui_update(ui);
 
     return ui;
 }
@@ -69,6 +70,14 @@ void board_ui_destroy(BoardUI* ui)
     window_destroy(ui->window);
     task_list_destroy(ui->tasks);
     SDL_free(ui);
+}
+void board_ui_update(InputState* input, BoardUI* ui)
+{
+    window_update(input, ui->window);
+}
+void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui)
+{
+    window_render(renderer, ui->window);
 }
 
 static void board_ui_set_scale(BoardUI* ui)
@@ -328,11 +337,6 @@ static void ui_update(BoardUI* ui)
     }
 }
 
-void board_ui_render(SDL_Renderer* renderer, BoardUI* ui)
-{
-    window_render(renderer, ui->window);
-}
-
 static bool is_piece_player_color(Piece* piece, Player* player)
 {
     Color player_color = player_get_color(player);
@@ -369,7 +373,7 @@ static int try_piece_move(BoardUI* ui, int src_col, int src_row, int dst_col, in
     board_piece_move_to(board, src_col, src_row, dst_col, dst_row);
     ui->selected_tile = NULL;
     advance_turn(board);
-    board_ui_update(ui);
+    ui_update(ui);
     return 1;
 }
 static int try_piece_capture(BoardUI* ui, int src_col, int src_row, int dst_col, int dst_row)
@@ -399,7 +403,7 @@ static int try_piece_capture(BoardUI* ui, int src_col, int src_row, int dst_col,
     board_piece_move_to(board, src_col, src_row, dst_col, dst_row);
     ui->selected_tile = NULL;
     advance_turn(board);
-    board_ui_update(ui);
+    ui_update(ui);
 
     return 1;
 }
@@ -419,7 +423,7 @@ static int try_task(BoardUI* ui, int col, int row)
     }
     task_complete_first(ui->tasks);
 
-    board_ui_update(ui);
+    ui_update(ui);
     advance_turn(board);
 
     return 1;
@@ -438,19 +442,19 @@ void select_tile(void* board_ui, void* tile)
     if (try_task(ui, new_col, new_row))
     {
         ui->selected_tile = NULL;
-        board_ui_update(ui);
+        ui_update(ui);
         return;
     }
 
     if (new_tile == old_tile)
     {
         ui->selected_tile = NULL;
-        board_ui_update(ui);
+        ui_update(ui);
         return;
     }
 
     ui->selected_tile = new_tile;
-    board_ui_update(ui);
+    ui_update(ui);
 
     if (new_tile == NULL) return;
     if (old_tile == NULL) return;
@@ -460,32 +464,10 @@ void select_tile(void* board_ui, void* tile)
 
     if (try_piece_capture(ui, old_col, old_row, new_col, new_row))
     {
-        char* log_msg = NULL;
-        SDL_asprintf(
-            &log_msg, 
-            "Capture: %d-%d -> %d-%d",
-            old_col,
-            old_row,
-            new_col,
-            new_row
-        );
-        gamelog_add(ui->log, log_msg);
-        SDL_free(log_msg);
         return;
     }
     if (try_piece_move(ui, old_col, old_row, new_col, new_row))
     {
-        char* log_msg = NULL;
-        SDL_asprintf(
-            &log_msg, 
-            "Move: %d-%d -> %d-%d",
-            old_col,
-            old_row,
-            new_col,
-            new_row
-        );
-        gamelog_add(ui->log, log_msg);
-        SDL_free(log_msg);
         return;
     }
 
@@ -497,7 +479,7 @@ void deselect_tile(void* board_ui, void* x)
     BoardUI* ui = (BoardUI*)board_ui;
     verify_board_ui(ui);
     ui->selected_tile = NULL;
-    board_ui_update(ui);
+    ui_update(ui);
 }
 
 static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row)
@@ -557,7 +539,13 @@ void board_ui_add_task(BoardUI* ui, Task task)
 
     add_task(ui->tasks, task);
     ui->selected_tile = NULL;
-    board_ui_update(ui);
+    ui_update(ui);
+}
+Board* board_ui_get_board(const BoardUI* ui)
+{
+    verify_board_ui(ui);
+
+    return ui->board;
 }
 
 

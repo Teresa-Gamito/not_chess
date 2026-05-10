@@ -1,4 +1,6 @@
 #include "include/game/board/board.h"
+#include "game/board/piece.h"
+#include "game/log.h"
 
 static const char board_default_layout[8][8] = 
     {
@@ -26,6 +28,8 @@ struct Board
     Player* player1;
     Player* player2;
     Player** active_player;
+
+    GameLog* log;
 };
 
 Board* board_create(int col_num, int row_num)
@@ -55,6 +59,8 @@ Board* board_create(int col_num, int row_num)
     board->player2 = player_create(BLACK, 0);
     board->active_player = &board->player1;
 
+    board->log = gamelog_create();
+
     return board;
 }
 
@@ -67,6 +73,8 @@ void board_destroy(Board* board)
 
     player_destroy(board->player1);
     player_destroy(board->player2);
+
+    gamelog_destroy(board->log);
 
     SDL_free(board);
 }
@@ -259,9 +267,36 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
 
     if (board_can_piece_promote(board, dst_col, dst_row))
     {
+        PieceType old_type = piece_get_type(piece);
         piece_promote(piece);
+        char* log_msg = NULL;
+        SDL_asprintf(
+            &log_msg,
+            "%s promoted %s to a %s at col:%d row:%d",
+            board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK",
+            piece_type_get_name(old_type),
+            piece_type_get_name(piece_get_type(piece)),
+            dst_col,
+            dst_row
+        );
+        gamelog_add(board->log, log_msg);
+        SDL_free(log_msg);
     }
     piece_set_moved(piece);
+
+    char* log_msg = NULL;
+    SDL_asprintf(
+        &log_msg,
+        "%s moved %s from col:%d row:%d to col:%d row:%d",
+        board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK",
+        piece_type_get_name(piece_get_type(piece)),
+        src_col,
+        src_row,
+        dst_col,
+        dst_row
+    );
+    gamelog_add(board->log, log_msg);
+    SDL_free(log_msg);
 }
 bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -286,7 +321,21 @@ void board_piece_capture(Board* board, Piece* piece)
     verify(piece == NULL, "Piece does not exist");
 
     Player* player = board_get_active_player(board);
-    player_add_points(player, piece_get_points(piece));
+    int points = piece_get_points(piece);
+    player_add_points(player, points);
+
+    char* log_msg = NULL;
+    SDL_asprintf(
+        &log_msg,
+        "%s captured %s at col:%d row:%d and recieved %d capturing points",
+        player == board_get_player_white(board) ? "WHITE" : "BLACK",
+        piece_type_get_name(piece_get_type(piece)),
+        board_piece_get_col(board, piece),
+        board_piece_get_row(board, piece),
+        points
+    );
+    gamelog_add(board->log, log_msg);
+    SDL_free(log_msg);
 }
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -410,6 +459,15 @@ void board_expand(Board* board)
             vector_swap(board->tiles, old_pos, new_pos);
         }
     }
+
+    char* log_msg = NULL;
+    SDL_asprintf(
+        &log_msg,
+        "%s expanded the size of the board",
+        board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK"
+    );
+    gamelog_add(board->log, log_msg);
+    SDL_free(log_msg);
 }
 Tile* board_get_tile_at(const Board* board, int col, int row)
 {
@@ -467,6 +525,15 @@ void advance_turn(Board* board)
     {
         board->active_player = &board->player1;
     }
+
+    char* log_msg = NULL;
+    SDL_asprintf(
+        &log_msg,
+        "===== %s turn =====",
+        board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK"
+    );
+    gamelog_add(board->log, log_msg);
+    SDL_free(log_msg);
 }
 bool is_player_side_of_board(const Board* board, const Player* player, int row)
 {
@@ -504,7 +571,10 @@ Player* board_get_player_black(const Board* board)
     verify_board(board);
     return board->player2;
 }
-
+const char* board_get_log(const Board* board)
+{
+    return gamelog_get(board->log);
+}
 
 
 void verify_board_pos(const Board* board, int col, int row)

@@ -39,7 +39,17 @@ void game_start(Game* game)
     tree_set_default(game->tree);
 }
 
-void verify_game(Game* game)
+Board* game_get_board(const Game* game)
+{
+    return game->board;
+}
+
+Tree* game_get_tree(const Game* game)
+{
+    return game->tree;
+}
+
+void verify_game(const Game* game)
 {
     verify(game == NULL, "game does not exist");
 }

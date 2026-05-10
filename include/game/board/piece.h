@@ -50,6 +50,7 @@ void piece_set_moved(Piece* piece);
 PieceType piece_get_type(const Piece* piece); 
 Color piece_get_color(const Piece* piece);
 int piece_get_points(const Piece* piece);
+const char* piece_type_get_name(PieceType type);
 bool piece_has_moved(const Piece* piece);
 bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
 bool piece_requires_clear_path(const Piece* piece);
