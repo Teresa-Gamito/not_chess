@@ -15,12 +15,10 @@
 #include "menu/menu_textures.h"
 #include "inputstate.h"
 
-#define FONT_PATH_MENU "assets/fonts/arialceb.ttf"
-#define FONT_SIZE_MENU 32.0f
 
 typedef struct Menu Menu;
 
-typedef enum Screen
+typedef enum MenuScreen
 {
     SCREEN_MENU_MAIN_MAIN,
     SCREEN_MENU_MAIN_OPTIONS,
@@ -30,9 +28,11 @@ typedef enum Screen
     SCREEN_MENU_PAUSE_MAIN,
     SCREEN_MENU_PAUSE_OPTIONS,
     SCREEN_MENU_PAUSE_QUIT,
-} Screen;
 
-Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height, Screen starting_screen);
+    SCREEN_MENU_END_MAIN,
+} MenuScreen;
+
+Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height, MenuScreen starting_menu);
 void menu_destroy(Menu* menu);
 void menu_render(SDL_Renderer* renderer, Menu* menu);
 void menu_update(InputState* input, Menu* menu);

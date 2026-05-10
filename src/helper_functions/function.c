@@ -29,7 +29,10 @@ void function_destroy(Function* function)
 
 void function_execute(Function* function)
 {
-    verify(function == NULL, "Function does not exist");
+    if (function == NULL)
+    {
+        return;
+    }
     if (function->fn == NULL) 
     {
         return;

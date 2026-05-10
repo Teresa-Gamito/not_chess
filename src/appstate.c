@@ -1,6 +1,14 @@
 #include "include/appstate.h"
-#include "helper_functions/global_variables.h"
+#include "game/gamestate.h"
 #include "menu/menu.h"
+
+typedef enum AppScreen
+{
+    APP_SCREEN_MAIN_MENU,
+    APP_SCREEN_GAME,
+    APP_SCREEN_PAUSE_MENU,
+    APP_SCREEN_END_MENU
+} AppScreen;
 
 struct AppState
 {
@@ -9,13 +17,14 @@ struct AppState
 
     InputState* input;
 
-    Menu* menu;
+    AppScreen screen;
 
+    Menu* menu;
     GameState* gamestate;
 };
 
+static void app_set_screen(AppState* app, AppScreen new_screen);
 
-// ========== create ==========
 AppState* app_create()
 {
     AppState* app = (AppState*)SDL_malloc(sizeof(AppState));
@@ -36,6 +45,8 @@ AppState* app_create()
 
     SDL_SetDefaultTextureScaleMode(app->sdl_renderer, SDL_SCALEMODE_PIXELART);
 
+    app->screen = APP_SCREEN_MAIN_MENU;
+
     app->menu = NULL;
     app->gamestate = NULL;
 
@@ -43,6 +54,64 @@ AppState* app_create()
 
     return app;
 }
+
+void app_init(AppState* app)
+{
+    app_set_screen(app, APP_SCREEN_MAIN_MENU);
+}
+
+static void app_end_game(AppState* app)
+{
+    if (app->gamestate == NULL)
+    {
+        return;
+    }
+    gamestate_destroy(app->gamestate);
+    app->gamestate = NULL;
+}
+
+static void app_start_game(AppState* app)
+{
+    app_end_game(app);
+    app->gamestate = gamestate_create();
+    game_start(app->sdl_renderer, app->gamestate);
+}
+
+static void app_set_menu(AppState* app, MenuScreen menu)
+{
+    app->menu = menu_create(
+        app->sdl_renderer,
+        (float) g_app_window_width / 4,
+        (float) g_app_window_height / 4,
+        (float) g_app_window_width / 2,
+        (float) g_app_window_height / 2,
+        menu
+    );
+}
+static void app_set_screen(AppState* app, AppScreen new_screen)
+{
+    SDL_Renderer* renderer = app->sdl_renderer;
+
+    AppScreen old_screen = app->screen;
+    switch (old_screen)
+    {
+        default:
+        case APP_SCREEN_MAIN_MENU:
+            app_set_menu(app, SCREEN_MENU_MAIN_MAIN);
+            break;
+        case APP_SCREEN_PAUSE_MENU:
+            app_set_menu(app, SCREEN_MENU_PAUSE_MAIN);
+            break;
+        case APP_SCREEN_END_MENU:
+            app_set_menu(app, SCREEN_MENU_END_MAIN);
+            break;
+        case APP_SCREEN_GAME:
+            app_start_game(app);
+            break;
+    }
+    app->screen = new_screen;
+}
+
 
 
 
@@ -66,32 +135,9 @@ void app_destroy(AppState* app)
 
 
 
-void app_game_start(AppState* app)
-{
-    verify(app == NULL, "AppState does not exist");
-
-    app->menu = menu_create(
-        app->sdl_renderer,
-        0,
-        0,
-        g_app_window_width,
-        g_app_window_height,
-        SCREEN_MENU_MAIN_MAIN
-    );
-    // app->gamestate = gamestate_create();
-    // game_start(app->sdl_renderer, app->gamestate);
-}
-
-
-
 // ========== update ==========
-void app_update(AppState* app)
+static void update_global_variables(AppState* app)
 {
-    verify(app == NULL, "AppState does not exist");
-
-    InputState* input = app->input;
-    GameState* game = app->gamestate;
-
     SDL_GetWindowSize(app->sdl_window, &g_app_window_width, &g_app_window_height);
     if (APP_WINDOW_WIDTH / APP_WINDOW_HEIGHT < g_app_window_width / g_app_window_height)
     {
@@ -101,7 +147,11 @@ void app_update(AppState* app)
     {
         g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
     }
-
+    g_menu_font_size = FONT_SIZE_MENU * g_app_scale;
+    g_game_font_size = FONT_SIZE * g_app_scale;
+}
+static void update_cheats(InputState* input)
+{
     if (keyboard_get_pressed(input, SDL_SCANCODE_1))
     {
         infinite_points = !infinite_points;
@@ -110,7 +160,19 @@ void app_update(AppState* app)
     {
         can_purchace_multiple_times = !can_purchace_multiple_times;
     }
+}
+void app_update(AppState* app)
+{
+    verify(app == NULL, "AppState does not exist");
+
+    InputState* input = app->input;
+
+    update_global_variables(app);
+    update_cheats(input);
+
+    GameState* game = app->gamestate;
     // game_update(input, game);
+
     menu_update(input, app->menu);
 }
 

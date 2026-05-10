@@ -4,6 +4,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_render.h>
 #include "helper_functions/error_handling.h"
+#include "inputstate.h"
 #include "ui_elements/window.h"
 #include "ui_elements/button.h"
 #include "game/ui/tree_textures.h"
@@ -27,7 +28,6 @@ TreeUI* tree_ui_create(
 
 void tree_ui_destroy(TreeUI* ui);
 
-void tree_ui_update(TreeUI* ui);
-
-Window* tree_ui_get_window(TreeUI* ui);
+void tree_ui_update(InputState* input, TreeUI* ui);
+void tree_ui_render(SDL_Renderer* renderer, TreeUI* ui);
 

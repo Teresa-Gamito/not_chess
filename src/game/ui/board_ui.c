@@ -1,12 +1,13 @@
 #include "include/game/ui/board_ui.h"
 
-static void board_ui_add_tile(BoardUI* ui, int col, int row);
+static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
 static BoardTextures tile_get_texture_index(const Tile* tile);
 static BoardTextures piece_get_texture_index(const Piece* piece);
 
 static bool board_ui_is_valid_task_tile(BoardUI* ui, Task task, int col, int row);
 static int do_task(BoardUI* ui, Task task, int col, int row);
+static void ui_update(BoardUI* ui);
 
 struct BoardUI
 {
@@ -16,18 +17,9 @@ struct BoardUI
 
     Tile* selected_tile;
     Vector* tasks;
-
-    GameLog* log;
 };
 
-BoardUI* board_ui_create(
-    SDL_Renderer* renderer,
-    Board* board,
-    float x,
-    float y,
-    float width,
-    float height
-)
+BoardUI* board_ui_create(Board* board, SDL_Renderer* renderer, float x, float y, float width, float height)
 {
     verify_renderer(renderer);
     verify_board(board);
@@ -35,8 +27,10 @@ BoardUI* board_ui_create(
     BoardUI* ui = SDL_malloc(sizeof(BoardUI));
     verify(ui == NULL, "BoardUI could not be created: malloc");
 
+    // board
     ui->board = board;
 
+    // window
     SDL_Texture* background_texture = SDL_CreateTextureFromPNG(
         renderer, 
         PATH_TEXTURE_WINDOW_BOARD_BACKGROUND
@@ -55,24 +49,19 @@ BoardUI* board_ui_create(
         board_textures, 
         BOARD_TEXTURE_COUNT
     );
+    board_ui_set_scale(ui);
 
+    // selected tile
     ui->selected_tile = NULL;
 
+    // tasks
     ui->tasks = task_list_create();
 
-    int col_num = board_get_col_num(board);
-    int row_num = board_get_row_num(board);
-    if ((double) col_num / row_num > width / height)
-        window_set_scale(ui->window, width / (col_num * TEXTURE_DEFAULT_SIZE_PX));
-    else
-        window_set_scale(ui->window, height / (row_num * TEXTURE_DEFAULT_SIZE_PX));
-
-    ui->log = gamelog_create();
-
-    board_ui_update(ui);
+    // board_ui_update(ui);
 
     return ui;
 }
+
 void board_ui_destroy(BoardUI* ui)
 {
     verify_board_ui(ui);
@@ -81,6 +70,29 @@ void board_ui_destroy(BoardUI* ui)
     task_list_destroy(ui->tasks);
     SDL_free(ui);
 }
+
+static void board_ui_set_scale(BoardUI* ui)
+{
+    Window* window = ui->window;
+    float window_width = window_get_width(window);
+    float window_height = window_get_height(window);
+
+    Board* board = ui->board;
+    float board_width = board_get_col_num(board) * TEXTURE_DEFAULT_SIZE_PX;
+    float board_height = board_get_row_num(board) * TEXTURE_DEFAULT_SIZE_PX;
+
+    float new_scale;
+    if (board_width / board_height > window_width / window_height)
+    {
+        new_scale = window_width / board_width;
+    }
+    else
+    {
+        new_scale = window_height / board_height;
+    }
+    window_set_scale(ui->window, new_scale);
+}
+
 static SDL_Texture* board_ui_tile_get_texture(BoardUI* ui, int new_col, int new_row)
 {
     if (has_task(ui->tasks))
@@ -131,6 +143,7 @@ static SDL_Texture* board_ui_tile_get_texture(BoardUI* ui, int new_col, int new_
     }
     return NULL;
 }
+
 static void board_ui_add_tile(BoardUI* ui, int col, int row)
 {
     verify_board_ui(ui);
@@ -185,10 +198,12 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
         y
     );
 }
+
 static BoardTextures tile_get_texture_index(const Tile* tile)
 {
     return tile_get_color(tile) == WHITE ? TEXTURE_TILE_WHITE : TEXTURE_TILE_BLACK;
 }
+
 static void board_ui_add_piece(BoardUI* ui, int col, int row)
 {
     Board* board = ui->board;
@@ -217,6 +232,7 @@ static void board_ui_add_piece(BoardUI* ui, int col, int row)
         y
     );
 }
+
 static BoardTextures piece_get_texture_index(const Piece* piece)
 {
     Color color = piece_get_color(piece);
@@ -289,7 +305,7 @@ static BoardTextures piece_get_texture_index(const Piece* piece)
     return 0;
 }
 
-void board_ui_update(BoardUI* ui)
+static void ui_update(BoardUI* ui)
 {
     verify_board_ui(ui);
 
@@ -310,6 +326,11 @@ void board_ui_update(BoardUI* ui)
             board_ui_add_piece(ui, col, row);
         }
     }
+}
+
+void board_ui_render(SDL_Renderer* renderer, BoardUI* ui)
+{
+    window_render(renderer, ui->window);
 }
 
 static bool is_piece_player_color(Piece* piece, Player* player)
@@ -537,19 +558,6 @@ void board_ui_add_task(BoardUI* ui, Task task)
     add_task(ui->tasks, task);
     ui->selected_tile = NULL;
     board_ui_update(ui);
-}
-
-Window* board_ui_get_window(const BoardUI* ui)
-{
-    verify_board_ui(ui);
-
-    return ui->window;
-}
-Board* board_ui_get_board(const BoardUI* ui)
-{
-    verify_board_ui(ui);
-
-    return ui->board;
 }
 
 

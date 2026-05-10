@@ -5,7 +5,7 @@ struct Menu
     SDL_Renderer* renderer;
 
     Window* window;
-    Screen screen;
+    MenuScreen screen;
 
     TTF_Font* font;
     SDL_Color* text_color;
@@ -14,7 +14,7 @@ struct Menu
 static void menu_add_button(Menu* menu, Function* function, const char* text);
 static void menu_go_to_screen(void* men, void* scr);
 
-Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height, Screen starting_screen)
+Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height, MenuScreen starting_menu)
 {
     Menu* menu = SDL_malloc(sizeof(Menu));
 
@@ -31,7 +31,7 @@ Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float h
     menu->text_color = SDL_malloc(sizeof(SDL_Color));
     *menu->text_color = color_black();
 
-    menu_go_to_screen(menu, &starting_screen);
+    menu_go_to_screen(menu, &starting_menu);
 
     return menu;
 }
@@ -103,21 +103,22 @@ static void menu_add_button(Menu* menu, Function* function, const char* text)
 static void menu_go_to_screen(void* men, void* scr)
 {
     Menu* menu = (Menu*)men;
-    Screen* screen = (Screen*)scr;
+    MenuScreen* screen = (MenuScreen*)scr;
 
     window_destroy_content(menu->window);
     menu->screen = *screen;
     Function* func = NULL;
-    static Screen main_main = SCREEN_MENU_MAIN_MAIN;
-    static Screen main_options = SCREEN_MENU_MAIN_OPTIONS;
-    static Screen main_credits = SCREEN_MENU_MAIN_CREDITS;
-    static Screen main_quit = SCREEN_MENU_MAIN_QUIT;
-    static Screen pause_main = SCREEN_MENU_PAUSE_MAIN;
-    static Screen pause_options = SCREEN_MENU_PAUSE_OPTIONS;
-    static Screen pause_quit = SCREEN_MENU_PAUSE_QUIT;
+    static MenuScreen main_main = SCREEN_MENU_MAIN_MAIN;
+    static MenuScreen main_options = SCREEN_MENU_MAIN_OPTIONS;
+    static MenuScreen main_credits = SCREEN_MENU_MAIN_CREDITS;
+    static MenuScreen main_quit = SCREEN_MENU_MAIN_QUIT;
+    static MenuScreen pause_main = SCREEN_MENU_PAUSE_MAIN;
+    static MenuScreen pause_options = SCREEN_MENU_PAUSE_OPTIONS;
+    static MenuScreen pause_quit = SCREEN_MENU_PAUSE_QUIT;
     switch (menu->screen)
     {
         case SCREEN_MENU_MAIN_MAIN:
+            func = NULL; // TODO:
             menu_add_button(menu, func, "START GAME");
             func = function_create(menu_go_to_screen, menu, &main_options);
             menu_add_button(menu, func, "OPTIONS");
@@ -146,10 +147,11 @@ static void menu_go_to_screen(void* men, void* scr)
 
 
         case SCREEN_MENU_PAUSE_MAIN:
+            func = NULL; // TODO:
             menu_add_button(menu, func, "RETURN");
             func = function_create(menu_go_to_screen, menu, &pause_options);
             menu_add_button(menu, func, "OPTIONS");
-            func = function_create(menu_go_to_screen, menu, &main_main);
+            func = function_create(menu_go_to_screen, menu, &pause_quit);
             menu_add_button(menu, func, "QUIT TO MAIN MENU");
             break;
 
@@ -160,7 +162,7 @@ static void menu_go_to_screen(void* men, void* scr)
 
         case SCREEN_MENU_PAUSE_QUIT:
             func = function_create(menu_go_to_screen, menu, &main_main);
-            menu_add_button(menu, func, "QUIT");
+            menu_add_button(menu, func, "QUIT TO MAIN MENU");
 
             func = function_create(menu_go_to_screen, menu, &pause_main);
             menu_add_button(menu, func, "BACK");

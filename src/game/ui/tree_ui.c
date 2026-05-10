@@ -1,5 +1,5 @@
 #include "include/game/ui/tree_ui.h"
-#include "helper_functions/function.h"
+#include "ui_elements/window.h"
 
 struct TreeUI
 {
@@ -245,11 +245,11 @@ static void tree_ui_set_nodes(TreeUI* ui)
     SDL_free(text);
     window_add_textbox(window, textbox, size, (size * index) + size - textbox_get_height(textbox));
 }
-void tree_ui_update(TreeUI* ui)
+void tree_ui_update(InputState* input, TreeUI* ui)
 {
-    Window* window = ui->window;
-
-    window_destroy_content(window);
-
-    tree_ui_set_nodes(ui);
+    window_update(input, ui->window);
+}
+void tree_ui_render(SDL_Renderer* renderer, TreeUI* ui)
+{
+    window_render(renderer, ui->window);
 }
