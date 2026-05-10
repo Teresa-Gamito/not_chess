@@ -1,4 +1,5 @@
 #include "include/game/ui/tree_ui.h"
+#include "helper_functions/function.h"
 
 struct TreeUI
 {
@@ -84,6 +85,7 @@ Window* tree_ui_get_window(TreeUI* ui)
 
 static void tree_ui_set_nodes(TreeUI* ui)
 {
+    // TODO: change this mess
     Tree* tree = ui->tree;
     Window* window = ui->window;
     SDL_Renderer* renderer = ui->renderer;
@@ -99,6 +101,7 @@ static void tree_ui_set_nodes(TreeUI* ui)
     int index;
     Node* node;
     Button* button;
+    Function* func;
     Sprite* sprite;
     Textbox* textbox;
     SDL_Color* color;
@@ -113,13 +116,10 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, 0);
-    button_set_on_click_fn(
-        button, 
-        MOUSE_LEFT, 
-        node_purchase, 
-        ui->board_ui, 
-        node
-    );
+
+    func = function_create(node_purchase, ui->board_ui, node);
+    button_set_on_click_fn(button, MOUSE_LEFT, func);
+
     window_add_button(window, button, 0, size * index);
 
     texture_node = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
@@ -152,13 +152,8 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, 1);
-    button_set_on_click_fn(
-        button, 
-        MOUSE_LEFT, 
-        node_purchase, 
-        ui->board_ui, 
-        node
-    );
+    func = function_create(node_purchase, ui->board_ui, node);
+    button_set_on_click_fn(button, MOUSE_LEFT, func);
     window_add_button(window, button, 0, size * index);
 
     texture_node = window_get_texture(ui->window, TEXTURE_NODE_EXPAND_BOARD);
@@ -191,13 +186,8 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, index);
-    button_set_on_click_fn(
-        button, 
-        MOUSE_LEFT, 
-        node_purchase, 
-        ui->board_ui, 
-        node
-    );
+    func = function_create(node_purchase, ui->board_ui, node);
+    button_set_on_click_fn(button, MOUSE_LEFT, func);
     window_add_button(window, button, 0, size * index);
 
     texture_node = window_get_texture(ui->window, TEXTURE_NODE_ADD_LANCE);
@@ -230,13 +220,8 @@ static void tree_ui_set_nodes(TreeUI* ui)
     );
     button_set_size(button, size, size);
     node = tree_get_node_at(tree, index);
-    button_set_on_click_fn(
-        button, 
-        MOUSE_LEFT, 
-        node_purchase, 
-        ui->board_ui, 
-        node
-    );
+    func = function_create(node_purchase, ui->board_ui, node);
+    button_set_on_click_fn(button, MOUSE_LEFT, func);
     window_add_button(window, button, 0, size * index);
 
     texture_node = window_get_texture(ui->window, TEXTURE_NODE_SACRIFICE);

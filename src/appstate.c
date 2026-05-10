@@ -1,4 +1,6 @@
 #include "include/appstate.h"
+#include "helper_functions/global_variables.h"
+#include "menu/menu.h"
 
 struct AppState
 {
@@ -6,6 +8,8 @@ struct AppState
     SDL_Renderer* sdl_renderer;
 
     InputState* input;
+
+    Menu* menu;
 
     GameState* gamestate;
 };
@@ -16,7 +20,7 @@ AppState* app_create()
 {
     AppState* app = (AppState*)SDL_malloc(sizeof(AppState));
     verify(app == NULL, "AppState could not be created: malloc");
-    
+
     TTF_Init();
 
     app->sdl_window = SDL_CreateWindow(
@@ -32,6 +36,7 @@ AppState* app_create()
 
     SDL_SetDefaultTextureScaleMode(app->sdl_renderer, SDL_SCALEMODE_PIXELART);
 
+    app->menu = NULL;
     app->gamestate = NULL;
 
     app->input = input_create();
@@ -51,7 +56,8 @@ void app_destroy(AppState* app)
 
     input_destroy(app->input);
 
-    gamestate_destroy(app->gamestate);
+    if (app->gamestate) gamestate_destroy(app->gamestate);
+    if (app->menu) menu_destroy(app->menu);
 
     TTF_Quit();
 
@@ -64,8 +70,16 @@ void app_game_start(AppState* app)
 {
     verify(app == NULL, "AppState does not exist");
 
-    app->gamestate = gamestate_create();
-    game_start(app->sdl_renderer, app->gamestate);
+    app->menu = menu_create(
+        app->sdl_renderer,
+        0,
+        0,
+        g_app_window_width,
+        g_app_window_height,
+        SCREEN_MENU_MAIN_MAIN
+    );
+    // app->gamestate = gamestate_create();
+    // game_start(app->sdl_renderer, app->gamestate);
 }
 
 
@@ -96,7 +110,8 @@ void app_update(AppState* app)
     {
         can_purchace_multiple_times = !can_purchace_multiple_times;
     }
-    game_update(input, game);
+    // game_update(input, game);
+    menu_update(input, app->menu);
 }
 
 
@@ -111,7 +126,8 @@ void app_render(AppState* app)
     SDL_SetRenderDrawColor(sdl_renderer, 12, 23, 34, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(sdl_renderer);
 
-    game_render(app->sdl_renderer, app->gamestate);
+    // game_render(app->sdl_renderer, app->gamestate);
+    menu_render(app->sdl_renderer, app->menu);
 
     SDL_RenderPresent(sdl_renderer);
 }

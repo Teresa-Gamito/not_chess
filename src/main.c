@@ -43,7 +43,7 @@ SDL_AppResult SDL_AppIterate(void* appstate)
     // reset input
     input_begin_frame(app_get_inputstate(app));
 
-    SDL_Delay(1);
+    SDL_Delay(16);
     return SDL_APP_CONTINUE; 
 }
 

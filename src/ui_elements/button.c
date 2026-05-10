@@ -23,9 +23,7 @@ struct Button
     float anchor_y;
     float scale;
 
-    void (*on_click[MOUSE_BUTTON_COUNT])(void* arg1, void* arg2);
-    void* arg1[MOUSE_BUTTON_COUNT];
-    void* arg2[MOUSE_BUTTON_COUNT];
+    Vector* on_click_fn;
 };
 
 Button* button_create(
@@ -43,11 +41,12 @@ Button* button_create(
 
     button->state = IDLE;
 
+    button->on_click_fn = vector_create(function_ops());
+
     for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
     {
-        button->on_click[i] = NULL;
-        button->arg1[i] = NULL;
-        button->arg2[i] = NULL;
+        Function* func = function_create(NULL, NULL, NULL);
+        vector_add(button->on_click_fn, func);
     }
 
     float w = 0;
@@ -69,6 +68,7 @@ void button_destroy(Button* button)
 {
     verify_button(button);
 
+    vector_destroy(button->on_click_fn);
     SDL_free(button);
 }
 
@@ -102,10 +102,6 @@ static void button_set_state(const InputState* input, Button* button)
         {
             continue;
         }
-        if (button->on_click[i] == NULL)
-        {
-            continue;
-        }
         button->state = PRESSED;
         return;
     }
@@ -121,12 +117,9 @@ static void button_press(const InputState* input, Button* button)
         {
             continue;
         }
-        if (button->on_click[i] == NULL)
-        {
-            continue;
-        }
         button_set_state(input, button);
-        button->on_click[i](button->arg1[i], button->arg2[i]);
+        Function* func = vector_get_at(button->on_click_fn, i);
+        function_execute(func);
         return;
     }
 }
@@ -200,17 +193,11 @@ void button_set_texture_all(Button* button, SDL_Texture* texture)
     button_set_texture_pressed(button, texture);
 }
 
-void button_set_on_click_fn(
-    Button* button,
-    MouseButton mouse_button,
-    void (*on_click_fn)(void* arg1, void* arg2), 
-    void* arg1, 
-    void* arg2
-)
+void button_set_on_click_fn(Button* button, MouseButton mouse_button, Function* function)
 {
-    button->on_click[mouse_button] = on_click_fn;
-    button->arg1[mouse_button] = arg1;
-    button->arg2[mouse_button] = arg2;
+    Function* old_func = vector_get_at(button->on_click_fn, mouse_button);
+    vector_set_at(button->on_click_fn,function, mouse_button);
+    function_destroy(old_func);
 }
 
 float button_get_x(const Button* button)

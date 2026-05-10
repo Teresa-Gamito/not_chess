@@ -1,8 +1,4 @@
 #include "include/game/ui/board_ui.h"
-#include "game/board/board.h"
-#include "game/board/piece.h"
-#include "game/board/tile.h"
-#include "game/ui/board_textures.h"
 
 static void board_ui_add_tile(BoardUI* ui, int col, int row);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -173,21 +169,15 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
         texture,
         texture
     );
-    button_set_on_click_fn(
-        button,
-        MOUSE_LEFT,
-        select_tile,
-        ui,
-        tile
-    );
-    button_set_on_click_fn(
-        button, 
-        MOUSE_RIGHT, 
-        deselect_tile,
-        ui, 
-        0
-    );
+
+    Function* func_left = function_create(select_tile, ui, tile);
+    button_set_on_click_fn(button, MOUSE_LEFT, func_left);
+
+    Function* func_right = function_create(deselect_tile, ui, 0);
+    button_set_on_click_fn(button, MOUSE_RIGHT, func_right);
+
     button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
+
     window_add_button(
         window, 
         button, 

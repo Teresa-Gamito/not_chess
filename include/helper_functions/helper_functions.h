@@ -25,3 +25,5 @@ int sign(int value);
 
 TypeOps* SDL_Texture_ops();
 TypeOps* default_ops();
+
+void app_quit(void* null1, void* null2);

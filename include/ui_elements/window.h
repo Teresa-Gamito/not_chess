@@ -13,9 +13,9 @@
 #define WINDOW_SCROLL_FACTOR 3
 
 typedef Uint8 WindowFlags;
-#define WINDOW_SCROLLABLE       1<<0
-#define WINDOW_ZOOMABLE         1<<1
-#define WINDOW_DRAGGABLE        1<<2
+#define WINDOW_SCROLLABLE       1ULL<<0
+#define WINDOW_ZOOMABLE         1ULL<<1
+#define WINDOW_DRAGGABLE        1ULL<<2
 
 typedef struct Window Window;
 
@@ -57,9 +57,6 @@ void window_set_anchor(Window* window, float anchor_x, float anchor_y);
 void window_set_size(Window* window, float width, float height);
 void window_set_scale(Window* window, float scale);
 void window_update_background_texture(Window* window, SDL_Texture* texture);
-void window_sprite_set_position(Window* window, Sprite* sprite, float x, float y);
-void window_button_set_position(Window* window, Button* button, float x, float y);
-void window_textbox_set_position(Window* window, Textbox* textbox, float x, float y);
 
 // ========== get ==========
 float window_get_x(const Window* window);
@@ -69,5 +66,8 @@ float window_get_height(const Window* window);
 float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);
+Vector* window_get_sprites(const Window* window);
+Vector* window_get_buttons(const Window* window);
+Vector* window_get_textboxes(const Window* window);
 
 void verify_window(const Window* window);

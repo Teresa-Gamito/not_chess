@@ -2,12 +2,16 @@
 
 struct Sprite {
     SDL_Texture* texture;
+
     float x;
     float y;
+
     float width;
     float height;
+
     float anchor_x;
     float anchor_y;
+
     float scale;
 };
 

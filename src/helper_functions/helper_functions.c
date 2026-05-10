@@ -98,3 +98,13 @@ TypeOps* default_ops()
 {
     return &ops;
 }
+
+
+
+void app_quit(void* null1, void* null2)
+{
+    (void)null1;
+    (void)null2;
+    SDL_Quit();
+    exit(0);
+}

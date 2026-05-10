@@ -1,5 +1,4 @@
 #include "include/game/log.h"
-#include "helper_functions/vector.h"
 
 struct GameLog
 {

@@ -52,9 +52,9 @@ Window* window_create(
 
     window->texture_background = background_texture;
 
-    window->is_scrollable = flags & 1;
-    window->is_zoomable = (flags >> 1) & 1;
-    window->is_draggable = (flags >> 2) & 1;
+    window->is_scrollable = (flags & WINDOW_SCROLLABLE);
+    window->is_zoomable = (flags & WINDOW_ZOOMABLE);
+    window->is_draggable = (flags & WINDOW_DRAGGABLE);
 
     return window;
 }
@@ -423,6 +423,24 @@ SDL_Texture* window_get_texture(const Window* window, int index)
     verify_window(window);
 
     return vector_get_at(window->textures, index);
+}
+Vector* window_get_sprites(const Window* window)
+{
+    verify_window(window);
+
+    return window->sprites;
+}
+Vector* window_get_buttons(const Window* window)
+{
+    verify_window(window);
+
+    return window->buttons;
+}
+Vector* window_get_textboxes(const Window* window)
+{
+    verify_window(window);
+
+    return window->textboxes;
 }
 
 

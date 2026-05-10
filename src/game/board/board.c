@@ -145,7 +145,7 @@ void board_add_piece_at(Board* board, Piece* piece, int col, int row)
     verify_board_pos(board, col, row);
     verify(!board_can_add_piece_at(board, col, row), "Could not add piece, position already occupied");
 
-    const int pos = translate_position(board, col, row);
+    int pos = translate_position(board, col, row);
     vector_set_at(board->pieces, piece, pos);
 }
 void board_piece_remove(Board* board, int col, int row)
@@ -156,7 +156,7 @@ void board_piece_remove(Board* board, int col, int row)
 
     Piece* piece = board_get_piece_at(board, col, row);
     piece_destroy(piece);
-    const int pos = translate_position(board, col, row);
+    int pos = translate_position(board, col, row);
     vector_set_at(board->pieces, NULL, pos);
 }
 bool board_has_piece_at(const Board* board, int col, int row)
@@ -171,7 +171,7 @@ Piece* board_get_piece_at(const Board* board, int col, int row)
     verify_board(board);
     verify_board_pos(board, col, row);
 
-    const int pos = translate_position(board, col, row);
+    int pos = translate_position(board, col, row);
     return vector_get_at(board->pieces, pos);
 }
 int board_piece_get_col(const Board* board, const Piece* piece)
@@ -179,7 +179,7 @@ int board_piece_get_col(const Board* board, const Piece* piece)
     verify_board(board);
     verify_piece(piece);
 
-    const int pos = vector_item_get_index(board->pieces, piece);
+    int pos = vector_item_get_index(board->pieces, piece);
     return pos % board->col_num;
 }
 int board_piece_get_row(const Board* board, const Piece* piece)
@@ -187,7 +187,7 @@ int board_piece_get_row(const Board* board, const Piece* piece)
     verify_board(board);
     verify_piece(piece);
 
-    const int pos = vector_item_get_index(board->pieces, piece);
+    int pos = vector_item_get_index(board->pieces, piece);
     return pos / board->col_num;
 }
 bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
@@ -336,24 +336,31 @@ static void board_add_col(Board* board)
     int col_num = board->col_num;
     int row_num = board->row_num;
 
+    // increase vector size
     for (int row = 0; row < row_num; row++)
     {
-        Color color = tile_get_default_color(col_num - 1, row);
-        Tile* tile = tile_create(TILE_NONE, color);
-        vector_add(board->tiles, tile);
+        vector_add(board->tiles, NULL);
         vector_add(board->pieces, NULL);
     }
 
-    // adjust piece position
+    // adjust positions
     int old_pos;
     int new_pos;
     for (int i = col_num * row_num - 1; i >= col_num; i--)
     {
         old_pos = i - (i / col_num);
         new_pos = i;
-        Piece* piece = vector_get_at(board->pieces, old_pos);
-        vector_set_at(board->pieces, piece, new_pos);
-        vector_set_at(board->pieces, NULL, old_pos);
+        vector_swap(board->pieces, old_pos, new_pos);
+        vector_swap(board->tiles, old_pos, new_pos);
+    }
+
+    // add new spaces
+    for (int row = 0; row < row_num; row++)
+    {
+        Color color = tile_get_default_color(col_num - 1, row);
+        Tile* tile = tile_create(TILE_NONE, color);
+        int pos = translate_position(board, col_num - 1, row);
+        vector_set_at(board->tiles, tile, pos);
     }
 }
 static void board_add_row(Board* board)
@@ -385,20 +392,22 @@ void board_expand(Board* board)
     int row_num = board->row_num;
 
     // adjust piece position
-    for (int col = col_num - 2; col >= 1 ; col--)
+    for (int col = col_num - 1; col >= 0; col--)
     {
-        for (int row = row_num - 2; row >= 1 ; row--)
+        for (int row = row_num - 1; row >= 0; row--)
         {
-            int old_col = col - 1;
-            int old_row = row - 1;
             int new_col = col;
             int new_row = row;
+            int old_col = col - 1;
+            int old_row = row - 1;
+            if (old_col < 0) old_col = col_num - 1;
+            if (old_row < 0) old_row = row_num - 1;
 
-            int old_pos = old_col + old_row * col_num;
-            int new_pos = new_col + new_row * col_num;
-            Piece* piece = vector_get_at(board->pieces, old_pos);
-            vector_set_at(board->pieces, piece, new_pos);
-            vector_set_at(board->pieces, NULL, old_pos);
+            int old_pos = translate_position(board, old_col, old_row);
+            int new_pos = translate_position(board, new_col, new_row);
+
+            vector_swap(board->pieces, old_pos, new_pos);
+            vector_swap(board->tiles, old_pos, new_pos);
         }
     }
 }
@@ -407,7 +416,7 @@ Tile* board_get_tile_at(const Board* board, int col, int row)
     verify_board(board);
     verify_board_pos(board, col, row);
 
-    const int pos = translate_position(board, col, row);
+    int pos = translate_position(board, col, row);
     return vector_get_at(board->tiles, pos);
 }
 int board_tile_get_col(const Board* board, const Tile* tile)
@@ -415,7 +424,7 @@ int board_tile_get_col(const Board* board, const Tile* tile)
     verify_board(board);
     verify_tile(tile);
 
-    const int pos = vector_item_get_index(board->tiles, tile);
+    int pos = vector_item_get_index(board->tiles, tile);
     return pos % board->col_num;
 }
 int board_tile_get_row(const Board* board, const Tile* tile)
@@ -423,7 +432,7 @@ int board_tile_get_row(const Board* board, const Tile* tile)
     verify_board(board);
     verify_tile(tile);
 
-    const int pos = vector_item_get_index(board->tiles, tile);
+    int pos = vector_item_get_index(board->tiles, tile);
     return pos / board->col_num;
 }
 

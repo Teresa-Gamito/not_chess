@@ -1,5 +1,4 @@
 #include "include/game/board/tile.h"
-#include "helper_functions/error_handling.h"
 
 struct Tile
 {
@@ -34,12 +33,14 @@ TileType tile_get_type(const Tile* tile)
 
     return tile->type;
 }
+
 Color tile_get_color(const Tile* tile)
 {
     verify_tile(tile);
 
     return tile->color;
 }
+
 Color tile_get_default_color(int col, int row)
 {
     return ((col + row) % 2 == 0) ? WHITE : BLACK;
@@ -51,10 +52,12 @@ static void destroy(void* tile)
 {
     tile_destroy(tile);
 }
+
 static TypeOps ops =
     {
         destroy
     };
+
 TypeOps* tile_ops()
 {
     return &ops;
@@ -66,6 +69,7 @@ void verify_tile(const Tile* tile)
 {
     verify(tile == NULL, "Tile does not exist");
 }
+
 void verify_tile_type(TileType type)
 {
     verify(type < 0 || type >= TILE_TYPE_COUNT, "Invalid TileType");

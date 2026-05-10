@@ -5,15 +5,18 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_rect.h>
 #include <stdbool.h>
-#include "../helper_functions/helper_functions.h"
-#include "../helper_functions/typeops.h"
-#include "../inputstate.h"
+#include "helper_functions/helper_functions.h"
+#include "helper_functions/error_handling.h"
+#include "helper_functions/function.h"
+#include "helper_functions/typeops.h"
+#include "helper_functions/vector.h"
+#include "inputstate.h"
 
 typedef struct Button Button;
 
 Button* button_create(
-    SDL_Texture* texture_idle, 
-    SDL_Texture* texture_hovered, 
+    SDL_Texture* texture_idle,
+    SDL_Texture* texture_hovered,
     SDL_Texture* texture_pressed
 );
 void button_destroy(Button* button);
@@ -30,13 +33,7 @@ void button_set_texture_hovered(Button* button, SDL_Texture* texture);
 void button_set_texture_pressed(Button* button, SDL_Texture* texture);
 void button_set_texture_all(Button* button, SDL_Texture* texture);
 
-void button_set_on_click_fn(
-    Button* button,
-    MouseButton mouse_button,
-    void (*on_click_fn)(void* arg1, void* arg2), 
-    void* arg1, 
-    void* arg2
-);
+void button_set_on_click_fn(Button* button, MouseButton mouse_button, Function* function);
 
 float button_get_x(const Button* button);
 float button_get_y(const Button* button);
