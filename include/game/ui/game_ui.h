@@ -8,7 +8,7 @@
 #include "game/game.h"
 #include "game/ui/board_ui.h"
 #include "game/ui/tree_ui.h"
-#include "menu/menu.h"
+#include "ui_elements/menu.h"
 
 typedef struct GameUI GameUI;
 

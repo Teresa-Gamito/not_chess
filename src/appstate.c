@@ -1,4 +1,5 @@
 #include "include/appstate.h"
+#include "game/game.h"
 
 typedef enum AppScreen
 {
@@ -59,50 +60,14 @@ void app_init(AppState* app)
     app_set_screen(app, APP_SCREEN_GAME);
 }
 
-static void app_end_game(AppState* app)
-{
-    if (app->game == NULL)
-    {
-        return;
-    }
-    game_destroy(app->game);
-    app->game = NULL;
 
-    if (app->game_ui == NULL)
-    {
-        return;
-    }
-    game_ui_destroy(app->game_ui);
-    app->game_ui = NULL;
-}
-
-static void app_start_game(AppState* app)
-{
-    app_end_game(app);
-    app->game = game_create();
-    game_start(app->game);
-    app->game_ui = game_ui_create(app->game, app->sdl_renderer);
-}
-
-static void app_set_menu(AppState* app, MenuScreen menu)
-{
-    app->menu = menu_create(
-        app->sdl_renderer,
-        (float) g_app_window_width / 4,
-        (float) g_app_window_height / 4,
-        (float) g_app_window_width / 2,
-        (float) g_app_window_height / 2,
-        menu
-    );
-}
 static void app_set_screen(AppState* app, AppScreen new_screen)
 {
-    AppScreen old_screen = app->screen;
     switch (new_screen)
     {
         default:
         case APP_SCREEN_MAIN_MENU:
-            app_set_menu(app, SCREEN_MENU_MAIN_MAIN);
+            // TODO: 
             break;
         case APP_SCREEN_GAME:
             app_start_game(app);
@@ -224,4 +189,97 @@ InputState* app_get_inputstate(const AppState* app)
     verify(app == NULL, "AppState does not exist");
 
     return app->input;
+}
+
+static void menu_set_main_main(void* app_state, void* null);
+static void menu_set_main_options(void* app_state, void* null);
+static void menu_set_main_credits(void* app_state, void* null);
+static void menu_set_main_exit(void* app_state, void* null);
+static void app_end_game(void* app_state, void* null);
+static void app_start_game(void* app_state, void* null);
+
+static void app_end_game(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    if (app->game == NULL)
+    {
+        return;
+    }
+    game_destroy(app->game);
+    app->game = NULL;
+
+    if (app->game_ui == NULL)
+    {
+        return;
+    }
+    game_ui_destroy(app->game_ui);
+    app->game_ui = NULL;
+}
+
+static void app_start_game(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    app_end_game(app);
+    app->game = game_create();
+    game_start(app->game);
+    app->game_ui = game_ui_create(app->game, app->sdl_renderer);
+}
+static void menu_set_main_main(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    SDL_Renderer* renderer = app->sdl_renderer;
+    Menu* menu = app->menu;
+
+    menu_destroy_content(menu);
+    Function* func;
+
+    func = function_create();
+    menu_add_button(renderer, menu, func, "START GAME");
+    func = function_create();
+    menu_add_button(renderer, menu, func, "OPTIONS");
+    func = function_create();
+    menu_add_button(renderer, menu, func, "CREDITS");
+    func = function_create();
+    menu_add_button(renderer, menu, func, "QUIT");
+}
+
+static void menu_set_main_options(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    SDL_Renderer* renderer = app->sdl_renderer;
+    Menu* menu = app->menu;
+
+    menu_destroy_content(menu);
+    Function* func;
+
+    func = function_create(menu_set_main_main, renderer, menu);
+    menu_add_button(renderer, menu, func, "BACK");
+}
+
+static void menu_set_main_credits(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    SDL_Renderer* renderer = app->sdl_renderer;
+    Menu* menu = app->menu;
+
+    menu_destroy_content(menu);
+    Function* func;
+
+    func = function_create(menu_set_main_main, renderer, menu);
+    menu_add_button(renderer, menu, func, "BACK");
+}
+
+static void menu_set_main_exit(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+    SDL_Renderer* renderer = app->sdl_renderer;
+    Menu* menu = app->menu;
+
+    menu_destroy_content(menu);
+    Function* func;
+
+    func = function_create(app_quit, NULL, NULL);
+    menu_add_button(renderer, menu, func, "QUIT");
+    func = function_create(menu_set_main_main, renderer, menu);
+    menu_add_button(renderer, menu, func, "BACK");
 }

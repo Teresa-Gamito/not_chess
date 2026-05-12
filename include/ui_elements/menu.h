@@ -18,21 +18,10 @@
 
 typedef struct Menu Menu;
 
-typedef enum MenuScreen
-{
-    SCREEN_MENU_MAIN_MAIN,
-    SCREEN_MENU_MAIN_OPTIONS,
-    SCREEN_MENU_MAIN_CREDITS,
-    SCREEN_MENU_MAIN_QUIT,
-
-    SCREEN_MENU_PAUSE_MAIN,
-    SCREEN_MENU_PAUSE_OPTIONS,
-    SCREEN_MENU_PAUSE_QUIT,
-
-    SCREEN_MENU_END_MAIN,
-} MenuScreen;
-
-Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height, MenuScreen starting_menu);
+Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height);
 void menu_destroy(Menu* menu);
+void menu_destroy_content(Menu* menu);
 void menu_render(SDL_Renderer* renderer, Menu* menu);
 void menu_update(InputState* input, Menu* menu);
+
+void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, const char* text);

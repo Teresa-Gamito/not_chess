@@ -220,7 +220,7 @@ static bool can_piece_type_capture(const Piece* piece, int src_col, int src_row,
         case PAWN:
             if (color == BLACK)
                 return can_pawn_capture(src_col, src_row, dst_col, dst_row);
-            else if (color == WHITE)
+            else
                 return can_pawn_capture(src_col, -src_row, dst_col, -dst_row);
 
         case ROOK:
