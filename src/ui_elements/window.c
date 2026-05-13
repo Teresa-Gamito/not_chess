@@ -110,6 +110,7 @@ void window_destroy(Window* window)
 
     vector_destroy(window->sprites);
     vector_destroy(window->buttons);
+    window->buttons = NULL;
     vector_destroy(window->textboxes);
     vector_destroy(window->textures);
 
@@ -281,10 +282,12 @@ void window_update(const InputState* input, Window* window)
     window_drag(input, window);
     window_scroll(input, window);
 
+
     for (int i = 0; i < vector_get_count(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
         button_update(input, button);
+        if (window->buttons == NULL) return;
     }
 }
 

@@ -1,13 +1,5 @@
 #include "game/ui/game_ui.h"
-#include "inputstate.h"
-#include <SDL3/SDL_log.h>
-
-typedef enum GameUIState
-{
-    GAME_UI_RUNNING,
-    GAME_UI_PAUSED,
-    GAME_UI_END,
-} GameUIState;
+#include "helper_functions/error_handling.h"
 
 struct GameUI 
 {
@@ -23,12 +15,17 @@ struct GameUI
 
     SDL_Renderer* renderer;
 
-    GameUIState state;
+    bool is_paused;
 };
+
+static void menu_set_pause_main(void* game_ui, void* null);
+static void menu_set_pause_options(void* game_ui, void* null);
+static void menu_set_pause_quit(void* game_ui, void* null);
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 {
     GameUI* ui = SDL_malloc(sizeof(GameUI));
+    verify(ui == NULL, "GameUI could not be created: malloc");
 
     ui->game = game;
 
@@ -53,13 +50,15 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 
     ui->renderer = renderer;
 
-    ui->state = GAME_UI_RUNNING;
+    ui->is_paused = false;
 
     return ui;
 }
 
 void game_ui_destroy(GameUI* ui)
 {
+    verify_game_ui(ui);
+
     board_ui_destroy(ui->board_ui);
     tree_ui_destroy(ui->tree_ui);
     if (ui->menu != NULL) menu_destroy(ui->menu);
@@ -67,6 +66,9 @@ void game_ui_destroy(GameUI* ui)
 
 void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
 {
+    verify_renderer(renderer);
+    verify_game_ui(ui);
+
     board_ui_render(renderer, ui->board_ui);
     tree_ui_render(renderer, ui->tree_ui);
     if (ui->menu == NULL)
@@ -75,12 +77,22 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
     }
     menu_render(renderer, ui->menu);
 }
+
+static void update_keys(InputState* input, GameUI* ui)
+{
+    if (keyboard_get_pressed(input, SDL_SCANCODE_ESCAPE))
+    {
+        game_ui_toggle_pause(ui);
+    }
+}
 void game_ui_update(InputState* input, GameUI* ui)
 {
-    verify(ui == NULL, "GameUI does not exist");
+    verify_game_ui(ui);
     verify_input(input);
 
-    if (ui->state != GAME_UI_RUNNING)
+    update_keys(input, ui);
+
+    if (ui->is_paused)
     {
         menu_update(input, ui->menu);
         return;
@@ -90,24 +102,113 @@ void game_ui_update(InputState* input, GameUI* ui)
     tree_ui_update(input, ui->tree_ui);
 }
 
+static void toggle_pause(void* game_ui, void* null)
+{
+    (void)null;
+    game_ui_toggle_pause(game_ui);
+}
+static void menu_set_pause_main(void* game_ui, void* null)
+{
+    (void)null;
+    GameUI* ui = (GameUI*)game_ui;
+    Function* func;
+
+    if (ui->menu != NULL)
+    {
+        menu_destroy(ui->menu);
+    }
+
+    ui->menu = menu_create(
+        ui->renderer,
+        (float)g_app_window_width / 4,
+        (float)g_app_window_height / 4,
+        (float)g_app_window_width / 2,
+        (float)g_app_window_height / 2
+    );
+
+    // CONTINUE
+    func = function_create(toggle_pause, ui, NULL);
+    menu_add_button(ui->renderer, ui->menu, func, "CONTINUE");
+    // OPTIONS
+    func = function_create(menu_set_pause_options, ui, NULL);
+    menu_add_button(ui->renderer, ui->menu, func, "OPTIONS");
+    // QUIT TO MAIN MENU
+    func = function_create(menu_set_pause_quit, ui, NULL);
+    menu_add_button(ui->renderer, ui->menu, func, "QUIT TO MAIN MENU");
+}
+
+static void menu_set_pause_options(void* game_ui, void* null)
+{
+    (void)null;
+    GameUI* ui = (GameUI*)game_ui;
+    Function* func;
+
+    if (ui->menu != NULL)
+    {
+        menu_destroy(ui->menu);
+    }
+
+    ui->menu = menu_create(
+        ui->renderer,
+        (float)g_app_window_width / 4,
+        (float)g_app_window_height / 4,
+        (float)g_app_window_width / 2,
+        (float)g_app_window_height / 2
+    );
+
+    // BACK
+    func = function_create(menu_set_pause_main, ui, NULL);
+    menu_add_button(ui->renderer, ui->menu, func, "BACK");
+}
+static void menu_set_pause_quit(void* game_ui, void* null)
+{
+    (void)null;
+    GameUI* ui = (GameUI*)game_ui;
+    Function* func;
+
+    if (ui->menu != NULL)
+    {
+        menu_destroy(ui->menu);
+    }
+
+    ui->menu = menu_create(
+        ui->renderer,
+        (float)g_app_window_width / 4,
+        (float)g_app_window_height / 4,
+        (float)g_app_window_width / 2,
+        (float)g_app_window_height / 2
+    );
+
+    // QUIT TO MAIN MENU
+    func = NULL; // TODO:
+    menu_add_button(ui->renderer, ui->menu, func, "QUIT TO MAIN MENU");
+    // BACK
+    func = function_create(menu_set_pause_main, ui, NULL);
+    menu_add_button(ui->renderer, ui->menu, func, "BACK");
+}
+
+
 void game_ui_toggle_pause(GameUI* ui)
 {
-    if (ui->state != GAME_UI_PAUSED)
+    verify_game_ui(ui);
+
+    ui->is_paused = !ui->is_paused;
+
+    if (ui->is_paused)
     {
-        ui->state = GAME_UI_PAUSED;
-        ui->menu = menu_create(
-            ui->renderer,
-            (float)g_app_window_width / 4,
-            (float)g_app_window_height / 2,
-            (float)g_app_window_width / 4,
-            (float)g_app_window_height / 2,
-            SCREEN_MENU_PAUSE_MAIN
-        );
+        menu_set_pause_main(ui, NULL);
+        return;
     }
-    else
+    if (!ui->is_paused)
     {
-        ui->state = GAME_UI_RUNNING;
         menu_destroy(ui->menu);
         ui->menu = NULL;
+        return;
     }
+}
+
+
+void verify_game_ui(const GameUI* ui)
+{
+    verify(ui == NULL, "GameUI does not exist");
 }

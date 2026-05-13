@@ -1,4 +1,4 @@
-#include "include/menu/menu.h"
+#include "include/ui_elements/menu.h"
 
 struct Menu
 {
@@ -7,8 +7,6 @@ struct Menu
     TTF_Font* font;
     SDL_Color* text_color;
 };
-
-// static void menu_go_to_screen(void* men, void* scr);
 
 Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float height)
 {
@@ -30,6 +28,8 @@ Menu* menu_create(SDL_Renderer* renderer, float x, float y, float width, float h
 
 void menu_destroy(Menu* menu)
 {
+    verify_menu(menu);
+
     TTF_CloseFont(menu->font);
     SDL_free(menu->text_color);
     window_destroy(menu->window);
@@ -38,20 +38,28 @@ void menu_destroy(Menu* menu)
 
 void menu_destroy_content(Menu* menu)
 {
+    verify_menu(menu);
+
     window_destroy_content(menu->window);
 }
 
 void menu_render(SDL_Renderer* renderer, Menu* menu)
 {
+    verify_menu(menu);
+
     window_render(renderer, menu->window);
 }
 void menu_update(InputState* input, Menu* menu)
 {
+    verify_menu(menu);
+
     window_update(input, menu->window);
 }
 
 void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, const char* text)
 {
+    verify_menu(menu);
+
     Window* window = menu->window;
 
     // add button
@@ -81,7 +89,7 @@ void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, con
     int count = vector_get_count(buttons);
     for (int i = 0; i < count; i++)
     {
-        float border = window_get_width(window) / 100; 
+        float border = window_get_width(window) / 100; // TODO:
         float width = window_get_width(window) - border * 2;
         float height = (window_get_height(window) - border) / count - border;
         float x = border;
@@ -96,75 +104,7 @@ void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, con
     }
 }
 
-// static void menu_go_to_screen(void* men, void* scr)
-// {
-//     Menu* menu = (Menu*)men;
-//     MenuScreen* screen = (MenuScreen*)scr;
-// 
-//     window_destroy_content(menu->window);
-//     menu->screen = *screen;
-//     Function* func = NULL;
-//     static MenuScreen main_main = SCREEN_MENU_MAIN_MAIN;
-//     static MenuScreen main_options = SCREEN_MENU_MAIN_OPTIONS;
-//     static MenuScreen main_credits = SCREEN_MENU_MAIN_CREDITS;
-//     static MenuScreen main_quit = SCREEN_MENU_MAIN_QUIT;
-//     static MenuScreen pause_main = SCREEN_MENU_PAUSE_MAIN;
-//     static MenuScreen pause_options = SCREEN_MENU_PAUSE_OPTIONS;
-//     static MenuScreen pause_quit = SCREEN_MENU_PAUSE_QUIT;
-//     switch (menu->screen)
-//     {
-//         case SCREEN_MENU_MAIN_MAIN:
-//             func = NULL; // TODO:
-//             menu_add_button(menu, func, "START GAME");
-//             func = function_create(menu_go_to_screen, menu, &main_options);
-//             menu_add_button(menu, func, "OPTIONS");
-//             func = function_create(menu_go_to_screen, menu, &main_credits);
-//             menu_add_button(menu, func, "CREDITS");
-//             func = function_create(menu_go_to_screen, menu, &main_quit);
-//             menu_add_button(menu, func, "QUIT");
-//             break;
-// 
-//         case SCREEN_MENU_MAIN_OPTIONS:
-//             func = function_create(menu_go_to_screen, menu, &main_main);
-//             menu_add_button(menu, func, "BACK");
-//             break;
-// 
-//         case SCREEN_MENU_MAIN_CREDITS:
-//             func = function_create(menu_go_to_screen, menu, &main_main);
-//             menu_add_button(menu, func, "BACK");
-//             break;
-// 
-//         case SCREEN_MENU_MAIN_QUIT:
-//             func = function_create(app_quit, NULL, NULL);
-//             menu_add_button(menu, func, "QUIT");
-//             func = function_create(menu_go_to_screen, menu, &main_main);
-//             menu_add_button(menu, func, "BACK");
-//             break;
-// 
-// 
-//         case SCREEN_MENU_PAUSE_MAIN:
-//             func = NULL; // TODO:
-//             menu_add_button(menu, func, "RETURN");
-//             func = function_create(menu_go_to_screen, menu, &pause_options);
-//             menu_add_button(menu, func, "OPTIONS");
-//             func = function_create(menu_go_to_screen, menu, &pause_quit);
-//             menu_add_button(menu, func, "QUIT TO MAIN MENU");
-//             break;
-// 
-//         case SCREEN_MENU_PAUSE_OPTIONS:
-//             func = function_create(menu_go_to_screen, menu, &pause_main);
-//             menu_add_button(menu, func, "BACK");
-//             break;
-// 
-//         case SCREEN_MENU_PAUSE_QUIT:
-//             func = function_create(menu_go_to_screen, menu, &main_main);
-//             menu_add_button(menu, func, "QUIT TO MAIN MENU");
-// 
-//             func = function_create(menu_go_to_screen, menu, &pause_main);
-//             menu_add_button(menu, func, "BACK");
-//             break;
-// 
-//         default:
-//             break;
-//     }
-// }
+void verify_menu(const Menu* menu)
+{
+    verify(menu == NULL, "Menu does not exist");
+}

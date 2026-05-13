@@ -1,5 +1,4 @@
 #include "include/game/ui/board_ui.h"
-#include "ui_elements/window.h"
 
 static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -165,47 +164,22 @@ static void board_ui_add_tile(BoardUI* ui, int col, int row)
     int index = tile_get_texture_index(tile);
     SDL_Texture* texture = window_get_texture(window, index);
     Sprite* sprite = sprite_create(texture);
-    int x;
-    int y;
-    if (board_get_active_player(board) == board_get_player_white(board))
-    {
-        x = col * TEXTURE_DEFAULT_SIZE_PX;
-        y = row * TEXTURE_DEFAULT_SIZE_PX;
-    }
-    else 
-    {
-        x = (board_get_col_num(board) - 1 - col) * TEXTURE_DEFAULT_SIZE_PX;
-        y = (board_get_row_num(board) - 1 - row) * TEXTURE_DEFAULT_SIZE_PX;
-    }
-    window_add_sprite(
-        window, 
-        sprite, 
-        x,
-        y
-    );
+    int x = col * TEXTURE_DEFAULT_SIZE_PX;
+    int y = row * TEXTURE_DEFAULT_SIZE_PX;
+    window_add_sprite(window, sprite, x, y);
 
     texture = board_ui_tile_get_texture(ui, col, row);
-
     Button* button = button_create(
         texture,
         texture,
         texture
     );
-
     Function* func_left = function_create(select_tile, ui, tile);
     button_set_on_click_fn(button, MOUSE_LEFT, func_left);
-
     Function* func_right = function_create(deselect_tile, ui, 0);
     button_set_on_click_fn(button, MOUSE_RIGHT, func_right);
-
     button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
-
-    window_add_button(
-        window, 
-        button, 
-        x,
-        y
-    );
+    window_add_button(window, button, x, y);
 }
 
 static BoardTextures tile_get_texture_index(const Tile* tile)
@@ -222,24 +196,9 @@ static void board_ui_add_piece(BoardUI* ui, int col, int row)
     int index = piece_get_texture_index(piece);
     SDL_Texture* texture = window_get_texture(window, index);
     Sprite* sprite = sprite_create(texture);
-    int x;
-    int y;
-    if (board_get_active_player(board) == board_get_player_white(board))
-    {
-        x = col * TEXTURE_DEFAULT_SIZE_PX;
-        y = row * TEXTURE_DEFAULT_SIZE_PX;
-    }
-    else 
-    {
-        x = (board_get_col_num(board) - 1 - col) * TEXTURE_DEFAULT_SIZE_PX;
-        y = (board_get_row_num(board) - 1 - row) * TEXTURE_DEFAULT_SIZE_PX;
-    }
-    window_add_sprite(
-        window, 
-        sprite, 
-        x,
-        y
-    );
+    int x = col * TEXTURE_DEFAULT_SIZE_PX;
+    int y = row * TEXTURE_DEFAULT_SIZE_PX;
+    window_add_sprite(window, sprite, x, y);
 }
 
 static BoardTextures piece_get_texture_index(const Piece* piece)

@@ -1,5 +1,6 @@
 #include "include/appstate.h"
-#include "game/game.h"
+#include "inputstate.h"
+#include "ui_elements/menu.h"
 
 typedef enum AppScreen
 {
@@ -22,7 +23,14 @@ struct AppState
     GameUI* game_ui;
 };
 
-static void app_set_screen(AppState* app, AppScreen new_screen);
+static void app_end_game(void* app_state, void* null);
+static void app_start_game(void* app_state, void* null);
+
+static void app_menu_create(AppState* app);
+static void app_menu_set_main_main(void* app_state, void* null);
+static void app_menu_set_main_options(void* app_state, void* null);
+static void app_menu_set_main_credits(void* app_state, void* null);
+static void app_menu_set_main_quit(void* app_state, void* null);
 
 AppState* app_create()
 {
@@ -44,7 +52,7 @@ AppState* app_create()
 
     SDL_SetDefaultTextureScaleMode(app->sdl_renderer, SDL_SCALEMODE_PIXELART);
 
-    app->screen = APP_SCREEN_MAIN_MENU;
+    app->screen = 0;
 
     app->menu = NULL;
     app->game = NULL;
@@ -57,40 +65,27 @@ AppState* app_create()
 
 void app_init(AppState* app)
 {
-    app_set_screen(app, APP_SCREEN_GAME);
+    verify_app_state(app);
+
+    app_menu_create(app);
+    app_menu_set_main_main(app, NULL);
+    app_end_game(app, NULL);
 }
 
-
-static void app_set_screen(AppState* app, AppScreen new_screen)
-{
-    switch (new_screen)
-    {
-        default:
-        case APP_SCREEN_MAIN_MENU:
-            // TODO: 
-            break;
-        case APP_SCREEN_GAME:
-            app_start_game(app);
-            break;
-    }
-    app->screen = new_screen;
-}
-
-
-
-
-// ========== destroy ==========
 void app_destroy(AppState* app)
 {
-    verify(app == NULL, "AppState does not exist");
+    verify_app_state(app);
 
     SDL_DestroyWindow(app->sdl_window);
     SDL_DestroyRenderer(app->sdl_renderer);
 
     input_destroy(app->input);
 
-    app_end_game(app);
-    if (app->menu) menu_destroy(app->menu);
+    if (app->menu != NULL)
+    {
+        menu_destroy(app->menu);
+    }
+    app_end_game(app, NULL);
 
     TTF_Quit();
 
@@ -98,8 +93,6 @@ void app_destroy(AppState* app)
 }
 
 
-
-// ========== update ==========
 static void update_global_variables(AppState* app)
 {
     SDL_GetWindowSize(app->sdl_window, &g_app_window_width, &g_app_window_height);
@@ -114,8 +107,11 @@ static void update_global_variables(AppState* app)
     g_menu_font_size = FONT_SIZE_MENU * g_app_scale;
     g_game_font_size = FONT_SIZE * g_app_scale;
 }
-static void update_cheats(InputState* input)
+
+static void update_cheats(AppState* app)
 {
+    InputState* input = app->input;
+
     if (keyboard_get_pressed(input, SDL_SCANCODE_1))
     {
         infinite_points = !infinite_points;
@@ -125,78 +121,87 @@ static void update_cheats(InputState* input)
         can_purchace_multiple_times = !can_purchace_multiple_times;
     }
 }
-void app_update(AppState* app)
+
+static void update_screen(AppState* app)
 {
-    verify(app == NULL, "AppState does not exist");
-
     InputState* input = app->input;
-
-    update_global_variables(app);
-    update_cheats(input);
 
     if (app->screen == APP_SCREEN_GAME)
     {
         game_ui_update(input, app->game_ui);
+        return;
     }
-    else
+    if (app->screen == APP_SCREEN_MAIN_MENU)
     {
         menu_update(input, app->menu);
+        return;
     }
 }
 
+void app_update(AppState* app)
+{
+    verify_app_state(app);
 
+    update_global_variables(app);
+    update_cheats(app);
+    update_screen(app);
+}
 
-// ========== render ==========
+static void render_screen(AppState* app)
+{
+    SDL_Renderer* renderer = app->sdl_renderer;
+
+    if (app->screen == APP_SCREEN_MAIN_MENU)
+    {
+        menu_render(renderer, app->menu);
+        return;
+    }
+    if (app->screen == APP_SCREEN_GAME)
+    {
+        game_ui_render(renderer, app->game_ui);
+        return;
+    }
+}
 void app_render(AppState* app)
 {
-    verify(app == NULL, "AppState does not exist");
+    verify_app_state(app);
 
-    SDL_Renderer* renderer = app_get_sdl_renderer(app);
+    SDL_Renderer* renderer = app->sdl_renderer;
 
     SDL_SetRenderDrawColor(renderer, 12, 23, 34, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    if (app->screen == APP_SCREEN_GAME)
-    {
-        game_ui_render(renderer, app->game_ui);
-    }
-    else
-    {
-        menu_render(renderer, app->menu);
-    }
+    render_screen(app);
 
     SDL_RenderPresent(renderer);
 }
 
-
-
-// ========== get ==========
-SDL_Window* app_get_sdl_window(const AppState* app)
-{
-    verify(app == NULL, "AppState does not exist");
-
-    return app->sdl_window;
-}
-SDL_Renderer* app_get_sdl_renderer(const AppState* app)
-{
-    verify(app == NULL, "AppState does not exist");
-
-    return app->sdl_renderer;
-}
-
 InputState* app_get_inputstate(const AppState* app)
 {
-    verify(app == NULL, "AppState does not exist");
+    verify_app_state(app);
 
     return app->input;
 }
 
-static void menu_set_main_main(void* app_state, void* null);
-static void menu_set_main_options(void* app_state, void* null);
-static void menu_set_main_credits(void* app_state, void* null);
-static void menu_set_main_exit(void* app_state, void* null);
-static void app_end_game(void* app_state, void* null);
-static void app_start_game(void* app_state, void* null);
+static void app_start_game(void* app_state, void* null)
+{
+    AppState* app = (AppState*)app_state;
+
+    app_end_game(app, NULL);
+
+    app->game = game_create();
+    game_start(app->game);
+
+    app->game_ui = game_ui_create(app->game, app->sdl_renderer);
+
+    if (app->menu != NULL)
+    {
+        menu_destroy(app->menu);
+        app->menu = NULL;
+    }
+
+    app->screen = APP_SCREEN_GAME;
+}
 
 static void app_end_game(void* app_state, void* null)
 {
@@ -214,36 +219,45 @@ static void app_end_game(void* app_state, void* null)
     }
     game_ui_destroy(app->game_ui);
     app->game_ui = NULL;
+
 }
 
-static void app_start_game(void* app_state, void* null)
+static void app_menu_create(AppState* app)
 {
-    AppState* app = (AppState*)app_state;
-    app_end_game(app);
-    app->game = game_create();
-    game_start(app->game);
-    app->game_ui = game_ui_create(app->game, app->sdl_renderer);
+    app->menu = menu_create(
+        app->sdl_renderer,
+        (float)g_app_window_width / 4,
+        (float)g_app_window_height / 4,
+        (float)g_app_window_width / 2,
+        (float)g_app_window_height / 2
+    );
 }
-static void menu_set_main_main(void* app_state, void* null)
+
+static void app_menu_set_main_main(void* app_state, void* null)
 {
     AppState* app = (AppState*)app_state;
     SDL_Renderer* renderer = app->sdl_renderer;
     Menu* menu = app->menu;
+    app->screen = APP_SCREEN_MAIN_MENU;
 
     menu_destroy_content(menu);
     Function* func;
 
-    func = function_create();
+    // START GAME
+    func = function_create(app_start_game, app, NULL);
     menu_add_button(renderer, menu, func, "START GAME");
-    func = function_create();
+    // OPTIONS
+    func = function_create(app_menu_set_main_options, app, NULL);
     menu_add_button(renderer, menu, func, "OPTIONS");
-    func = function_create();
+    // CREDITS
+    func = function_create(app_menu_set_main_credits, app, NULL);
     menu_add_button(renderer, menu, func, "CREDITS");
-    func = function_create();
+    // QUIT
+    func = function_create(app_menu_set_main_quit, app, NULL);
     menu_add_button(renderer, menu, func, "QUIT");
 }
 
-static void menu_set_main_options(void* app_state, void* null)
+static void app_menu_set_main_options(void* app_state, void* null)
 {
     AppState* app = (AppState*)app_state;
     SDL_Renderer* renderer = app->sdl_renderer;
@@ -252,11 +266,12 @@ static void menu_set_main_options(void* app_state, void* null)
     menu_destroy_content(menu);
     Function* func;
 
-    func = function_create(menu_set_main_main, renderer, menu);
+    // BACK
+    func = function_create(app_menu_set_main_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
 }
 
-static void menu_set_main_credits(void* app_state, void* null)
+static void app_menu_set_main_credits(void* app_state, void* null)
 {
     AppState* app = (AppState*)app_state;
     SDL_Renderer* renderer = app->sdl_renderer;
@@ -265,11 +280,12 @@ static void menu_set_main_credits(void* app_state, void* null)
     menu_destroy_content(menu);
     Function* func;
 
-    func = function_create(menu_set_main_main, renderer, menu);
+    // BACK
+    func = function_create(app_menu_set_main_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
 }
 
-static void menu_set_main_exit(void* app_state, void* null)
+static void app_menu_set_main_quit(void* app_state, void* null)
 {
     AppState* app = (AppState*)app_state;
     SDL_Renderer* renderer = app->sdl_renderer;
@@ -278,8 +294,15 @@ static void menu_set_main_exit(void* app_state, void* null)
     menu_destroy_content(menu);
     Function* func;
 
+    // QUIT
     func = function_create(app_quit, NULL, NULL);
-    menu_add_button(renderer, menu, func, "QUIT");
-    func = function_create(menu_set_main_main, renderer, menu);
+    menu_add_button(renderer, menu, func, "QUIT GAME");
+    // BACK
+    func = function_create(app_menu_set_main_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
+}
+
+void verify_app_state(const AppState* app)
+{
+    verify(app == NULL, "AppState does not exist");
 }

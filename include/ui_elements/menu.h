@@ -25,3 +25,5 @@ void menu_render(SDL_Renderer* renderer, Menu* menu);
 void menu_update(InputState* input, Menu* menu);
 
 void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, const char* text);
+
+void verify_menu(const Menu* menu);
