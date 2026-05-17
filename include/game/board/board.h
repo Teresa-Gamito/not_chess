@@ -25,8 +25,10 @@ int board_get_row_num(const Board* board);
 
 const char* board_get_log(const Board* board);
 
+bool board_game_ended(const Board* board);
+
 // ========== piece ==========
-bool board_can_add_piece_at(Board* board, int col, int row);
+bool board_can_add_piece_at(const Board* board, int col, int row);
 void board_add_piece_at(Board* board, Piece* piece, int col, int row);
 
 void board_piece_remove(Board* board, int col, int row);
@@ -34,10 +36,10 @@ void board_piece_remove(Board* board, int col, int row);
 bool board_has_piece_at(const Board* board, int col, int row);
 Piece* board_get_piece_at(const Board* board, int col, int row);
 
-bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_row, int dst_col);
+bool board_can_piece_capture(const Board* board, int src_col, int src_row, int dst_row, int dst_col);
 void board_piece_capture(Board* board, Piece* piece);
 
-bool board_can_piece_move_to(Board *board, int src_col, int src_row, int dst_col, int dst_row);
+bool board_can_piece_move_to(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
 
 int board_piece_get_col(const Board* board, const Piece* piece);

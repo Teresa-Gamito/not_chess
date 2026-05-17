@@ -1,5 +1,5 @@
 #include "game/ui/game_ui.h"
-#include <SDL3/SDL_scancode.h>
+#include "helper_functions/helper_functions.h"
 
 typedef enum GameScreen
 {
@@ -24,7 +24,6 @@ struct GameUI
     SDL_Renderer* renderer;
 
     bool is_paused;
-    bool end_game;
 };
 
 static void menu_set_pause_main(void* game_ui, void* null);
@@ -65,7 +64,6 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
     ui->renderer = renderer;
 
     ui->is_paused = false;
-    ui->end_game = false;
 
     return ui;
 }
@@ -118,10 +116,6 @@ int game_ui_update(InputState* input, GameUI* ui)
 
     update_keys(input, ui);
 
-    if (ui->end_game) 
-    {
-        return 1;
-    }
     if (ui->is_paused)
     {
         menu_update(input, ui->menu);
@@ -129,7 +123,15 @@ int game_ui_update(InputState* input, GameUI* ui)
     }
     if (ui->screen == GAME_SCREEN_BOARD)
     {
-        board_ui_update(input, ui->board_ui);
+        int result = board_ui_update(input, ui->board_ui);
+        if (result == 0) 
+        {
+            return 0;
+        }
+        else
+        {
+            app_quit(NULL, NULL);
+        }
     }
     if (ui->screen == GAME_SCREEN_TREE)
     {

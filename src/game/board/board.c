@@ -28,6 +28,8 @@ struct Board
     Player** active_player;
 
     GameLog* log;
+
+    bool has_game_ended;
 };
 
 Board* board_create(int col_num, int row_num)
@@ -58,6 +60,8 @@ Board* board_create(int col_num, int row_num)
     board->active_player = &board->player1;
 
     board->log = gamelog_create();
+
+    board->has_game_ended = false;
 
     return board;
 }
@@ -132,8 +136,13 @@ void board_set_default(Board* board)
     }
 }
 
+bool board_game_ended(const Board* board)
+{
+    verify_board(board);
+    return board->has_game_ended;
+}
 
-bool board_can_add_piece_at(Board* board, int col, int row)
+bool board_can_add_piece_at(const Board* board, int col, int row)
 {
     verify_board(board);
     verify_board_pos(board, col, row);
@@ -203,7 +212,7 @@ int board_piece_get_row(const Board* board, const Piece* piece)
     return pos / board->col_num;
 }
 
-bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+bool board_can_piece_move_to(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify_board(board);
     verify_board_pos(board, src_col, src_row);
@@ -301,7 +310,7 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
 
     );
 }
-bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
+bool board_can_piece_capture(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
     verify(!board_has_piece_at(board, dst_col, dst_row), "Piece does not exist");
@@ -347,7 +356,7 @@ static bool board_piece_has_clear_path(const Board* board, int src_col, int src_
     int next_col = src_col + col_step;
     int next_row = src_row + row_step;
 
-    // if the next position is the destination then nothing was found until here
+    // if the next position is the destination then there was no occupied tile along the way
     if (next_col == dst_col && next_row == dst_row)
     {
         return true;
@@ -503,9 +512,46 @@ static int translate_position(const Board* board, int col, int row)
     return col + row * board->col_num;
 }
 
+static bool board_player_has_king(const Board* board, const Player* player)
+{
+    Color color = player_get_color(player);
+    for (int col = 0; col < board_get_col_num(board); col++)
+    {
+        for (int row = 0; row < board_get_row_num(board); row++)
+        {
+            if (!board_has_piece_at(board, col, row))
+            {
+                continue;
+            }
+            Piece* piece = board_get_piece_at(board, col, row);
+            if (piece_get_type(piece) == KING && piece_get_color(piece) == color)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+static bool has_game_ended(const Board* board)
+{
+    Player* player = board_get_opponent(board);
+    if (!board_player_has_king(board, player))
+    {
+        return true;
+    }
+    return false;
+}
+
 void advance_turn(Board* board)
 {
     verify_board(board);
+
+    if (has_game_ended(board))
+    {
+        board->has_game_ended = true;
+        return;
+    }
 
     if (*board->active_player == board->player1)
     {
@@ -516,14 +562,11 @@ void advance_turn(Board* board)
         board->active_player = &board->player1;
     }
 
-    char* log_msg = NULL;
-    SDL_asprintf(
-        &log_msg,
+    gamelog_add(
+        board->log, 
         "===== %s turn =====",
         board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK"
     );
-    gamelog_add(board->log, log_msg);
-    SDL_free(log_msg);
 }
 
 bool is_player_side_of_board(const Board* board, const Player* player, int row)

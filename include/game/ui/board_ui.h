@@ -28,7 +28,7 @@ BoardUI* board_ui_create(
 );
 void board_ui_destroy(BoardUI* ui);
 
-void board_ui_update(InputState* input, BoardUI* ui);
+int board_ui_update(InputState* input, BoardUI* ui);
 void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui);
 
 void select_tile(void* board_ui, void* tile);

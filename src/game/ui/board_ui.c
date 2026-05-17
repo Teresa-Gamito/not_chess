@@ -1,4 +1,6 @@
 #include "include/game/ui/board_ui.h"
+#include "game/board/board.h"
+#include <SDL3/SDL_log.h>
 
 static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -70,9 +72,27 @@ void board_ui_destroy(BoardUI* ui)
     task_list_destroy(ui->tasks);
     SDL_free(ui);
 }
-void board_ui_update(InputState* input, BoardUI* ui)
+int board_ui_update(InputState* input, BoardUI* ui)
 {
+    Board* board = ui->board;
+    if (board_game_ended(board))
+    {
+        Player* player = board_get_active_player(board);
+        if (player == board_get_player_white(board))
+        {
+            SDL_Log("White wins!");
+            return 1;
+        }
+        if (player == board_get_player_black(board))
+        {
+            SDL_Log("Black wins!");
+            return 2;
+        }
+    }
+
     window_update(input, ui->window);
+
+    return 0;
 }
 void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui)
 {
