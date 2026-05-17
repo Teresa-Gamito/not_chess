@@ -22,11 +22,17 @@ void gamelog_destroy(GameLog* log)
     SDL_free(log);
 }
 
-void gamelog_add(GameLog* log, const char* msg)
+void gamelog_add(GameLog* log, const char* msg, ...)
 {
     verify_gamelog(log);
 
-    vector_add(log->logs, SDL_strdup(msg));
+    va_list args;
+    va_start(args, msg);
+    char* log_msg;
+    SDL_asprintf(&log_msg, msg, args);
+    vector_add(log->logs, SDL_strdup(log_msg));
+    va_end(args);
+    SDL_free(log_msg);
 }
 const char* gamelog_get(const GameLog *log)
 {

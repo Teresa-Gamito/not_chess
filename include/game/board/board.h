@@ -10,6 +10,7 @@
 #include "game/board/color.h"
 #include "game/board/piece.h"
 #include "game/board/tile.h"
+#include "game/log.h"
 
 typedef struct Board Board;
 

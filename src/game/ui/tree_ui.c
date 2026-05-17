@@ -1,5 +1,4 @@
 #include "include/game/ui/tree_ui.h"
-#include "ui_elements/window.h"
 
 struct TreeUI
 {

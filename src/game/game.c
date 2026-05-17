@@ -39,6 +39,13 @@ void game_start(Game* game)
     tree_set_default(game->tree);
 }
 
+void game_restart(Game* game)
+{
+    game_destroy(game);
+    game = game_create();
+    game_start(game);
+}
+
 Board* game_get_board(const Game* game)
 {
     return game->board;

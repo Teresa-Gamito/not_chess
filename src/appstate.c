@@ -1,4 +1,5 @@
 #include "include/appstate.h"
+#include "game/game.h"
 #include "inputstate.h"
 #include "ui_elements/menu.h"
 
@@ -125,11 +126,22 @@ static void update_cheats(AppState* app)
 static void update_screen(AppState* app)
 {
     InputState* input = app->input;
+    int result;
 
     if (app->screen == APP_SCREEN_GAME)
     {
-        game_ui_update(input, app->game_ui);
-        return;
+        result = game_ui_update(input, app->game_ui);
+        if (result == 0)
+        {
+            return;
+        }
+        if (result == 1)
+        {
+            app_menu_create(app);
+            app_menu_set_main_main(app, NULL);
+            app_end_game(app, NULL);
+            return;
+        }
     }
     if (app->screen == APP_SCREEN_MAIN_MENU)
     {

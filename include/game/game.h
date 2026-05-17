@@ -14,6 +14,7 @@ Game* game_create();
 void game_destroy(Game* game);
 
 void game_start(Game* game);
+void game_restart(Game* game);
 
 Board* game_get_board(const Game* game);
 Tree* game_get_tree(const Game* game);

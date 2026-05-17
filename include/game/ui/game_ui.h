@@ -16,7 +16,7 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer);
 void game_ui_destroy(GameUI* ui);
 
 void game_ui_render(SDL_Renderer* renderer, const GameUI* ui);
-void game_ui_update(InputState* input, GameUI* ui);
+int game_ui_update(InputState* input, GameUI* ui);
 
 void game_ui_toggle_pause(GameUI* ui);
 

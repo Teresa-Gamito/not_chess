@@ -1,6 +1,4 @@
 #include "include/game/board/board.h"
-#include "game/board/piece.h"
-#include "game/log.h"
 
 static const char board_default_layout[8][8] = 
     {
@@ -146,6 +144,7 @@ bool board_can_add_piece_at(Board* board, int col, int row)
     }
     return true;
 }
+
 void board_add_piece_at(Board* board, Piece* piece, int col, int row)
 {
     verify_board(board);
@@ -156,6 +155,7 @@ void board_add_piece_at(Board* board, Piece* piece, int col, int row)
     int pos = translate_position(board, col, row);
     vector_set_at(board->pieces, piece, pos);
 }
+
 void board_piece_remove(Board* board, int col, int row)
 {
     verify_board(board);
@@ -167,6 +167,7 @@ void board_piece_remove(Board* board, int col, int row)
     int pos = translate_position(board, col, row);
     vector_set_at(board->pieces, NULL, pos);
 }
+
 bool board_has_piece_at(const Board* board, int col, int row)
 {
     verify_board(board);
@@ -174,6 +175,7 @@ bool board_has_piece_at(const Board* board, int col, int row)
 
     return board_get_piece_at(board, col, row) != NULL;
 }
+
 Piece* board_get_piece_at(const Board* board, int col, int row)
 {
     verify_board(board);
@@ -182,6 +184,7 @@ Piece* board_get_piece_at(const Board* board, int col, int row)
     int pos = translate_position(board, col, row);
     return vector_get_at(board->pieces, pos);
 }
+
 int board_piece_get_col(const Board* board, const Piece* piece)
 {
     verify_board(board);
@@ -190,6 +193,7 @@ int board_piece_get_col(const Board* board, const Piece* piece)
     int pos = vector_item_get_index(board->pieces, piece);
     return pos % board->col_num;
 }
+
 int board_piece_get_row(const Board* board, const Piece* piece)
 {
     verify_board(board);
@@ -198,6 +202,7 @@ int board_piece_get_row(const Board* board, const Piece* piece)
     int pos = vector_item_get_index(board->pieces, piece);
     return pos / board->col_num;
 }
+
 bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify_board(board);
@@ -221,6 +226,7 @@ bool board_can_piece_move_to(Board* board, int src_col, int src_row, int dst_col
 
     return true;
 }
+
 static bool board_can_piece_promote(Board* board, int col, int row)
 {
     Player* player = board_get_active_player(board);
@@ -237,6 +243,7 @@ static bool board_can_piece_promote(Board* board, int col, int row)
     }
     return false;
 }
+
 void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
     verify_board(board);
@@ -269,9 +276,9 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
     {
         PieceType old_type = piece_get_type(piece);
         piece_promote(piece);
-        char* log_msg = NULL;
-        SDL_asprintf(
-            &log_msg,
+
+        gamelog_add(
+            board->log, 
             "%s promoted %s to a %s at col:%d row:%d",
             board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK",
             piece_type_get_name(old_type),
@@ -279,14 +286,11 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
             dst_col,
             dst_row
         );
-        gamelog_add(board->log, log_msg);
-        SDL_free(log_msg);
     }
     piece_set_moved(piece);
 
-    char* log_msg = NULL;
-    SDL_asprintf(
-        &log_msg,
+    gamelog_add(
+        board->log,
         "%s moved %s from col:%d row:%d to col:%d row:%d",
         board_get_active_player(board) == board_get_player_white(board) ? "WHITE" : "BLACK",
         piece_type_get_name(piece_get_type(piece)),
@@ -294,9 +298,8 @@ void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, in
         src_row,
         dst_col,
         dst_row
+
     );
-    gamelog_add(board->log, log_msg);
-    SDL_free(log_msg);
 }
 bool board_can_piece_capture(Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
@@ -324,9 +327,8 @@ void board_piece_capture(Board* board, Piece* piece)
     int points = piece_get_points(piece);
     player_add_points(player, points);
 
-    char* log_msg = NULL;
-    SDL_asprintf(
-        &log_msg,
+    gamelog_add(
+        board->log,
         "%s captured %s at col:%d row:%d and recieved %d capturing points",
         player == board_get_player_white(board) ? "WHITE" : "BLACK",
         piece_type_get_name(piece_get_type(piece)),
@@ -334,50 +336,31 @@ void board_piece_capture(Board* board, Piece* piece)
         board_piece_get_row(board, piece),
         points
     );
-    gamelog_add(board->log, log_msg);
-    SDL_free(log_msg);
 }
+
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row)
 {
-    verify_board(board);
-    verify_board_pos(board, src_col, src_row);
-    verify_board_pos(board, dst_col, dst_row);
-    verify(!board_has_piece_at(board, src_col, src_row), "Piece does not exist");
+    // get the distance between the source tile and the next one
+    int col_step = sign(dst_col - src_col);
+    int row_step = sign(dst_row - src_row);
+    // get the next position
+    int next_col = src_col + col_step;
+    int next_row = src_row + row_step;
 
-    Piece* piece = board_get_piece_at(board, src_col, src_row);
-
-    if (!piece_requires_clear_path(piece))
+    // if the next position is the destination then nothing was found until here
+    if (next_col == dst_col && next_row == dst_row)
     {
         return true;
     }
-
-    int col_size = SDL_abs(dst_col - src_col);
-    int row_size = SDL_abs(dst_row - src_row);
-    int col_dir = sign(dst_col - src_col);
-    int row_dir = sign(dst_row - src_row);
-
-    int col = 0;
-    int row = 0;
-    int board_col, board_row;
-    while (col <= col_size && row <= row_size)
+    // if the position is occupied then there is no clear path
+    // this excludes the starting and destination positions
+    if (board_has_piece_at(board, next_col, next_row))
     {
-        board_col = src_col + (col * col_dir);
-        board_row = src_row + (row * row_dir);
-
-        if ((board_col == dst_col && board_row == dst_row) || 
-            (board_col == src_col && board_row == src_row))
-        { /* do nothing */ }
-        else if (board_has_piece_at(board, board_col, board_row))
-        {
-            return false;
-        }
-
-        col += SDL_abs(col_dir);
-        row += SDL_abs(row_dir);
+        return false;
     }
-    return true;
+    // verify the next position
+    return board_piece_has_clear_path(board, next_col, next_row, dst_col, dst_row);
 }
-
 
 static void board_add_col(Board* board)
 {
@@ -412,6 +395,7 @@ static void board_add_col(Board* board)
         vector_set_at(board->tiles, tile, pos);
     }
 }
+
 static void board_add_row(Board* board)
 {
     verify_board(board);
@@ -428,6 +412,7 @@ static void board_add_row(Board* board)
         vector_add(board->pieces, NULL);
     }
 }
+
 void board_expand(Board* board)
 {
     verify_board(board);
@@ -469,6 +454,7 @@ void board_expand(Board* board)
     gamelog_add(board->log, log_msg);
     SDL_free(log_msg);
 }
+
 Tile* board_get_tile_at(const Board* board, int col, int row)
 {
     verify_board(board);
@@ -477,6 +463,7 @@ Tile* board_get_tile_at(const Board* board, int col, int row)
     int pos = translate_position(board, col, row);
     return vector_get_at(board->tiles, pos);
 }
+
 int board_tile_get_col(const Board* board, const Tile* tile)
 {
     verify_board(board);
@@ -485,6 +472,7 @@ int board_tile_get_col(const Board* board, const Tile* tile)
     int pos = vector_item_get_index(board->tiles, tile);
     return pos % board->col_num;
 }
+
 int board_tile_get_row(const Board* board, const Tile* tile)
 {
     verify_board(board);
@@ -502,12 +490,14 @@ int board_get_col_num(const Board* board)
 
     return board->col_num;
 }
+
 int board_get_row_num(const Board* board)
 {
     verify_board(board);
 
     return board->row_num;
 }
+
 static int translate_position(const Board* board, int col, int row)
 {
     return col + row * board->col_num;
@@ -535,6 +525,7 @@ void advance_turn(Board* board)
     gamelog_add(board->log, log_msg);
     SDL_free(log_msg);
 }
+
 bool is_player_side_of_board(const Board* board, const Player* player, int row)
 {
     verify_board(board);
@@ -550,11 +541,13 @@ bool is_player_side_of_board(const Board* board, const Player* player, int row)
     }
     return false;
 }
+
 Player* board_get_active_player(const Board* board)
 {
     verify_board(board);
     return *board->active_player;
 }
+
 Player* board_get_opponent(const Board* board)
 {
     verify_board(board);
@@ -566,11 +559,13 @@ Player* board_get_player_white(const Board* board)
     verify_board(board);
     return board->player1;
 }
+
 Player* board_get_player_black(const Board* board)
 {
     verify_board(board);
     return board->player2;
 }
+
 const char* board_get_log(const Board* board)
 {
     return gamelog_get(board->log);
@@ -582,6 +577,7 @@ void verify_board_pos(const Board* board, int col, int row)
     verify(col < 0 || col >= board->col_num, "Invalid column");
     verify(row < 0 || row >= board->row_num, "Invalid row");
 }
+
 void verify_board(const Board* board)
 {
     verify(board == NULL, "Board does not exist");

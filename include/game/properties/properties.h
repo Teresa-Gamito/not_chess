@@ -3,6 +3,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include "include/game/board/piece.h"
 #include "include/game/board/tile.h"
+#include <stdarg.h>
 
 
 const char* get_piece_properties(const Piece* piece);

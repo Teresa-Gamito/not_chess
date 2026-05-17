@@ -1,5 +1,11 @@
 #include "game/ui/game_ui.h"
-#include "helper_functions/error_handling.h"
+#include <SDL3/SDL_scancode.h>
+
+typedef enum GameScreen
+{
+    GAME_SCREEN_BOARD,
+    GAME_SCREEN_TREE,
+} GameScreen;
 
 struct GameUI 
 {
@@ -7,6 +13,8 @@ struct GameUI
 
     BoardUI* board_ui;
     TreeUI* tree_ui;
+    GameScreen screen;
+
     // player info
     // properties
     // rules
@@ -16,11 +24,15 @@ struct GameUI
     SDL_Renderer* renderer;
 
     bool is_paused;
+    bool end_game;
 };
 
 static void menu_set_pause_main(void* game_ui, void* null);
 static void menu_set_pause_options(void* game_ui, void* null);
 static void menu_set_pause_quit(void* game_ui, void* null);
+
+static void toggle_pause(void* game_ui, void* null);
+static void toggle_screen(void* game_ui, void* null);
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 {
@@ -34,23 +46,26 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
         game_get_board(ui->game),
         0,
         0,
-        200,
-        200
+        g_app_window_width,
+        g_app_window_height
     );
     ui->tree_ui = tree_ui_create(
         renderer,
         game_get_tree(ui->game),
         ui->board_ui,
-        200,
         0,
-        100,
-        200
+        0,
+        g_app_window_width,
+        g_app_window_height
     );
+    ui->screen = GAME_SCREEN_BOARD;
+
     ui->menu = NULL;
 
     ui->renderer = renderer;
 
     ui->is_paused = false;
+    ui->end_game = false;
 
     return ui;
 }
@@ -69,8 +84,15 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
     verify_renderer(renderer);
     verify_game_ui(ui);
 
-    board_ui_render(renderer, ui->board_ui);
-    tree_ui_render(renderer, ui->tree_ui);
+    if (ui->screen == GAME_SCREEN_BOARD)
+    {
+        board_ui_render(renderer, ui->board_ui);
+    }
+    if (ui->screen == GAME_SCREEN_TREE)
+    {
+        tree_ui_render(renderer, ui->tree_ui);
+    }
+
     if (ui->menu == NULL)
     {
         return;
@@ -84,28 +106,56 @@ static void update_keys(InputState* input, GameUI* ui)
     {
         game_ui_toggle_pause(ui);
     }
+    if (keyboard_get_pressed(input, SDL_SCANCODE_TAB))
+    {
+        toggle_screen(ui, NULL);
+    }
 }
-void game_ui_update(InputState* input, GameUI* ui)
+int game_ui_update(InputState* input, GameUI* ui)
 {
     verify_game_ui(ui);
     verify_input(input);
 
     update_keys(input, ui);
 
+    if (ui->end_game) 
+    {
+        return 1;
+    }
     if (ui->is_paused)
     {
         menu_update(input, ui->menu);
-        return;
+        return 0;
     }
-
-    board_ui_update(input, ui->board_ui);
-    tree_ui_update(input, ui->tree_ui);
+    if (ui->screen == GAME_SCREEN_BOARD)
+    {
+        board_ui_update(input, ui->board_ui);
+    }
+    if (ui->screen == GAME_SCREEN_TREE)
+    {
+        tree_ui_update(input, ui->tree_ui);
+    }
+    return 0;
 }
 
 static void toggle_pause(void* game_ui, void* null)
 {
     (void)null;
     game_ui_toggle_pause(game_ui);
+}
+static void toggle_screen(void* game_ui, void* null)
+{
+    (void)null;
+    GameUI* ui = game_ui;
+    if (ui->screen == GAME_SCREEN_BOARD) 
+    {
+        ui->screen = GAME_SCREEN_TREE;
+        return;
+    }
+    if (ui->screen == GAME_SCREEN_TREE)
+    {
+        ui->screen = GAME_SCREEN_BOARD;
+    }
 }
 static void menu_set_pause_main(void* game_ui, void* null)
 {
@@ -206,6 +256,7 @@ void game_ui_toggle_pause(GameUI* ui)
         return;
     }
 }
+
 
 
 void verify_game_ui(const GameUI* ui)

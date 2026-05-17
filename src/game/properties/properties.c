@@ -1,9 +1,14 @@
 #include "include/game/properties/properties.h"
 
-static void add_to_string(char** string, const char* add, bool is_new_line)
+static void add_property(char** properties, const char* msg, ...)
 {
-    char* fmt = is_new_line ? "%s%s\n" : "%s%s";
-    SDL_asprintf(string, fmt, *string, add);
+    va_list args;
+    va_start(args, msg);
+    char* temp;
+    SDL_asprintf(&temp, msg, args);
+    va_end(args);
+    SDL_asprintf(properties, "%s%s\n", *properties, temp);
+    SDL_free(temp);
 }
 
 static const char* color_get_name(Color color)
@@ -24,18 +29,15 @@ const char* get_piece_properties(const Piece* piece)
     char* properties = "";
 
     Color color = piece_get_color(piece);
-    add_to_string(&properties, "Color: ", false);
-    add_to_string(&properties, color_get_name(color), true);
+    add_property(&properties, "Color: %s", color_get_name(color));
 
     PieceType type = piece_get_type(piece);
-    add_to_string(&properties, "Type: ", false);
-    add_to_string(&properties, piece_type_get_name(type), true);
+    add_property(&properties, "Type: %s", piece_type_get_name(type));
 
-    add_to_string(&properties, "", true);
+    add_property(&properties, "");
 
     char* has_moved = piece_has_moved(piece) ? "yes" : "no";
-    add_to_string(&properties, "Has moved: ", false);
-    add_to_string(&properties, has_moved, true);
+    add_property(&properties, "Has moved: %s", has_moved);
 
     // TODO: keep adding more properties
 
@@ -59,18 +61,14 @@ const char* get_tile_properties(const Tile* tile)
     char* properties = "";
 
     Color color = tile_get_color(tile);
-    add_to_string(&properties, "Color: ", false);
-    add_to_string(&properties, color_get_name(color), true);
+    add_property(&properties, "Color: %s", color_get_name(color));
 
     TileType type = tile_get_type(tile);
-    add_to_string(&properties, "Type: ", false);
-    add_to_string(&properties, tile_type_get_name(type), true);
+    add_property(&properties, "Type: %s", tile_type_get_name(type));
 
-    add_to_string(&properties, "", true);
+    add_property(&properties, "");
 
     // TODO: keep adding more properties
 
     return properties;
 }
-const char* get_rules();
-const char* get_log();
