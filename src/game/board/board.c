@@ -1,16 +1,6 @@
 #include "include/game/board/board.h"
 
-static const char board_default_layout[8][8] = 
-    {
-        { 'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R' },
-        { 'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P' },
-        { '0', '0', '0', '0', '0', '0', '0', '0' },
-        { '0', '0', '0', '0', '0', '0', '0', '0' },
-        { '0', '0', '0', '0', '0', '0', '0', '0' },
-        { '0', '0', '0', '0', '0', '0', '0', '0' },
-        { 'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p' },
-        { 'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r' },
-    };
+static const char board_default_layout[] = "RNBQKBNRPPPPPPPP00000000000000000000000000000000pppppppprnbqkbnr";
 
 static int translate_position(const Board* board, int col, int row);
 static bool board_piece_has_clear_path(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
@@ -87,52 +77,49 @@ void board_set_default(Board* board)
 
     PieceType type;
     Color color;
-    for (int col = 0; col < board_get_col_num(board); col++)
+    for (int i = 0; i < board_get_col_num(board) * board_get_row_num(board); i++)
     {
-        for (int row = 0; row < board_get_row_num(board); row++)
+        switch (board_default_layout[i])
         {
-            switch (board_default_layout[row][col])
-            {
-                case 'P':
-                case 'p':
-                    type = PAWN;
-                    break;
-                case 'R':
-                case 'r':
-                    type = ROOK;
-                    break;
-                case 'N':
-                case 'n':
-                    type = KNIGHT;
-                    break;
-                case 'B':
-                case 'b':
-                    type = BISHOP;
-                    break;
-                case 'Q':
-                case 'q':
-                    type = QUEEN;
-                    break;
-                case 'K':
-                case 'k':
-                    type = KING;
-                    break;
-                case 'L':
-                case 'l':
-                    type = LANCE;
-                    break;
-                default:
-                    continue;
-            }
-            if (board_default_layout[row][col] > 'a')
-            {
-                color = WHITE;
-            }
-            else color = BLACK;
-
-            Piece* piece = piece_create(type, color);
-            board_add_piece_at(board, piece, col, row);
+            case 'P':
+            case 'p':
+                type = PAWN;
+                break;
+            case 'R':
+            case 'r':
+                type = ROOK;
+                break;
+            case 'N':
+            case 'n':
+                type = KNIGHT;
+                break;
+            case 'B':
+            case 'b':
+                type = BISHOP;
+                break;
+            case 'Q':
+            case 'q':
+                type = QUEEN;
+                break;
+            case 'K':
+            case 'k':
+                type = KING;
+                break;
+            case 'L':
+            case 'l':
+                type = LANCE;
+                break;
+            default:
+                continue;
         }
+        if (board_default_layout[i] > 'a')
+        {
+            color = WHITE;
+        }
+        else color = BLACK;
+
+        Piece* piece = piece_create(type, color);
+        board_add_piece_at(board, piece, i % board_get_row_num(board), i / board_get_row_num(board));
     }
 }
 
