@@ -1,9 +1,12 @@
-#include "include/game/helper_functions/graph.h"
+#include "include/helper_functions/graph.h"
+#include "helper_functions/vector.h"
 
 typedef struct Node
 {
     void* data;
-    Vector* neighbours;
+    Vector* next_nodes;
+    Vector* prev_nodes;
+    TypeOps* ops;
 } Node;
 
 struct Graph
@@ -12,13 +15,44 @@ struct Graph
 };
 
 
-
-static Node* graph_get_node(const Graph* graph, int index);
-
-static Node* node_create(void* data);
-static void node_add_edge(Node* node, const Node* neighbour);
-static void node_destroy(Node* node);
 TypeOps* node_ops();
+
+
+static Node* node_create(void* data)
+{
+    Node* node = SDL_malloc(sizeof(Node));
+    verify(node == NULL, "Node could not be created: malloc");
+
+    node->data = data;
+    node->prev_nodes = vector_create(node_ops());
+    node->next_nodes = vector_create(node_ops());
+
+    return node;
+}
+
+static void node_add_edge(Node* from, Node* to)
+{
+    vector_add(from->next_nodes, (void*) to);
+    vector_add(to->prev_nodes, (void*) from);
+}
+
+static void node_destroy(Node* node)
+{
+
+    for (int i = 0; i < vector_get_count(node->prev_nodes); i++)
+    {
+        vector_set_at(node->prev_nodes, NULL, i);
+    }
+    vector_destroy(node->prev_nodes);
+
+    for (int i = 0; i < vector_get_count(node->prev_nodes); i++)
+    {
+        vector_set_at(node->prev_nodes, NULL, i);
+    }
+    vector_destroy(node->next_nodes);
+
+    SDL_free(node);
+}
 
 
 
@@ -44,6 +78,15 @@ void graph_add_node(Graph* graph, void* data)
     vector_add(graph->nodes, node);
 }
 
+static Node* graph_get_node(const Graph* graph, int index)
+{
+    if (index >= vector_get_count(graph->nodes))
+    {
+        return NULL;
+    }
+    return (Node*) vector_get_at(graph->nodes, index);
+}
+
 void graph_add_edge(Graph* graph, int index_from, int index_to)
 {
     Node* node = graph_get_node(graph, index_from);
@@ -56,39 +99,6 @@ void* graph_get_data(const Graph* graph, int index)
 {
     Node* node = graph_get_node(graph, index);
     return node->data;
-}
-
-static Node* graph_get_node(const Graph* graph, int index)
-{
-    if (index >= vector_get_count(graph->nodes))
-    {
-        return NULL;
-    }
-    return (Node*) vector_get_at(graph->nodes, index);
-}
-
-
-
-static Node* node_create(void* data)
-{
-    Node* node = SDL_malloc(sizeof(Node));
-    verify(node == NULL, "Node could not be created: malloc");
-
-    node->data = data;
-    node->neighbours = vector_create(node_ops());
-
-    return node;
-}
-
-static void node_add_edge(Node* node, const Node* neighbour)
-{
-    vector_add(node->neighbours, (void*) neighbour);
-}
-
-static void node_destroy(Node* node)
-{
-    // destory data?
-    SDL_free(node);
 }
 
 

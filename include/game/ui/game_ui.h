@@ -7,7 +7,6 @@
 #include "helper_functions/global_variables.h"
 #include "game/game.h"
 #include "game/ui/board_ui.h"
-#include "game/ui/tree_ui.h"
 #include "ui_elements/menu.h"
 
 typedef struct GameUI GameUI;

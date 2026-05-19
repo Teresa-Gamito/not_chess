@@ -1,6 +1,5 @@
 #include "include/game/ui/board_ui.h"
 #include "game/board/board.h"
-#include <SDL3/SDL_log.h>
 
 static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, int col, int row);
@@ -525,6 +524,11 @@ Board* board_ui_get_board(const BoardUI* ui)
     verify_board_ui(ui);
 
     return ui->board;
+}
+
+const char* board_get_selected_properties(const BoardUI* ui)
+{
+    // TODO: RODRIGO
 }
 
 

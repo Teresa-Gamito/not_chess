@@ -6,7 +6,6 @@
 #include "helper_functions/global_variables.h"
 #include "helper_functions/error_handling.h"
 #include "game/board/board.h"
-#include "game/tree/tree.h"
 
 typedef struct Game Game;
 
@@ -17,6 +16,5 @@ void game_start(Game* game);
 void game_restart(Game* game);
 
 Board* game_get_board(const Game* game);
-Tree* game_get_tree(const Game* game);
 
 void verify_game(const Game* game);

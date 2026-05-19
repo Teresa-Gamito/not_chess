@@ -5,10 +5,8 @@ struct TreeUI
     SDL_Renderer* renderer;
 
     TTF_Font* font;
-    SDL_Color* red;
-    SDL_Color* green;
 
-    Tree* tree;
+    Graph* tree;
     Window* window;
 
     Board* board;

@@ -39,3 +39,5 @@ Board* board_ui_get_board(const BoardUI* ui);
 void board_ui_add_task(BoardUI* ui, Task task);
 
 void verify_board_ui(const BoardUI* ui);
+
+const char* board_selected_tile_get_properties(const BoardUI* ui);
