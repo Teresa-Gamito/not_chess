@@ -1,27 +1,24 @@
 #include "game/upgrade_tree/tree.h"
-#include "helper_functions/graph.h"
 
-typedef enum NodeState
+typedef enum UpgradeState
 {
     LOCKED,
     UNLOCKED,
     PURCHASED
-} NodeState;
+} UpgradeState;
 
-typedef struct Node 
+typedef struct Upgrade
 {
     char* name;
     char* description;
     int cost;
-    NodeState state;
-} Node;
+    UpgradeState state;
+} Upgrade;
 
-
-
-static Node* node_create(const char* name, const char* description, int cost)
+static Upgrade* node_create(int cost)
 {
-    Node* node = SDL_malloc(sizeof(Node));
-    verify(node == NULL, "Node could not be created: malloc");
+    Upgrade* node = SDL_malloc(sizeof(Upgrade));
+    verify(node == NULL, "Upgrade could not be created: malloc");
 
     node->name = SDL_strdup(name);
     node->description = SDL_strdup(description);
@@ -31,7 +28,7 @@ static Node* node_create(const char* name, const char* description, int cost)
     return node;
 }
 
-static void node_destroy(Node* node)
+static void node_destroy(Upgrade* node)
 {
     SDL_free(node->name);
     SDL_free(node->description);
@@ -44,14 +41,17 @@ Graph* tree_create()
 }
 void tree_destroy(Graph *tree)
 {
-
+    
 }
 
-void tree_node_purchase(Graph* tree, NodeIndex index)
+void tree_set_default(Graph *tree)
 {
-    Node* node = graph_get_data(tree, index);
-    node->state = PURCHASED;
-
+    Upgrade* upgrade_create();
 }
 
-void tree_set_default(Graph *tree);
+void tree_node_purchase(Graph* tree, UpgradeIndex index)
+{
+    Upgrade* node = graph_get_data(tree, index);
+    node->state = PURCHASED;
+}
+

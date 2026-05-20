@@ -1,11 +1,8 @@
-// player, capturing points and color
-// player 1 is white
-// player 2 is black
 #pragma once
 
-#include "helper_functions/error_handling.h"
-#include "include/game/board/color.h"
 #include <SDL3/SDL_stdinc.h>
+#include "helper_functions/error_handling.h"
+#include "include/game/color.h"
 
 typedef struct Player Player;
 

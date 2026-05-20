@@ -1,4 +1,4 @@
-#include "include/game/log.h"
+#include "include/game/log/log.h"
 
 struct GameLog
 {

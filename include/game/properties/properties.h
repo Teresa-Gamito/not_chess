@@ -1,12 +1,16 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
-#include "include/game/board/piece.h"
-#include "include/game/board/tile.h"
 #include <stdarg.h>
+#include "game/board/board_elements/piece.h"
+#include "game/board/board_elements/tile.h"
+#include "game/player/player.h"
 
-
+// ========== piece ==========
 const char* get_piece_properties(const Piece* piece);
+
+// ========== tile ==========
 const char* get_tile_properties(const Tile* tile);
-const char* get_rules();
-const char* get_log();
+
+// ========== player ==========
+const char* get_player_properties(const Player* player);

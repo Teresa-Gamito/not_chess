@@ -47,32 +47,32 @@ void task_complete_first(Vector* task_list)
 
 
 
-bool task_is_valid_tile__addPiece(Board* board, int col, int row)
+bool task_is_valid_tile__addPiece(Board* board, Pos pos)
 {
     Player* player = board_get_active_player(board);
 
-    if (!board_can_add_piece_at(board, col, row))
+    if (!board_can_add_piece_at(board, pos))
     {
         return false;
     }
-    if (!is_player_side_of_board(board, player, row))
+    if (!is_player_side_of_board(board, player, pos.row))
     {
         return false;
     }
     return true;
 }
-int task__addPiece(Board* board, PieceType piece_type, int col, int row)
+int task__addPiece(Board* board, PieceType piece_type, Pos pos)
 {
     Player* player = board_get_active_player(board);
     Color player_color = player_get_color(player);
 
-    if (!task_is_valid_tile__addPiece(board, col, row))
+    if (!task_is_valid_tile__addPiece(board, pos))
     {
         return 0;
     }
     Piece* piece = piece_create(piece_type, player_color);
     piece_set_moved(piece);
-    board_add_piece_at(board, piece, col, row);
+    board_add_piece_at(board, piece, pos);
     return 1;
 }
 
@@ -91,16 +91,16 @@ int task__expandBoard(Board* board, Window* window)
     return 1;
 }
 
-bool task_is_valid_tile__sacrifice(Board* board, int col, int row)
+bool task_is_valid_tile__sacrifice(Board* board, Pos pos)
 {
     Player* player = board_get_active_player(board);
     Color player_color = player_get_color(player);
 
-    if (!board_has_piece_at(board, col, row))
+    if (!board_has_piece_at(board, pos))
     {
         return false;
     }
-    Piece* piece = board_get_piece_at(board, col, row);
+    Piece* piece = board_get_piece_at(board, pos);
     Color piece_color = piece_get_color(piece);
     if (piece_color != player_color)
     {
@@ -108,12 +108,12 @@ bool task_is_valid_tile__sacrifice(Board* board, int col, int row)
     }
     return true;
 }
-int task__sacrifice(Board* board, int col, int row)
+int task__sacrifice(Board* board, Pos pos)
 {
-    if (!task_is_valid_tile__sacrifice(board, col, row))
+    if (!task_is_valid_tile__sacrifice(board, pos))
     {
         return 0;
     }
-    board_piece_remove(board, col, row);
+    board_piece_remove(board, pos);
     return 1;
 }

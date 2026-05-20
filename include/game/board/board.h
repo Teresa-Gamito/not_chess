@@ -3,67 +3,45 @@
 
 #include <SDL3/SDL_stdinc.h>
 #include <stdbool.h>
-#include "helper_functions/error_handling.h"
-#include "helper_functions/helper_functions.h"
+#include "game/board/board_elements/piece.h"
+#include "game/board/board_elements/tile.h"
+#include "helper_functions/position.h"
 #include "helper_functions/vector.h"
-#include "game/board/player.h"
-#include "game/board/color.h"
-#include "game/board/piece.h"
-#include "game/board/tile.h"
-#include "game/log.h"
+#include "helper_functions/helper_functions.h"
+#include "helper_functions/error_handling.h"
 
 typedef struct Board Board;
 
-// ========== board ==========
+// ========== create ==========
 Board* board_create(int col_num, int row_num);
+
+// ========== destroy ==========
 void board_destroy(Board* board);
 
+// ========== set ==========
 void board_set_default(Board* board);
 
+// ========== get ==========
 int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
-
-const char* board_get_log(const Board* board);
-
-bool board_game_ended(const Board* board);
+Tile* board_get_tile_at(const Board* board, Pos pos);
+Piece* board_get_piece_at(const Board* board, Pos pos);
 
 // ========== piece ==========
-bool board_can_add_piece_at(const Board* board, int col, int row);
-void board_add_piece_at(Board* board, Piece* piece, int col, int row);
+void board_add_piece_at(Board* board, Piece* piece, Pos pos);
 
-void board_piece_remove(Board* board, int col, int row);
+bool board_has_piece_at(const Board* board, Pos pos);
+Pos board_piece_get_pos(const Board* board, const Piece* piece);
 
-bool board_has_piece_at(const Board* board, int col, int row);
-Piece* board_get_piece_at(const Board* board, int col, int row);
+bool board_can_piece_move_to(const Board* board, Pos src, Pos dst);
+// returns the points obtained
+int board_piece_move_to(Board* board, Pos src, Pos dst);
+bool board_can_piece_capture(const Board* board, Pos src, Pos dst);
 
-bool board_can_piece_capture(const Board* board, int src_col, int src_row, int dst_row, int dst_col);
-void board_piece_capture(Board* board, Piece* piece);
-
-bool board_can_piece_move_to(const Board* board, int src_col, int src_row, int dst_col, int dst_row);
-void board_piece_move_to(Board* board, int src_col, int src_row, int dst_col, int dst_row);
-
-int board_piece_get_col(const Board* board, const Piece* piece);
-int board_piece_get_row(const Board* board, const Piece* piece);
-
-
-// ========== tile ==========
+// ========== tiles ==========
 void board_expand(Board* board);
+Pos board_tile_get_pos(const Board* board, const Tile* tile);
 
-bool board_has_tile_at(const Board* board, int col, int row);
-Tile* board_get_tile_at(const Board* board, int col, int row);
-
-int board_tile_get_col(const Board* board, const Tile* tile);
-int board_tile_get_row(const Board* board, const Tile* tile);
-
-// ========== player ==========
-void advance_turn(Board* board);
-bool is_player_side_of_board(const Board* board, const Player* player, int row);
-Player* board_get_active_player(const Board* board);
-Player* board_get_opponent(const Board* board);
-Player* board_get_player_white(const Board* board);
-Player* board_get_player_black(const Board* board);
-
-
-// ========== errors ==========
-void verify_board_pos(const Board* board, int col, int row);
+// ========== verify ==========
+void verify_board_pos(const Board* board, Pos pos);
 void verify_board(const Board* board);

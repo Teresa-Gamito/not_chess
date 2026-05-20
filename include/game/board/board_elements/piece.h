@@ -1,11 +1,10 @@
-// pieces on the board
-// responsible for its own movement and capturing mechanics
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
+#include "game/color.h"
+#include "helper_functions/position.h"
 #include "helper_functions/typeops.h"
-#include "include/game/board/color.h"
-#include "include/helper_functions/error_handling.h"
+#include "helper_functions/error_handling.h"
 
 typedef struct Piece Piece;
 
@@ -37,6 +36,7 @@ typedef enum PiecePoints
 
 // ========== create ==========
 Piece* piece_create(PieceType type, Color color);
+TypeOps* piece_ops();
 
 // ========== destroy ==========
 void piece_destroy(Piece *piece);
@@ -49,22 +49,16 @@ void piece_set_moved(Piece* piece);
 // ========== get ==========
 PieceType piece_get_type(const Piece* piece); 
 Color piece_get_color(const Piece* piece);
+bool piece_has_moved(const Piece* piece);
 int piece_get_points(const Piece* piece);
 const char* piece_type_get_name(PieceType type);
-bool piece_has_moved(const Piece* piece);
-bool piece_can_move_to(const Piece* piece, int src_col, int src_row, int dst_col, int dst_row);
+
+// ========== actions ==========
 bool piece_requires_clear_path(const Piece* piece);
-bool piece_can_capture(
-    const Piece* src_piece, 
-    const Piece* dst_piece, 
-    int src_col, 
-    int src_row, 
-    int dst_col, 
-    int dst_row
-);
+bool piece_can_move_to(const Piece* piece, Pos src, Pos dst);
+bool piece_can_capture(const Piece* src_piece, const Piece* dst_piece, Pos src, Pos dst);
 void piece_promote(Piece* piece);
 
-TypeOps* piece_ops();
-
+// ========== verify ==========
 void verify_piece(const Piece* piece);
 void verify_piece_type(PieceType type);

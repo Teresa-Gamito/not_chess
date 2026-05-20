@@ -26,11 +26,11 @@ Task task_get_first(const Vector* task_list);
 void task_complete_first(Vector* task_list);
 
 // task add piece
-bool task_is_valid_tile__addPiece(Board* board, int col, int row);
-int task__addPiece(Board* board, PieceType piece, int col, int row);
+bool task_is_valid_tile__addPiece(Board* board, Pos pos);
+int task__addPiece(Board* board, PieceType piece, Pos pos);
 // task expand board
 int task__expandBoard(Board* board, Window* window);
 bool task_is_valid_tile__expandBoard(Board* board);
 // task sacrifice
-int task__sacrifice(Board* board, int col, int row);
-bool task_is_valid_tile__sacrifice(Board* board, int col, int row);
+int task__sacrifice(Board* board, Pos pos);
+bool task_is_valid_tile__sacrifice(Board* board, Pos pos);

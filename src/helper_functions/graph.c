@@ -1,22 +1,21 @@
 #include "include/helper_functions/graph.h"
-#include "helper_functions/vector.h"
 
-typedef struct Node
+typedef struct Node Node;
+struct Node
 {
     void* data;
-    Vector* next_nodes;
-    Vector* prev_nodes;
-    TypeOps* ops;
-} Node;
+    Node** next;
+    int next_count;
+    Node** prev;
+    int prev_count;
+};
 
 struct Graph
 {
     Vector* nodes;
 };
 
-
-TypeOps* node_ops();
-
+static TypeOps* node_ops();
 
 static Node* node_create(void* data)
 {
@@ -52,6 +51,19 @@ static void node_destroy(Node* node)
     vector_destroy(node->next_nodes);
 
     SDL_free(node);
+}
+
+static void destroy(void* node)
+{
+    node_destroy(node);
+}
+static TypeOps ops =
+    {
+        destroy
+    };
+static TypeOps* node_ops()
+{
+    return &ops;
 }
 
 
@@ -103,15 +115,3 @@ void* graph_get_data(const Graph* graph, int index)
 
 
 
-static void destroy(void* node)
-{
-    node_destroy(node);
-}
-static TypeOps ops =
-    {
-        destroy
-    };
-TypeOps* node_ops()
-{
-    return &ops;
-}

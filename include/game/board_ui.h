@@ -5,6 +5,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include "helper_functions/error_handling.h"
 #include "helper_functions/helper_functions.h"
+#include "helper_functions/position.h"
 #include "game/ui/board_textures.h"
 #include "helper_functions/vector.h"
 #include "inputstate.h"
