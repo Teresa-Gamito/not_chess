@@ -1,12 +1,9 @@
-// tasks for the game
-// responsible for managing interactions between the tree and the board
 #pragma once
 
-#include "game/board/piece.h"
+#include "game/board/board_elements/piece.h"
 #include "include/helper_functions/helper_functions.h"
-#include "include/helper_functions/vector.h"
+#include "data_structures/queue.h"
 #include "include/game/board/board.h"
-#include "ui_elements/window.h"
 
 typedef enum Task 
 {
@@ -34,3 +31,5 @@ bool task_is_valid_tile__expandBoard(Board* board);
 // task sacrifice
 int task__sacrifice(Board* board, Pos pos);
 bool task_is_valid_tile__sacrifice(Board* board, Pos pos);
+
+void verify_tasklist(const Vector* tasklist);

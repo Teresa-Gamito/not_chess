@@ -39,16 +39,3 @@ void function_execute(Function* function)
     }
     function->fn(function->arg1, function->arg2);
 }
-
-static void destroy(void* func)
-{
-    function_destroy(func);
-}
-static TypeOps ops = 
-    {
-        destroy
-    };
-TypeOps* function_ops()
-{
-    return &ops;
-}

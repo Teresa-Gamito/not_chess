@@ -7,7 +7,6 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_render.h>
-#include "include/helper_functions/typeops.h"
 #include "include/helper_functions/error_handling.h"
 
 typedef struct Textbox Textbox;
@@ -50,7 +49,5 @@ int textbox_get_max_width(const Textbox* textbox);
 TextAlignment textbox_get_alignment(const Textbox* textbox);
 SDL_Color* textbox_get_color(const Textbox* textbox);
 TTF_Font* textbox_get_font(const Textbox* textbox);
-
-TypeOps* textbox_ops();
 
 void verify_textbox(const Textbox* textbox);

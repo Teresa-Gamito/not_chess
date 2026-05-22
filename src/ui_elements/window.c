@@ -1,4 +1,7 @@
 #include "include/ui_elements/window.h"
+#include "data_structures/vector.h"
+#include "ui_elements/sprite.h"
+#include <SDL3/SDL_render.h>
 
 struct Window {
     float x;
@@ -44,11 +47,11 @@ Window* window_create(
     window->anchor_y = y;
     window->scale = 1;
 
-    window->sprites = vector_create(sprite_ops());
-    window->buttons = vector_create(button_ops());
-    window->textboxes = vector_create(textbox_ops());
+    window->sprites = vector_create();
+    window->buttons = vector_create();
+    window->textboxes = vector_create();
 
-    window->textures = vector_create(SDL_Texture_ops());
+    window->textures = vector_create();
 
     window->texture_background = background_texture;
 
@@ -70,6 +73,7 @@ void window_load_textures(SDL_Renderer* renderer, Window* window, const char** p
         vector_add(window->textures, texture);
     }
 }
+
 void window_add_sprite(Window* window, Sprite* sprite, float x, float y)
 {
     verify_window(window);
@@ -81,6 +85,7 @@ void window_add_sprite(Window* window, Sprite* sprite, float x, float y)
     sprite_set_anchor(sprite, window->anchor_x, window->anchor_y);
     sprite_set_scale(sprite, window->scale);
 }
+
 void window_add_button(Window* window, Button* button, float x, float y)
 {
     verify_window(window);
@@ -92,6 +97,7 @@ void window_add_button(Window* window, Button* button, float x, float y)
     button_set_anchor(button, window->anchor_x, window->anchor_y);
     button_set_scale(button, window->scale);
 }
+
 void window_add_textbox(Window* window, Textbox* textbox, float x, float y)
 {
     verify_window(window);
@@ -108,11 +114,20 @@ void window_destroy(Window* window)
 {
     verify_window(window);
 
+    window_unload_textures(window);
+    window_destroy_content(window);
+
     vector_destroy(window->sprites);
+    window->sprites = NULL;
+
     vector_destroy(window->buttons);
     window->buttons = NULL;
+
     vector_destroy(window->textboxes);
+    window->textboxes = NULL;
+
     vector_destroy(window->textures);
+    window->textures = NULL;
 
     if (window->texture_background != NULL)
     {
@@ -121,34 +136,63 @@ void window_destroy(Window* window)
 
     SDL_free(window);
 }
+
 void window_destroy_content(Window* window)
 {
     verify_window(window);
 
-    vector_destroy_content(window->sprites);
-    vector_destroy_content(window->buttons);
-    vector_destroy_content(window->textboxes);
+    for (int i = 0; i < vector_get_size(window->sprites); i++)
+    {
+        Sprite* sprite = vector_get_at(window->sprites, i);
+        sprite_destroy(sprite);
+    }
+    for (int i = 0; i < vector_get_size(window->buttons); i++)
+    {
+        Button* button = vector_get_at(window->buttons, i);
+        button_destroy(button);
+    }
+    for (int i = 0; i < vector_get_size(window->textboxes); i++)
+    {
+        Textbox* textbox = vector_get_at(window->textboxes, i);
+        textbox_destroy(textbox);
+    }
 }
+
+void window_unload_textures(Window* window)
+{
+    for (int i = 0; i < vector_get_size(window->textures); i++)
+    {
+        SDL_Texture* texture = vector_get_at(window->textures, i);
+        SDL_DestroyTexture(texture);
+    }
+}
+
 void window_destroy_sprite(Window* window, Sprite* sprite)
 {
     verify_window(window);
     verify_sprite(sprite);
 
-    vector_destroy_item(window->sprites, sprite);
+    Vector* vector = window->sprites;
+    int index = vector_search(vector, sprite);
+    sprite_destroy(vector_remove_at(vector, index));
 }
 void window_destroy_button(Window* window, Button* button)
 {
     verify_window(window);
     verify_button(button);
 
-    vector_destroy_item(window->sprites, button);
+    Vector* vector = window->buttons;
+    int index = vector_search(vector, button);
+    sprite_destroy(vector_remove_at(vector, index));
 }
 void window_destroy_textbox(Window* window, Textbox* textbox)
 {
     verify_window(window);
     verify_textbox(textbox);
 
-    vector_destroy_item(window->sprites, textbox);
+    Vector* vector = window->textboxes;
+    int index = vector_search(vector, textbox);
+    sprite_destroy(vector_remove_at(vector, index));
 }
 
 static void window_render_background(SDL_Renderer* renderer, const Window* window)
@@ -161,6 +205,7 @@ static void window_render_background(SDL_Renderer* renderer, const Window* windo
         &frect
     );
 }
+
 void window_render(SDL_Renderer* renderer, const Window* window)
 {
     verify_renderer(renderer);
@@ -177,17 +222,17 @@ void window_render(SDL_Renderer* renderer, const Window* window)
 
     window_render_background(renderer, window);
 
-    for (int i = 0; i < vector_get_count(window->sprites); i++)
+    for (int i = 0; i < vector_get_size(window->sprites); i++)
     {
         Sprite* sprite = vector_get_at(window->sprites, i);
         sprite_render(renderer, sprite);
     }
-    for (int i = 0; i < vector_get_count(window->buttons); i++)
+    for (int i = 0; i < vector_get_size(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
         button_render(renderer, button);
     }
-    for (int i = 0; i < vector_get_count(window->textboxes); i++)
+    for (int i = 0; i < vector_get_size(window->textboxes); i++)
     {
         Textbox* textbox = vector_get_at(window->textboxes, i);
         textbox_render(renderer, textbox);
@@ -283,7 +328,7 @@ void window_update(const InputState* input, Window* window)
     window_scroll(input, window);
 
 
-    for (int i = 0; i < vector_get_count(window->buttons); i++)
+    for (int i = 0; i < vector_get_size(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
         button_update(input, button);
@@ -305,22 +350,23 @@ void window_set_position(Window* window, float x, float y)
 }
 static void window_elements_update_anchor(Window* window)
 {
-    for (int i = 0; i < vector_get_count(window->sprites); i++)
+    for (int i = 0; i < vector_get_size(window->sprites); i++)
     {
         Sprite* sprite = vector_get_at(window->sprites, i);
         sprite_set_anchor(sprite, window->anchor_x, window->anchor_y);
     }
-    for (int i = 0; i < vector_get_count(window->buttons); i++)
+    for (int i = 0; i < vector_get_size(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
         button_set_anchor(button, window->anchor_x, window->anchor_y);
     }
-    for (int i = 0; i < vector_get_count(window->textboxes); i++)
+    for (int i = 0; i < vector_get_size(window->textboxes); i++)
     {
         Textbox* textbox = vector_get_at(window->textboxes, i);
         textbox_set_anchor(textbox, window->anchor_x, window->anchor_y);
     }
 }
+
 void window_set_anchor(Window* window, float anchor_x, float anchor_y)
 {
     window->anchor_x = anchor_x;
@@ -328,6 +374,7 @@ void window_set_anchor(Window* window, float anchor_x, float anchor_y)
 
     window_elements_update_anchor(window);
 }
+
 void window_set_size(Window* window, float width, float height)
 {
     verify_window(window);
@@ -336,24 +383,26 @@ void window_set_size(Window* window, float width, float height)
     window->width = width;
     window->height = height;
 }
+
 static void window_elements_set_scale(Window* window, float scale)
 {
-    for (int i = 0; i < vector_get_count(window->sprites); i++)
+    for (int i = 0; i < vector_get_size(window->sprites); i++)
     {
         Sprite* sprite = vector_get_at(window->sprites, i);
         sprite_set_scale(sprite, scale);
     }
-    for (int i = 0; i < vector_get_count(window->buttons); i++)
+    for (int i = 0; i < vector_get_size(window->buttons); i++)
     {
         Button* button = vector_get_at(window->buttons, i);
         button_set_scale(button, scale);
     }
-    for (int i = 0; i < vector_get_count(window->textboxes); i++)
+    for (int i = 0; i < vector_get_size(window->textboxes); i++)
     {
         Textbox* textbox = vector_get_at(window->textboxes, i);
         textbox_set_scale(textbox, scale);
     }
 }
+
 void window_set_scale(Window* window, float scale)
 {
     verify_window(window);
@@ -383,30 +432,35 @@ float window_get_x(const Window* window)
 
     return window->x;
 }
+
 float window_get_y(const Window* window)
 {
     verify_window(window);
 
     return window->y;
 }
+
 float window_get_width(const Window* window)
 {
     verify_window(window);
 
     return window->width;
 }
+
 float window_get_height(const Window* window)
 {
     verify_window(window);
 
     return window->height;
 }
+
 float window_get_scale(const Window* window)
 {
     verify_window(window);
 
     return window->scale;
 }
+
 SDL_FRect window_get_frect(const Window* window)
 {
     verify_window(window);
@@ -421,25 +475,29 @@ SDL_FRect window_get_frect(const Window* window)
 
     return frect;
 }
+
 SDL_Texture* window_get_texture(const Window* window, int index)
 {
     verify_window(window);
 
     return vector_get_at(window->textures, index);
 }
-Vector* window_get_sprites(const Window* window)
+
+const Vector* window_get_sprites(const Window* window)
 {
     verify_window(window);
 
     return window->sprites;
 }
-Vector* window_get_buttons(const Window* window)
+
+const Vector* window_get_buttons(const Window* window)
 {
     verify_window(window);
 
     return window->buttons;
 }
-Vector* window_get_textboxes(const Window* window)
+
+const Vector* window_get_textboxes(const Window* window)
 {
     verify_window(window);
 

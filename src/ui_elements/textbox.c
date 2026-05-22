@@ -1,5 +1,4 @@
 #include "include/ui_elements/textbox.h"
-#include "helper_functions/error_handling.h"
 
 struct Textbox
 {
@@ -251,27 +250,6 @@ SDL_Texture* textbox_get_texture(const Textbox* textbox)
 
     return textbox->texture;
 }
-
-
-
-static void destroy(void* textbox)
-{
-    verify_textbox(textbox);
-
-    textbox_destroy(textbox);
-}
-TypeOps ops =
-    {
-        destroy
-        //is_equal,
-    };
-
-TypeOps* textbox_ops()
-{
-    return &ops;
-}
-
-
 
 void verify_textbox(const Textbox* textbox)
 {

@@ -6,7 +6,7 @@
 #include "game/board/board_elements/piece.h"
 #include "game/board/board_elements/tile.h"
 #include "helper_functions/position.h"
-#include "helper_functions/vector.h"
+#include "data_structures/vector.h"
 #include "helper_functions/helper_functions.h"
 #include "helper_functions/error_handling.h"
 

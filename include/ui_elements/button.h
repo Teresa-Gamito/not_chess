@@ -5,12 +5,11 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_rect.h>
 #include <stdbool.h>
-#include "helper_functions/helper_functions.h"
-#include "helper_functions/error_handling.h"
-#include "helper_functions/function.h"
-#include "helper_functions/typeops.h"
-#include "helper_functions/vector.h"
 #include "inputstate.h"
+#include "data_structures/vector.h"
+#include "helper_functions/function.h"
+#include "helper_functions/error_handling.h"
+#include "helper_functions/helper_functions.h"
 
 typedef struct Button Button;
 
@@ -40,7 +39,5 @@ float button_get_y(const Button* button);
 float button_get_width(const Button* button);
 float button_get_height(const Button* button);
 SDL_FRect button_get_frect(const Button* button);
-
-TypeOps* button_ops();
 
 void verify_button(const Button* button);

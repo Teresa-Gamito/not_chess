@@ -3,8 +3,7 @@
 #include <SDL3/SDL_stdinc.h>
 #include <stdarg.h>
 #include "helper_functions/error_handling.h"
-#include "helper_functions/helper_functions.h"
-#include "helper_functions/vector.h"
+#include "data_structures/vector.h"
 
 typedef struct GameLog GameLog;
 

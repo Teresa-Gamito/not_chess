@@ -141,25 +141,6 @@ SDL_Texture* sprite_get_texture(const Sprite* sprite)
     return sprite->texture;
 }
 
-
-
-static void destroy(void* sprite)
-{
-    verify_sprite(sprite);
-
-    sprite_destroy(sprite);
-}
-static TypeOps ops =
-    {
-        destroy
-    };
-TypeOps* sprite_ops()
-{
-    return &ops;
-}
-
-
-
 void verify_sprite(const Sprite* sprite)
 {
     verify(sprite == NULL, "Sprite does not exist");

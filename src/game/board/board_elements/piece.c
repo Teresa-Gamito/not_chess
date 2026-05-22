@@ -1,5 +1,4 @@
 #include "include/game/board/board_elements/piece.h"
-#include "game/color.h"
 
 struct Piece 
 {
@@ -37,21 +36,6 @@ Piece* piece_create(PieceType type, Color color)
     piece->has_moved = false;
 
     return piece;
-}
-
-static void destroy(void* piece)
-{
-    piece_destroy(piece);
-}
-
-static TypeOps ops =
-    {
-        destroy
-    };
-
-TypeOps* piece_ops()
-{
-    return &ops;
 }
 
 void piece_destroy(Piece* piece) 

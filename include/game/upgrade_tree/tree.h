@@ -1,9 +1,12 @@
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
-#include "helper_functions/graph.h"
+#include "data_structures/graph.h"
+#include "game/board/board.h"
 
-typedef enum UpgradeIndex
+typedef Graph Tree;
+
+typedef enum UpgradeType
 {
     UPGRADE_PEASANT,
     UPGRADE_CHECKERS,
@@ -31,12 +34,16 @@ typedef enum UpgradeIndex
     UPGRADE_TACTICAL_ADVANTAGE,
     UPGRADE_RUN,
     COUNT_UPGRADE,
-} UpgradeIndex;
+} UpgradeType;
 
-Graph* tree_create();
-void tree_destroy(Graph *tree);
+Tree* tree_create();
+void tree_destroy(Tree *tree);
 
-void tree_set_default(Graph *tree);
+void tree_add_upgrade(Tree* tree, UpgradeType type, int cost);
+void tree_add_upgrade_dependency(Tree* tree, int upgrade_index, int dependency_index);
 
-void tree_node_unlock(Graph* tree, UpgradeIndex node);
-void tree_node_purchase(Graph* tree, UpgradeIndex node);
+void tree_upgrade_unlock(Tree* tree, int index);
+void tree_upgrade_purchase(Board* board, Tree* tree, int index);
+
+int tree_get_upgrade_cost(const Tree* tree, int index);
+UpgradeType tree_get_upgrade_type(const Tree* tree, int index);

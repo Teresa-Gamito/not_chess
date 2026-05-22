@@ -41,7 +41,7 @@ Button* button_create(
 
     button->state = IDLE;
 
-    button->on_click_fn = vector_create(function_ops());
+    button->on_click_fn = vector_create();
 
     for (int i = 0; i < MOUSE_BUTTON_COUNT; i++)
     {
@@ -68,7 +68,13 @@ void button_destroy(Button* button)
 {
     verify_button(button);
 
+    for (int i = 0; i < vector_get_size(button->on_click_fn); i++)
+    {
+        Function* func = vector_get_at(button->on_click_fn, i);
+        function_destroy(func);
+    }
     vector_destroy(button->on_click_fn);
+
     SDL_free(button);
 }
 
@@ -196,7 +202,7 @@ void button_set_texture_all(Button* button, SDL_Texture* texture)
 void button_set_on_click_fn(Button* button, MouseButton mouse_button, Function* function)
 {
     Function* old_func = vector_get_at(button->on_click_fn, mouse_button);
-    vector_set_at(button->on_click_fn,function, mouse_button);
+    vector_set_at(button->on_click_fn, mouse_button, function);
     function_destroy(old_func);
 }
 
@@ -237,24 +243,6 @@ SDL_FRect button_get_frect(const Button* button)
         };
     return frect;
 }
-
-
-
-static void destroy(void* button)
-{
-    verify_button(button);
-    button_destroy(button);
-}
-static TypeOps ops =
-    {
-        destroy
-    };
-TypeOps* button_ops()
-{
-    return &ops;
-}
-
-
 
 void verify_button(const Button* button)
 {

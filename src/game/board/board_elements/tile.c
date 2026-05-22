@@ -20,21 +20,6 @@ Tile* tile_create(TileType type, Color color)
     return tile;
 }
 
-static void destroy(void* tile)
-{
-    tile_destroy(tile);
-}
-
-static TypeOps ops =
-    {
-        destroy
-    };
-
-TypeOps* tile_ops()
-{
-    return &ops;
-}
-
 void tile_destroy(Tile* tile)
 {
     verify_tile(tile);

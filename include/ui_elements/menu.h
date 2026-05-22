@@ -7,7 +7,7 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include "helper_functions/helper_functions.h"
 #include "helper_functions/function.h"
-#include "helper_functions/vector.h"
+#include "data_structures/vector.h"
 #include "helper_functions/color.h"
 #include "ui_elements/window.h"
 #include "ui_elements/button.h"

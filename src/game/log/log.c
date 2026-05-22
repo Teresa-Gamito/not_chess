@@ -10,14 +10,18 @@ GameLog* gamelog_create()
     GameLog* log = SDL_malloc(sizeof(GameLog));
     verify(log == NULL, "GameLog could not be created: malloc");
 
-    log->logs = vector_create(default_ops());
+    log->logs = vector_create();
 
     return log;
 }
 void gamelog_destroy(GameLog* log)
 {
     verify_gamelog(log);
-
+    for (int i = 0; i < vector_get_size(log->logs); i++)
+    {
+        char* msg = vector_get_at(log->logs, i);
+        SDL_free(msg);
+    }
     vector_destroy(log->logs);
     SDL_free(log);
 }
@@ -34,16 +38,17 @@ void gamelog_add(GameLog* log, const char* msg, ...)
     va_end(args);
     SDL_free(log_msg);
 }
+
 const char* gamelog_get(const GameLog *log)
 {
     verify_gamelog(log);
-    if (vector_get_count(log->logs) <= 0)
+    if (vector_get_size(log->logs) <= 0)
     {
         return NULL;
     }
 
     char* full_log = "";
-    for (int i = vector_get_count(log->logs) - 1; i >= 0; i--)
+    for (int i = vector_get_size(log->logs) - 1; i >= 0; i--)
     {
         char* curr_msg = vector_get_at(log->logs, i);
         SDL_asprintf(&full_log, "%s%s\n", full_log, curr_msg);

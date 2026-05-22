@@ -84,14 +84,14 @@ void menu_add_button(SDL_Renderer* renderer, Menu* menu, Function* function, con
     window_add_textbox(window, textbox, 0, 0);
 
     // align buttons and text
-    Vector* buttons = window_get_buttons(window);
-    Vector* textboxes = window_get_textboxes(window);
-    int count = vector_get_count(buttons);
-    for (int i = 0; i < count; i++)
+    const Vector* buttons = window_get_buttons(window);
+    const Vector* textboxes = window_get_textboxes(window);
+    int size = vector_get_size(buttons);
+    for (int i = 0; i < size; i++)
     {
         float border = window_get_width(window) / 100; // TODO:
         float width = window_get_width(window) - border * 2;
-        float height = (window_get_height(window) - border) / count - border;
+        float height = (window_get_height(window) - border) / size - border;
         float x = border;
         float y = (height + border) * i + border;
 

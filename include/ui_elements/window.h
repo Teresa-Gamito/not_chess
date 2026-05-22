@@ -6,9 +6,9 @@
 #include "ui_elements/sprite.h"
 #include "ui_elements/button.h"
 #include "ui_elements/textbox.h"
-#include "helper_functions/global_variables.h"
+#include "data_structures/vector.h"
 #include "helper_functions/error_handling.h"
-#include "helper_functions/vector.h"
+#include "helper_functions/global_variables.h"
 
 #define WINDOW_SCROLL_FACTOR 3
 
@@ -40,6 +40,7 @@ void window_add_textbox(Window* window, Textbox* textbox, float x, float y);
 
 // ========== destroy ==========
 void window_destroy(Window* window);
+void window_unload_textures(Window* window);
 void window_destroy_content(Window* window);
 void window_destroy_sprite(Window *window, Sprite* sprite);
 void window_destroy_button(Window *window, Button* button);
@@ -66,8 +67,8 @@ float window_get_height(const Window* window);
 float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);
-Vector* window_get_sprites(const Window* window);
-Vector* window_get_buttons(const Window* window);
-Vector* window_get_textboxes(const Window* window);
+const Vector* window_get_sprites(const Window* window);
+const Vector* window_get_buttons(const Window* window);
+const Vector* window_get_textboxes(const Window* window);
 
 void verify_window(const Window* window);

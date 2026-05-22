@@ -5,7 +5,6 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_rect.h>
-#include "include/helper_functions/typeops.h"
 #include "include/helper_functions/error_handling.h"
 
 
@@ -22,8 +21,5 @@ void SDL_DestroyFRect(SDL_FRect* frect);
 bool is_within(int value, int min, int max);
 bool is_even(int x);
 int sign(int value);
-
-TypeOps* SDL_Texture_ops();
-TypeOps* default_ops();
 
 void app_quit(void* null1, void* null2);

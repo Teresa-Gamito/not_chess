@@ -3,7 +3,6 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
 #include "game/color.h"
-#include "helper_functions/typeops.h"
 #include "helper_functions/position.h"
 #include "helper_functions/error_handling.h"
 
@@ -20,7 +19,6 @@ typedef enum TileType
 
 // ========== create ==========
 Tile* tile_create(TileType type, Color color);
-TypeOps* tile_ops();
 
 // ========== destroy ==========
 void tile_destroy(Tile* tile);

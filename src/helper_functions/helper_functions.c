@@ -76,31 +76,6 @@ int sign(int value)
 
 
 
-static void texture_destroy(void* t)
-{
-    SDL_Texture* texture = (SDL_Texture*)t;
-    verify(texture == NULL, "SDL_Texture does not exist");
-    SDL_DestroyTexture(texture);
-}
-static TypeOps sdl_texture_ops =
-    {
-        texture_destroy
-    };
-TypeOps* SDL_Texture_ops()
-{
-    return &sdl_texture_ops;
-}
-static TypeOps ops =
-    {
-        SDL_free
-    };
-TypeOps* default_ops()
-{
-    return &ops;
-}
-
-
-
 void app_quit(void* null1, void* null2)
 {
     (void)null1;

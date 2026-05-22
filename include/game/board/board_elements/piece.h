@@ -3,7 +3,6 @@
 #include <SDL3/SDL_stdinc.h>
 #include "game/color.h"
 #include "helper_functions/position.h"
-#include "helper_functions/typeops.h"
 #include "helper_functions/error_handling.h"
 
 typedef struct Piece Piece;
@@ -36,7 +35,6 @@ typedef enum PiecePoints
 
 // ========== create ==========
 Piece* piece_create(PieceType type, Color color);
-TypeOps* piece_ops();
 
 // ========== destroy ==========
 void piece_destroy(Piece *piece);
