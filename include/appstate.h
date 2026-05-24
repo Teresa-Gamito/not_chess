@@ -6,8 +6,8 @@
 #include <SDL3/SDL_events.h>
 #include "helper_functions/global_variables.h"
 #include "inputstate.h"
-#include "ui_elements/menu.h"
-#include "game/ui/game_ui.h"
+#include "ui/ui_elements/menu.h"
+#include "ui/game_ui.h"
 
 typedef struct AppState AppState;
 

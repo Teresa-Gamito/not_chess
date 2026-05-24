@@ -16,7 +16,7 @@ typedef enum PieceType
     QUEEN,
     KING,
     LANCE,
-    PROMOTED_LANCE,
+    P_LANCE,
 
     PIECE_TYPE_COUNT
 } PieceType;
@@ -30,7 +30,7 @@ typedef enum PiecePoints
     POINTS_QUEEN = 5,
     POINTS_KING = 0,
     POINTS_LANCE = 3,
-    POINTS_PROMOTED_LANCE = 3,
+    POINTS_P_LANCE = 3,
 } PiecePoints;
 
 // ========== create ==========

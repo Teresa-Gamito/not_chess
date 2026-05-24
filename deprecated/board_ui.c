@@ -1,5 +1,4 @@
-#include "include/game/ui/board_ui.h"
-#include "helper_functions/helper_functions.h"
+#include "include/ui/board_ui.h"
 
 static void board_ui_set_scale(BoardUI* ui);
 static void board_ui_add_piece(BoardUI* ui, Pos pos);
@@ -30,10 +29,8 @@ BoardUI* board_ui_create(SDL_Renderer* renderer, Board* board, float x, float y,
     BoardUI* ui = SDL_malloc(sizeof(BoardUI));
     verify(ui == NULL, "BoardUI could not be created: malloc");
 
-    // board
     ui->board = board;
 
-    // window
     SDL_Texture* background_texture = SDL_CreateTextureFromPNG(
         renderer, 
         PATH_TEXTURE_WINDOW_BOARD_BACKGROUND

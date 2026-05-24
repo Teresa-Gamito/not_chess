@@ -9,10 +9,10 @@
 #include "helper_functions/function.h"
 #include "data_structures/vector.h"
 #include "helper_functions/color.h"
-#include "ui_elements/window.h"
-#include "ui_elements/button.h"
-#include "ui_elements/textbox.h"
-#include "menu/menu_textures.h"
+#include "ui/ui_elements/window.h"
+#include "ui/ui_elements/button.h"
+#include "ui/ui_elements/textbox.h"
+#include "ui/textures/menu_textures.h"
 #include "inputstate.h"
 
 

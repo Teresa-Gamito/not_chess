@@ -1,4 +1,4 @@
-#include "include/ui_elements/sprite.h"
+#include "include/ui/ui_elements/sprite.h"
 
 struct Sprite {
     SDL_Texture* texture;

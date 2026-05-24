@@ -1,7 +1,5 @@
-#include "include/ui_elements/window.h"
+#include "include/ui/ui_elements/window.h"
 #include "data_structures/vector.h"
-#include "ui_elements/sprite.h"
-#include <SDL3/SDL_render.h>
 
 struct Window {
     float x;
@@ -141,19 +139,22 @@ void window_destroy_content(Window* window)
 {
     verify_window(window);
 
-    for (int i = 0; i < vector_get_size(window->sprites); i++)
+    while (vector_get_size(window->sprites) > 0)
     {
-        Sprite* sprite = vector_get_at(window->sprites, i);
+        int index = vector_get_size(window->sprites) - 1;
+        Sprite* sprite = vector_remove_at(window->sprites, index);
         sprite_destroy(sprite);
     }
-    for (int i = 0; i < vector_get_size(window->buttons); i++)
+    while (vector_get_size(window->buttons) > 0)
     {
-        Button* button = vector_get_at(window->buttons, i);
+        int index = vector_get_size(window->buttons) - 1;
+        Button* button = vector_remove_at(window->buttons, index);
         button_destroy(button);
     }
-    for (int i = 0; i < vector_get_size(window->textboxes); i++)
+    while (vector_get_size(window->textboxes) > 0)
     {
-        Textbox* textbox = vector_get_at(window->textboxes, i);
+        int index = vector_get_size(window->textboxes) - 1;
+        Textbox* textbox = vector_remove_at(window->textboxes, index);
         textbox_destroy(textbox);
     }
 }
@@ -452,6 +453,20 @@ float window_get_height(const Window* window)
     verify_window(window);
 
     return window->height;
+}
+
+float window_get_anchor_x(const Window* window)
+{
+    verify_window(window);
+
+    return window->anchor_x;
+}
+
+float window_get_anchor_y(const Window* window)
+{
+    verify_window(window);
+
+    return window->anchor_y;
 }
 
 float window_get_scale(const Window* window)

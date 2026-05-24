@@ -11,6 +11,8 @@ void queue_destroy(Queue* queue);
 void queue_push(Queue* queue, void* data);
 void* queue_pop(Queue* queue);
 
+void* queue_peek(const Queue* queue);
+
 int queue_get_size(const Queue* queue);
 
 void verify_queue(const Queue* queue);

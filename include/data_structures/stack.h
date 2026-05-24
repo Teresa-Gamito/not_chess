@@ -12,6 +12,8 @@ void stack_destroy(Stack* stack);
 void stack_push(Stack* stack, void* data);
 void* stack_pop(Stack* stack);
 
+void* stack_peek(const Stack* stack);
+
 int stack_get_size(const Stack* stack);
 
 void verify_stack(const Stack* stack);

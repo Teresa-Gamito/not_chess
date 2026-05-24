@@ -12,6 +12,7 @@ typedef struct Upgrade
     int cost;
     UpgradeType type;
     UpgradeState state;
+    // HACK: index?
 } Upgrade;
 
 Tree* tree_create()
@@ -27,6 +28,40 @@ void tree_destroy(Tree *tree)
         SDL_free(upgrade);
     }
     graph_destroy(tree);
+}
+
+void tree_set_default(Tree* tree)
+{
+    tree_add_upgrade(tree, UPGRADE_PEASANT, 1); // 0
+    tree_add_upgrade(tree, UPGRADE_PEASANT, 1); // 1
+    tree_add_upgrade_dependency(tree, 1, 0);
+
+    tree_add_upgrade(tree, UPGRADE_SHOGI, 3); // 2
+    tree_add_upgrade_dependency(tree, 2, 1);
+    tree_add_upgrade(tree, UPGRADE_SHOGI, 3); // 3
+    tree_add_upgrade_dependency(tree, 3, 2);
+
+    tree_add_upgrade(tree, UPGRADE_CHECKERS, 3); // 4
+    tree_add_upgrade_dependency(tree, 4, 1);
+    tree_add_upgrade(tree, UPGRADE_CHECKERS, 3); // 5
+    tree_add_upgrade_dependency(tree, 5, 4);
+
+
+    tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 6
+    tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 7
+    tree_add_upgrade_dependency(tree, 7, 6);
+    tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 8
+    tree_add_upgrade_dependency(tree, 8, 7);
+
+    tree_add_upgrade(tree, UPGRADE_RISE, 1); // 9
+    tree_add_upgrade_dependency(tree, 9, 6);
+    tree_add_upgrade(tree, UPGRADE_RISE, 1); // 10
+    tree_add_upgrade_dependency(tree, 10, 9);
+
+    tree_add_upgrade(tree, UPGRADE_SWAMP, 3); // 11
+    tree_add_upgrade_dependency(tree, 11, 9);
+    tree_add_upgrade(tree, UPGRADE_SWAMP, 3); // 12
+    tree_add_upgrade_dependency(tree, 12, 11);
 }
 
 void tree_add_upgrade(Tree* tree, UpgradeType type, int cost)

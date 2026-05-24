@@ -1,4 +1,3 @@
-// textures for the tree
 #pragma once
 
 #define TEXTURE_DEFAULT_SIZE_PX 16

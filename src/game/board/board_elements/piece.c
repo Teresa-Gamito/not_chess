@@ -20,8 +20,6 @@ static bool can_promoted_lance_move(Pos src, Pos dst);
 static bool can_piece_type_capture(const Piece* piece, Pos src, Pos dst);
 static bool can_pawn_capture(Pos src, Pos dst);
 
-
-
 Piece* piece_create(PieceType type, Color color) 
 {
     verify_piece_type(type);
@@ -52,7 +50,7 @@ void piece_set_type(Piece* piece, PieceType type)
     piece->type = type;
 }
 
-void piece_set_colour(Piece* piece, Color color)
+void piece_set_color(Piece* piece, Color color)
 {
     verify_piece(piece);
     verify_color(color);
@@ -114,8 +112,8 @@ int piece_get_points(const Piece* piece)
         case LANCE:
             return POINTS_LANCE;
 
-        case PROMOTED_LANCE:
-            return POINTS_PROMOTED_LANCE;
+        case P_LANCE:
+            return POINTS_P_LANCE;
 
         default:
             return 0;
@@ -143,7 +141,7 @@ const char* piece_type_get_name(PieceType type)
             return "King";
         case LANCE:
             return "Lance";
-        case PROMOTED_LANCE:
+        case P_LANCE:
             return "Promoted Lance";
         default:
             return "Invalid type";
@@ -166,7 +164,7 @@ bool piece_requires_clear_path(const Piece* piece)
 
         case KNIGHT:
         case KING:
-        case PROMOTED_LANCE:
+        case P_LANCE:
         default:
             return false;
     }
@@ -208,7 +206,7 @@ bool piece_can_move_to(const Piece* piece, Pos src, Pos dst)
             else
                 return can_lance_move(src, dst);
 
-        case PROMOTED_LANCE:
+        case P_LANCE:
             if (color == WHITE)
                 return can_promoted_lance_move(pos_mirror_y(src), pos_mirror_y(dst));
             else
@@ -333,7 +331,7 @@ static bool can_piece_type_capture(const Piece* piece, Pos src, Pos dst)
         case QUEEN:
         case KING:
         case LANCE:
-        case PROMOTED_LANCE:
+        case P_LANCE:
         default:
             return piece_can_move_to(piece, src, dst);
     }
@@ -359,11 +357,9 @@ void piece_promote(Piece* piece)
         case PAWN:
             piece->type = QUEEN;
             break;
-
         case LANCE:
-            piece->type = PROMOTED_LANCE;
+            piece->type = P_LANCE;
             break;
-
         default:
             break;
     }

@@ -53,6 +53,10 @@ Graph* graph_create()
 
 void graph_destroy(Graph* graph)
 {
+    for (int i = 0; i < vector_get_size(graph->nodes); i++)
+    {
+        node_destroy(vector_get_at(graph->nodes, i));
+    }
     vector_destroy(graph->nodes);
     SDL_free(graph);
 }
@@ -109,6 +113,20 @@ const Vector* graph_get_prev_data(const Graph* graph, int index)
 {
     Node* node = graph_get_node(graph, index);
     return node->prev_nodes;
+}
+
+bool graph_is_connected(const Graph* graph, int index1, int index2)
+{
+    Node* node1 = graph_get_node(graph, index1);
+    Node* node2 = graph_get_node(graph, index2);
+    for (int i = 0; i < vector_get_size(node1->next_nodes); i++)
+    {
+        if (vector_get_at(node1->next_nodes, i) == node2)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void verify_graph(const Graph* graph)

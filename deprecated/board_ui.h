@@ -3,19 +3,13 @@
 
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
+#include "inputstate.h"
+#include "game/board/board.h"
+#include "ui_elements/window.h"
+#include "ui/textures/board_textures.h"
+#include "helper_functions/position.h"
 #include "helper_functions/error_handling.h"
 #include "helper_functions/helper_functions.h"
-#include "helper_functions/position.h"
-#include "game/ui/board_textures.h"
-#include "helper_functions/vector.h"
-#include "inputstate.h"
-#include "ui_elements/window.h"
-#include "ui_elements/button.h"
-#include "game/board/board.h"
-#include "game/board/player.h"
-#include "game/board/piece.h"
-#include "game/board/task.h"
-#include "game/log.h"
 
 typedef struct BoardUI BoardUI;
 

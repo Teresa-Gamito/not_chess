@@ -9,5 +9,6 @@ typedef enum Color
 } Color;
 
 const char* color_get_name(Color color);
+Color color_get_opposite(Color color);
 
 void verify_color(Color color);

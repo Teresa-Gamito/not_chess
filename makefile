@@ -59,7 +59,7 @@ INC  := -Isource -Iutils -Iinclude -I.
 DBG := -g -O0 -fno-omit-frame-pointer
 REL := -O2 -DNDEBUG
 
-SRC := $(wildcard src/*.c) $(wildcard src/**/*.c) $(wildcard src/**/**/*.c)
+SRC := $(wildcard src/*.c) $(wildcard src/**/*.c) $(wildcard src/**/**/*.c) $(wildcard src/**/**/**/*.c)
 OBJ := $(SRC:.c=.o)
 DEP := $(OBJ:.o=.d)
 

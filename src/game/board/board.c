@@ -2,9 +2,9 @@
 
 static const char board_default_layout[] = "RNBQKBNRPPPPPPPP00000000000000000000000000000000pppppppprnbqkbnr";
 
-static int translate_position(const Board* board, Pos pos);
+static int get_vector_index(const Board* board, Pos pos);
 static bool board_piece_has_clear_path(const Board* board, Pos src, Pos dst);
-static int board_piece_capture(Board* board, Piece* piece);
+static int board_piece_capture(Piece* piece);
 static bool board_can_piece_promote(Board* board, Pos pos);
 
 static void board_add_row(Board* board);
@@ -17,6 +17,8 @@ struct Board
 
     Vector* tiles;
     Vector* pieces;
+
+    RuleList* rules;
 };
 
 Board* board_create(int col_num, int row_num)
@@ -46,6 +48,8 @@ Board* board_create(int col_num, int row_num)
         }
     }
 
+    board->rules = rulelist_create();
+
     return board;
 }
 
@@ -67,6 +71,8 @@ void board_destroy(Board* board)
     }
     vector_destroy(board->pieces);
 
+    rulelist_destroy(board->rules);
+
     SDL_free(board);
 }
 
@@ -81,7 +87,7 @@ void board_set_default(Board* board)
         for (int row = 0; row < board_get_row_num(board); row++)
         {
             Pos pos = {col, row};
-            int index = translate_position(board, pos);
+            int index = get_vector_index(board, pos);
             switch (board_default_layout[index])
             {
                 case 'P':
@@ -146,7 +152,7 @@ Piece* board_get_piece_at(const Board* board, Pos pos)
     verify_board(board);
     verify_board_pos(board, pos);
 
-    int index = translate_position(board, pos);
+    int index = get_vector_index(board, pos);
     return vector_get_at(board->pieces, index);
 }
 
@@ -155,7 +161,7 @@ Tile* board_get_tile_at(const Board* board, Pos pos)
     verify_board(board);
     verify_board_pos(board, pos);
 
-    int index = translate_position(board, pos);
+    int index = get_vector_index(board, pos);
     return vector_get_at(board->tiles, index);
 }
 
@@ -166,7 +172,7 @@ void board_add_piece_at(Board* board, Piece* piece, Pos pos)
     verify_board_pos(board, pos);
     verify(board_has_piece_at(board, pos), "Could not add piece, position already occupied");
 
-    int index = translate_position(board, pos);
+    int index = get_vector_index(board, pos);
     vector_set_at(board->pieces, index, piece);
 }
 
@@ -177,7 +183,7 @@ void board_piece_remove(Board* board, Pos pos)
     verify(!board_has_piece_at(board, pos), "Piece does not exist");
 
     piece_destroy(board_get_piece_at(board, pos));
-    int index = translate_position(board, pos);
+    int index = get_vector_index(board, pos);
     vector_set_at(board->pieces, index, NULL);
 }
 
@@ -211,6 +217,10 @@ bool board_can_piece_move_to(const Board* board, Pos src, Pos dst)
         return false;
     }
     if (!piece_can_move_to(piece, src, dst))
+    {
+        return false;
+    }
+    if (tile_get_type(board_get_tile_at(board, dst)) == TILE_WALL)
     {
         return false;
     }
@@ -253,7 +263,7 @@ static bool board_piece_has_clear_path(const Board* board, Pos src, Pos dst)
     }
     // if the position is occupied then there is no clear path
     // this excludes the starting and destination positions
-    if (board_has_piece_at(board, next))
+    if (board_has_piece_at(board, next) || tile_get_type(board_get_tile_at(board, next)) == TILE_WALL)
     {
         return false;
     }
@@ -290,12 +300,22 @@ int board_piece_move_to(Board* board, Pos src, Pos dst)
     if (board_has_piece_at(board, dst))
     {
         Piece* dst_piece = board_get_piece_at(board, dst);
-        points = board_piece_capture(board, dst_piece);
+        points = board_piece_capture(dst_piece);
+        if (board_has_rule(board, RULE_PAWN_PROMOTION_CHANCE))
+        {
+            if (piece_get_type(piece) == PAWN)
+            {
+                if (SDL_randf() < CHANCE_RULE_PAWN_PROMOTE)
+                {
+                    piece_set_type(piece, QUEEN);
+                }
+            }
+        }
     }
 
-    int src_pos = translate_position(board, src);
+    int src_pos = get_vector_index(board, src);
     vector_set_at(board->pieces, src_pos, NULL);
-    int dst_pos = translate_position(board, dst);
+    int dst_pos = get_vector_index(board, dst);
     vector_set_at(board->pieces, dst_pos, piece);
 
     if (board_can_piece_promote(board, dst))
@@ -308,7 +328,7 @@ int board_piece_move_to(Board* board, Pos src, Pos dst)
     return points;
 }
 
-static int board_piece_capture(Board* board, Piece* piece)
+static int board_piece_capture(Piece* piece)
 {
     int points = piece_get_points(piece);
     piece_destroy(piece);
@@ -337,8 +357,8 @@ void board_expand(Board* board)
             if (old.col < 0) old.col = col_num - 1;
             if (old.row < 0) old.row = row_num - 1;
 
-            int old_pos = translate_position(board, old);
-            int new_pos = translate_position(board, new);
+            int old_pos = get_vector_index(board, old);
+            int new_pos = get_vector_index(board, new);
 
             vector_swap(board->pieces, old_pos, new_pos);
             vector_swap(board->tiles, old_pos, new_pos);
@@ -375,7 +395,7 @@ static void board_add_col(Board* board)
     {
         Color color = tile_get_default_color((Pos){col_num - 1, row});
         Tile* tile = tile_create(TILE_NONE, color);
-        int pos = translate_position(board, (Pos){col_num - 1, row});
+        int pos = get_vector_index(board, (Pos){col_num - 1, row});
         vector_set_at(board->tiles, pos, tile);
     }
 }
@@ -406,7 +426,38 @@ Pos board_tile_get_pos(const Board* board, const Tile* tile)
     return (Pos){pos % board->col_num, pos / board->col_num};
 }
 
-static int translate_position(const Board* board, Pos pos)
+void board_add_rule(Board* board, Rule rule)
+{
+    rulelist_add(board->rules, rule);
+}
+
+bool board_has_rule(const Board* board, Rule rule)
+{
+    return rulelist_has(board->rules, rule);
+}
+
+bool is_check_mate(const Board* board, Color color)
+{
+    for (int col = 0; col < board_get_col_num(board); col++)
+    {
+        for (int row = 0; row < board_get_row_num(board); row++)
+        {
+            Pos pos = (Pos){col, row};
+            if (!board_has_piece_at(board, pos))
+            {
+                continue;
+            }
+            Piece* piece = board_get_piece_at(board, pos);
+            if (piece_get_type(piece) == KING && piece_get_color(piece) == color_get_opposite(color))
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+static int get_vector_index(const Board* board, Pos pos)
 {
     return pos.col + pos.row * board->col_num;
 }

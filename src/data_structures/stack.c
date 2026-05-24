@@ -26,6 +26,13 @@ void* stack_pop(Stack* stack)
     return vector_remove_at(stack, vector_get_size(stack) - 1);
 }
 
+void* stack_peek(const Stack* stack)
+{
+    verify_stack(stack);
+
+    return vector_get_at(stack, stack_get_size(stack) - 1);
+}
+
 int stack_get_size(const Stack* stack)
 {
     verify_stack(stack);

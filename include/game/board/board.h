@@ -7,6 +7,7 @@
 #include "game/board/board_elements/tile.h"
 #include "helper_functions/position.h"
 #include "data_structures/vector.h"
+#include "game/rules/rules.h"
 #include "helper_functions/helper_functions.h"
 #include "helper_functions/error_handling.h"
 
@@ -26,6 +27,7 @@ int board_get_col_num(const Board* board);
 int board_get_row_num(const Board* board);
 Tile* board_get_tile_at(const Board* board, Pos pos);
 Piece* board_get_piece_at(const Board* board, Pos pos);
+bool is_check_mate(const Board* board, Color color);
 
 // ========== piece ==========
 void board_add_piece_at(Board* board, Piece* piece, Pos pos);
@@ -41,6 +43,10 @@ bool board_can_piece_capture(const Board* board, Pos src, Pos dst);
 // ========== tiles ==========
 void board_expand(Board* board);
 Pos board_tile_get_pos(const Board* board, const Tile* tile);
+
+// ========== rules ==========
+void board_add_rule(Board* board, Rule rule);
+bool board_has_rule(const Board* board, Rule rule);
 
 // ========== verify ==========
 void verify_board_pos(const Board* board, Pos pos);

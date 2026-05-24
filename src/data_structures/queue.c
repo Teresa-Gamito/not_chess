@@ -1,4 +1,5 @@
 #include "data_structures/queue.h"
+#include "data_structures/vector.h"
 
 Queue* queue_create()
 {
@@ -28,6 +29,13 @@ void* queue_pop(Queue* queue)
         return NULL;
     }
     return vector_remove_at(queue, 0);
+}
+
+void* queue_peek(const Queue* queue)
+{
+    verify_queue(queue);
+
+    return vector_get_at(queue, 0);
 }
 
 int queue_get_size(const Queue* queue)

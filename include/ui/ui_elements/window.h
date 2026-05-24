@@ -3,9 +3,9 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_rect.h>
-#include "ui_elements/sprite.h"
-#include "ui_elements/button.h"
-#include "ui_elements/textbox.h"
+#include "ui/ui_elements/sprite.h"
+#include "ui/ui_elements/button.h"
+#include "ui/ui_elements/textbox.h"
 #include "data_structures/vector.h"
 #include "helper_functions/error_handling.h"
 #include "helper_functions/global_variables.h"
@@ -64,6 +64,8 @@ float window_get_x(const Window* window);
 float window_get_y(const Window* window);
 float window_get_width(const Window* window);
 float window_get_height(const Window* window);
+float window_get_anchor_x(const Window* window);
+float window_get_anchor_y(const Window* window);
 float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);
