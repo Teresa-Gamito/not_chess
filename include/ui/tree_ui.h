@@ -2,8 +2,8 @@
 
 #include <SDL3/SDL_render.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include "game/game.h"
 #include "inputstate.h"
-#include "game/upgrade_tree/tree.h"
 #include "ui/ui_elements/window.h"
 #include "helper_functions/color.h"
 #include "ui/textures/tree_textures.h"
@@ -12,7 +12,7 @@
 
 typedef struct TreeUI TreeUI;
 
-TreeUI* tree_ui_create(SDL_Renderer* renderer, Tree* tree, float x, float y, float width, float height);
+TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, float width, float height);
 void tree_ui_destroy(TreeUI* ui);
 
 void tree_ui_render(SDL_Renderer* renderer, const TreeUI* ui);

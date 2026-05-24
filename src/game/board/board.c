@@ -66,8 +66,9 @@ void board_destroy(Board* board)
 
     for (int i = 0; i < vector_get_size(board->pieces); i++)
     {
-        Tile* tile = vector_get_at(board->pieces, i);
-        tile_destroy(tile);
+        Piece* piece = vector_get_at(board->pieces, i);
+        if (piece == NULL) continue;
+        piece_destroy(piece);
     }
     vector_destroy(board->pieces);
 

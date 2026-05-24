@@ -1,13 +1,11 @@
 #include "ui/game_ui.h"
-#include "game/game.h"
-#include "helper_functions/helper_functions.h"
-#include "ui/board_ui.h"
 
 struct GameUI 
 {
     Game* game;
 
     BoardUI* board_ui;
+    TreeUI* tree_ui;
 };
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
@@ -19,11 +17,19 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 
     ui->board_ui = board_ui_create(
         renderer,
-        game_get_board(ui->game),
-        game_get_active_player(ui->game),
+        game,
         0,
         0,
-        g_app_window_width,
+        g_app_window_width / 2,
+        g_app_window_height
+    );
+
+    ui->tree_ui = tree_ui_create(
+        renderer, 
+        game,
+        g_app_window_width / 2, 
+        0, 
+        g_app_window_width / 2, 
         g_app_window_height
     );
 
@@ -35,6 +41,7 @@ void game_ui_destroy(GameUI* ui)
     verify_game_ui(ui);
 
     board_ui_destroy(ui->board_ui);
+    tree_ui_destroy(ui->tree_ui);
 }
 
 void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
@@ -42,6 +49,7 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
     verify_renderer(renderer);
     verify_game_ui(ui);
 
+    tree_ui_render(renderer, ui->tree_ui);
     board_ui_render(renderer, ui->board_ui);
 }
 
@@ -65,26 +73,31 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
     result = update_keys(input, ui);
     if (result != GAME_RESULT_CONTINUE) return result;
 
+    tree_ui_update(input, ui->tree_ui);
+
     switch (board_ui_update(input, ui->board_ui))
     {
         case BOARD_RESULT_ADVANCE_TURN:
             game_advance_turn(ui->game);
-            board_ui_set_active_player(ui->board_ui, game_get_active_player(ui->game));
-            return GAME_RESULT_CONTINUE;
+            result = GAME_RESULT_CONTINUE;
+            break;
 
         case BOARD_RESULT_WIN_WHITE:
-            return GAME_RESULT_WIN_WHITE;
+            result = GAME_RESULT_WIN_WHITE;
+            break;
 
         case BOARD_RESULT_WIN_BLACK:
-            return GAME_RESULT_WIN_BLACK;
+            result = GAME_RESULT_WIN_BLACK;
+            break;
 
         case BOARD_RESULT_CONTINUE:
         default:
-            return GAME_RESULT_CONTINUE;
+            result = GAME_RESULT_CONTINUE;
+            break;
     }
+
+    return result;
 }
-
-
 
 void verify_game_ui(const GameUI* ui)
 {

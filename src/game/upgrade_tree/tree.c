@@ -12,8 +12,11 @@ typedef struct Upgrade
     int cost;
     UpgradeType type;
     UpgradeState state;
-    // HACK: index?
 } Upgrade;
+
+static void tree_add_upgrade(Tree* tree, UpgradeType type, int cost);
+static void tree_add_upgrade_dependency(Tree* tree, int upgrade_index, int dependency_index);
+static void tree_upgrade_unlock(Tree* tree, int index);
 
 Tree* tree_create()
 {
@@ -33,6 +36,7 @@ void tree_destroy(Tree *tree)
 void tree_set_default(Tree* tree)
 {
     tree_add_upgrade(tree, UPGRADE_PEASANT, 1); // 0
+    tree_upgrade_unlock(tree, 0);
     tree_add_upgrade(tree, UPGRADE_PEASANT, 1); // 1
     tree_add_upgrade_dependency(tree, 1, 0);
 
@@ -48,6 +52,7 @@ void tree_set_default(Tree* tree)
 
 
     tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 6
+    tree_upgrade_unlock(tree, 6);
     tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 7
     tree_add_upgrade_dependency(tree, 7, 6);
     tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 8
@@ -64,7 +69,7 @@ void tree_set_default(Tree* tree)
     tree_add_upgrade_dependency(tree, 12, 11);
 }
 
-void tree_add_upgrade(Tree* tree, UpgradeType type, int cost)
+static void tree_add_upgrade(Tree* tree, UpgradeType type, int cost)
 {
     Upgrade* upgrade = SDL_malloc(sizeof(Upgrade));
     upgrade->cost = cost;
@@ -73,7 +78,7 @@ void tree_add_upgrade(Tree* tree, UpgradeType type, int cost)
     graph_add_node(tree, upgrade);
 }
 
-void tree_add_upgrade_dependency(Tree* tree, int upgrade_index, int dependency_index)
+static void tree_add_upgrade_dependency(Tree* tree, int upgrade_index, int dependency_index)
 {
     graph_add_edge(tree, dependency_index, upgrade_index);
 }
@@ -92,20 +97,24 @@ static bool upgrade_can_unlock(Tree* tree, int index)
     return true;
 }
 
-void tree_upgrade_purchase(Board* board, Tree* tree, int index)
+UpgradeType tree_upgrade_purchase(Tree* tree, int index)
 {
     const Vector* next = graph_get_next_data(tree, index);
     for (int i = 0; i < vector_get_size(next); i++)
     {
         Upgrade* curr = vector_get_at(next, i);
         int curr_index = graph_search(tree, curr);
-        if (upgrade_can_unlock(tree, curr_index))
-        {
             curr->state = UNLOCKED;
-        }
     }
+    Upgrade* upgrade = graph_get_data(tree, index);
+    upgrade->state = PURCHASED;
+    return upgrade->type;
+}
 
-    // TODO: do the effects of the upgrade
+static void tree_upgrade_unlock(Tree* tree, int index)
+{
+    Upgrade* upgrade = graph_get_data(tree, index);
+    upgrade->state = UNLOCKED;
 }
 
 int tree_get_upgrade_cost(const Tree* tree, int index)
@@ -119,3 +128,10 @@ UpgradeType tree_get_upgrade_type(const Tree* tree, int index)
     Upgrade* upgrade = graph_get_data(tree, index);
     return upgrade->type;
 }
+
+bool tree_is_upgrade_available(const Tree* tree, int index)
+{
+    Upgrade* upgrade = graph_get_data(tree, index);
+    return upgrade->state == UNLOCKED;
+}
+

@@ -106,13 +106,27 @@ int graph_get_size(const Graph* graph)
 const Vector* graph_get_next_data(const Graph* graph, int index)
 {
     Node* node = graph_get_node(graph, index);
-    return node->next_nodes;
+    Vector* vector = vector_create();
+    for (int i = 0; i < vector_get_size(node->next_nodes); i++)
+    {
+        Node* curr = vector_get_at(node->next_nodes, i);
+        void* data = curr->data;
+        vector_add(vector, data);
+    }
+    return vector;
 }
 
 const Vector* graph_get_prev_data(const Graph* graph, int index)
 {
     Node* node = graph_get_node(graph, index);
-    return node->prev_nodes;
+    Vector* vector = vector_create();
+    for (int i = 0; i < vector_get_size(node->prev_nodes); i++)
+    {
+        Node* curr = vector_get_at(node->prev_nodes, i);
+        void* data = curr->data;
+        vector_add(vector, data);
+    }
+    return vector;
 }
 
 bool graph_is_connected(const Graph* graph, int index1, int index2)

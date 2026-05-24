@@ -1,7 +1,7 @@
 #include "helper_functions/global_variables.h"
 
-int g_app_window_width = APP_WINDOW_WIDTH;
-int g_app_window_height = APP_WINDOW_HEIGHT;
+float g_app_window_width = APP_WINDOW_WIDTH;
+float g_app_window_height = APP_WINDOW_HEIGHT;
 
 float g_app_scale = 1;
 

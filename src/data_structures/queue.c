@@ -35,6 +35,10 @@ void* queue_peek(const Queue* queue)
 {
     verify_queue(queue);
 
+    if (vector_get_size(queue) <= 0)
+    {
+        return NULL;
+    }
     return vector_get_at(queue, 0);
 }
 

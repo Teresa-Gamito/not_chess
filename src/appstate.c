@@ -1,4 +1,5 @@
 #include "include/appstate.h"
+#include "helper_functions/global_variables.h"
 
 struct AppState
 {
@@ -70,14 +71,18 @@ void app_destroy(AppState* app)
 
 static void update_global_variables(AppState* app)
 {
-    SDL_GetWindowSize(app->sdl_window, &g_app_window_width, &g_app_window_height);
-    if (APP_WINDOW_WIDTH / APP_WINDOW_HEIGHT < g_app_window_width / g_app_window_height)
+    int app_width;
+    int app_height;
+    SDL_GetWindowSize(app->sdl_window, &app_width, &app_height);
+    g_app_window_width = app_width;
+    g_app_window_height = app_height;
+    if ((float) APP_WINDOW_WIDTH / APP_WINDOW_HEIGHT < g_app_window_width / g_app_window_height)
     {
-        g_app_scale = (float) g_app_window_width / APP_WINDOW_WIDTH;
+        g_app_scale = g_app_window_width / APP_WINDOW_WIDTH;
     }
     else
     {
-        g_app_scale = (float) g_app_window_height / APP_WINDOW_HEIGHT;
+        g_app_scale = g_app_window_height / APP_WINDOW_HEIGHT;
     }
     g_menu_font_size = FONT_SIZE_MENU * g_app_scale;
     g_game_font_size = FONT_SIZE * g_app_scale;

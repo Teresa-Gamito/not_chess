@@ -24,8 +24,8 @@
 #define GAME_STARTING_ROW_NUM 8
 
 // window properties
-extern int g_app_window_width;
-extern int g_app_window_height;
+extern float g_app_window_width;
+extern float g_app_window_height;
 
 extern float g_app_scale;
 

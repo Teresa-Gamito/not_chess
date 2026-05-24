@@ -1,22 +1,23 @@
 #include "include/ui/tree_ui.h"
-#include "ui/ui_elements/sprite.h"
 
 static void tree_ui_set(TreeUI* ui);
+static void purchase_upgrade(void* game, void* index);
 
 struct TreeUI
 {
-    Tree* tree;
+    Game* game;
+
     Window* window;
 
     TTF_Font* font;
     SDL_Color white;
 };
 
-TreeUI* tree_ui_create(SDL_Renderer* renderer, Tree* tree, float x, float y, float width, float height)
+TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, float width, float height)
 {
     TreeUI* ui = SDL_malloc(sizeof(TreeUI));
-    ui->tree = tree;
 
+    ui->game = game;
 
     SDL_Texture* texture = SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_TREE_BACKGROUND);
     ui->window = window_create(
@@ -60,10 +61,16 @@ void tree_ui_update(InputState* input, TreeUI* ui)
 
 static void tree_ui_set(TreeUI* ui)
 {
-    for (int i = 0; i < graph_get_size(ui->tree); i++)
+    Tree* tree = game_get_tree(ui->game);
+    for (int i = 0; i < graph_get_size(tree); i++)
     {
         SDL_Texture* texture = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
-        Sprite* sprite = sprite_create(texture);
+        Button* button = button_create(texture, NULL, texture);
+        button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
+        int* index = SDL_malloc(sizeof(int));
+        *index = i;
+        Function* func = function_create(purchase_upgrade, ui->game, index);
+        button_set_on_click_fn(button, MOUSE_LEFT, func);
 
         float x = 0;
         float y = 0;
@@ -122,12 +129,19 @@ static void tree_ui_set(TreeUI* ui)
                 y = 3;
                 break;
         }
-        x *= sprite_get_width(sprite);
-        y *= sprite_get_height(sprite);
+        x *= button_get_width(button);
+        y *= button_get_height(button);
 
-        x += 0.1 * sprite_get_width(sprite);
-        y += 0.1 * sprite_get_height(sprite);
-        window_add_sprite(ui->window, sprite, x, y);
+        x += 0.1 * button_get_width(button);
+        y += 0.1 * button_get_height(button);
+
+        window_add_button(ui->window, button, x, y);
     }
 }
 
+static void purchase_upgrade(void* game, void* index)
+{
+    int i = *(int*)index;
+
+    game_purchase_upgrade(game, i);
+}

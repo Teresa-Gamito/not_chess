@@ -1,4 +1,4 @@
-#include "include/game/upgrade_tree/upgrade.h"
+#include "include/game/upgrade.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);
@@ -22,38 +22,40 @@ bool upgrade_needs_select(UpgradeType type)
     }
 }
 
-bool upgrade_pos_is_valid(UpgradeType type, Board* board, Pos pos, Player* active_player)
+bool upgrade_pos_is_valid(Game* game, UpgradeType type, Pos pos)
 {
+    Board* board = game_get_board(game);
+    Player* player = game_get_active_player(game);
     switch (type)
     {
         case UPGRADE_PEASANT:
         case UPGRADE_CHECKERS:
         case UPGRADE_SHOGI:
-            if (!is_player_side(board, active_player, pos)) return false;
+            if (!is_player_side(board, player, pos)) return false;
             if (board_has_piece_at(board, pos)) return false;
             return true;
 
         case UPGRADE_DISGUISE:
             if (!board_has_piece_at(board, pos)) return false;
-            if (!is_player_color(active_player, board_get_piece_at(board,  pos))) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) != ROOK) return false;
             return true;
 
         case UPGRADE_REVERSE_DISGUISE:
             if (!board_has_piece_at(board, pos)) return false;
-            if (!is_player_color(active_player, board_get_piece_at(board,  pos))) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) != BISHOP) return false;
             return true;
 
         case UPGRADE_PROMOTION:
             if (!board_has_piece_at(board, pos)) return false;
-            if (!is_player_color(active_player, board_get_piece_at(board,  pos))) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) != PAWN) return false;
             return true;
 
         case UPGRADE_PRECIOUS:
             if (!board_has_piece_at(board, pos)) return false;
-            if (is_player_color(active_player, board_get_piece_at(board,  pos))) return false;
+            if (is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) == QUEEN) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) == KING) return false;
             return true;
@@ -66,7 +68,7 @@ bool upgrade_pos_is_valid(UpgradeType type, Board* board, Pos pos, Player* activ
         case UPGRADE_DEADTOUCH:
         case UPGRADE_TRAMPLE:
             if (!board_has_piece_at(board, pos)) return false;
-            if (!is_player_color(active_player, board_get_piece_at(board,  pos))) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             return true;
 
         default:
@@ -75,9 +77,11 @@ bool upgrade_pos_is_valid(UpgradeType type, Board* board, Pos pos, Player* activ
     return true;
 }
 
-void upgrade(UpgradeType type, Board* board, Pos pos, Player* active_player)
+void upgrade(Game* game, UpgradeType type, Pos pos)
 {
-    Color color = player_get_color(active_player);
+    Player* player = game_get_active_player(game);
+    Color color = player_get_color(player);
+    Board* board = game_get_board(game);
     switch (type) 
     {
         case UPGRADE_PEASANT:
@@ -110,7 +114,7 @@ void upgrade(UpgradeType type, Board* board, Pos pos, Player* active_player)
             break;
 
         case UPGRADE_PRECIOUS:
-            piece_set_color(board_get_piece_at(board, pos), player_get_color(active_player));
+            piece_set_color(board_get_piece_at(board, pos), color);
             break;
 
         case UPGRADE_RISE:
