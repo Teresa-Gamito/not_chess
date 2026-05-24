@@ -1,5 +1,4 @@
 #include "data_structures/queue.h"
-#include "data_structures/vector.h"
 
 Queue* queue_create()
 {

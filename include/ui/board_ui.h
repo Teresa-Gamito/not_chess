@@ -24,8 +24,10 @@ typedef struct BoardUI BoardUI;
 BoardUI* board_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, float width, float height);
 void board_ui_destroy(BoardUI* ui);
 
-BoardResult board_ui_update(InputState* input, BoardUI* ui);
+void board_ui_update(InputState* input, BoardUI* ui);
 void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui);
+
+void board_ui_update_objects(BoardUI* ui);
 
 void board_ui_add_upgrade(BoardUI* ui, UpgradeType upgrade);
 

@@ -134,6 +134,34 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
     }
 }
 
+void purchase_upgrade(Game* game, int index)
+{
+    Tree* tree = game_get_tree(game);
+    Player* player = game_get_active_player(game);
+    int cost = tree_get_upgrade_cost(tree, index);
+    if (player_get_points(player) < cost)
+    {
+        return;
+    }
+    if (!tree_is_upgrade_available(tree, index))
+    {
+        return;
+    }
+
+    player_add_points(player, -cost);
+
+    UpgradeType type = tree_upgrade_purchase(tree, index);
+
+    UpgradeType* upgrade = SDL_malloc(sizeof(UpgradeType));
+    *upgrade = type;
+    queue_push(game_get_upgrade_queue(game), upgrade);
+    if (!upgrade_needs_select(type))
+    {
+        game_try_upgrade(game, (Pos){0, 0});
+    }
+}
+
+
 static bool is_player_side(Board* board, Player* player, Pos pos)
 {
     if (pos.row >= board_get_row_num(board) / 2)

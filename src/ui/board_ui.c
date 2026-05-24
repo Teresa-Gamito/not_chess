@@ -1,12 +1,9 @@
 #include "include/ui/board_ui.h"
-#include "game/game.h"
 
 static void board_ui_set_scale(BoardUI* ui);
 
-static BoardResult select_pos(BoardUI* ui, Pos pos);
+static void select_pos(BoardUI* ui, Pos pos);
 static void deselect_pos(BoardUI* ui);
-
-static void update(BoardUI* ui);
 
 struct BoardUI
 {
@@ -49,7 +46,7 @@ BoardUI* board_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, f
     ui->selected_pos = (Pos){0, 0};
     ui->is_selected = false;
 
-    update(ui);
+    board_ui_update_objects(ui);
 
     return ui;
 }
@@ -95,33 +92,28 @@ static Pos get_board_pos_from_screen(const BoardUI* ui, Pos pos)
     return (Pos){(int)x, (int)y};
 }
 
-static BoardResult press_board(InputState* input, BoardUI* ui)
+static void press_board(InputState* input, BoardUI* ui)
 {
     Board* board = game_get_board(ui->game);
     if (mouse_get_released(input, MOUSE_LEFT))
     {
-        update(ui);
-
         Pos mouse_pos = (Pos) {mouse_get_x(input), mouse_get_y(input)};
         Pos board_pos = get_board_pos_from_screen(ui, mouse_pos);
-        if (board_pos.col >= board_get_col_num(board)) return BOARD_RESULT_CONTINUE;
-        if (board_pos.row >= board_get_row_num(board)) return BOARD_RESULT_CONTINUE;
-        return select_pos(ui, board_pos);
+        if (board_pos.col >= board_get_col_num(board)) return;
+        if (board_pos.row >= board_get_row_num(board)) return;
+        select_pos(ui, board_pos);
     }
     if (mouse_get_released(input, MOUSE_RIGHT))
     {
         deselect_pos(ui);
     }
-    return BOARD_RESULT_CONTINUE;
 }
 
-BoardResult board_ui_update(InputState* input, BoardUI* ui)
+void board_ui_update(InputState* input, BoardUI* ui)
 {
     window_update(input, ui->window);
 
-    return press_board(input, ui);
-
-    return 0;
+    press_board(input, ui);
 }
 
 void board_ui_render(SDL_Renderer* renderer, const BoardUI* ui)
@@ -146,20 +138,14 @@ static SDL_Texture* highlight_get_texture(BoardUI* ui, Pos pos)
         }
         return window_get_texture(window, TEXTURE_VALID);
     }
-
-    // no selected tile
     if (!ui->is_selected)
     {
         return NULL;
     }
-
-    // pos is same as selected pos
     if (pos_equals(pos, selected_pos))
     {
         return window_get_texture(window, TEXTURE_SELECTED);
     }
-
-    // no selected piece
     if (!board_has_piece_at(board, selected_pos)) 
     {
         return NULL;
@@ -167,14 +153,10 @@ static SDL_Texture* highlight_get_texture(BoardUI* ui, Pos pos)
 
     Color player_color = player_get_color(player);
     Color piece_color = piece_get_color(board_get_piece_at(board, selected_pos));
-
-    // opponent piece
     if (player_color != piece_color)
     {
         return NULL;
     }
-
-    // can capture
     if (board_has_piece_at(board, pos))
     {
         if (board_can_piece_capture(board, selected_pos, pos))
@@ -182,8 +164,6 @@ static SDL_Texture* highlight_get_texture(BoardUI* ui, Pos pos)
             return window_get_texture(window, TEXTURE_CAPTURE);
         }
     }
-
-    // can move to
     if (board_can_piece_move_to(board, selected_pos, pos))
     {
         return window_get_texture(window, TEXTURE_VALID);
@@ -199,7 +179,6 @@ static void add_highlight(BoardUI* ui, Pos pos)
 
     SDL_Texture* texture = highlight_get_texture(ui, pos);
     Sprite* sprite = sprite_create(texture);
-
     window_add_sprite(ui->window, sprite, x, y);
 }
 
@@ -235,7 +214,6 @@ static void add_tile(BoardUI* ui, Pos pos)
 
     SDL_Texture* texture = tile_get_texture(ui, pos);
     Sprite* sprite = sprite_create(texture);
-
     window_add_sprite(ui->window, sprite, x, y);
 }
 
@@ -287,11 +265,10 @@ static void add_piece(BoardUI* ui, Pos pos)
 
     SDL_Texture* texture = piece_get_texture(ui, pos);
     Sprite* sprite = sprite_create(texture);
-
     window_add_sprite(ui->window, sprite, x, y);
 }
 
-static void update(BoardUI* ui)
+void board_ui_update_objects(BoardUI* ui)
 {
     Board* board = game_get_board(ui->game);
     window_destroy_content(ui->window);
@@ -313,69 +290,7 @@ static void update(BoardUI* ui)
     board_ui_set_scale(ui);
 }
 
-// static bool try_capture(BoardUI* ui, Pos src, Pos dst)
-// {
-//     Board* board = game_get_board(ui->game);
-//     Player* player = game_get_active_player(ui->game);
-// 
-//     if (!board_has_piece_at(board, src)) return false;
-//     if (!board_has_piece_at(board, dst)) return false;
-//     if (!board_can_piece_capture(board, src, dst)) return false;
-// 
-//     Piece* piece = board_get_piece_at(board, src);
-//     Color player_color = player_get_color(player);
-//     Color piece_color = piece_get_color(piece);
-//     if (player_color != piece_color) return false;
-// 
-//     int points = board_piece_move_to(board, src, dst);
-//     player_add_points(player, points);
-//     ui->is_selected = false;
-//     update(ui);
-//     return true;
-// }
-
-// static bool try_move(BoardUI* ui, Pos src, Pos dst)
-// {
-//     Board* board = game_get_board(ui->game);
-//     Player* player = game_get_active_player(ui->game);
-// 
-//     if (!board_has_piece_at(board, src)) return false;
-//     if (!board_can_piece_move_to(board, src, dst)) return false;
-// 
-//     Color player_color = player_get_color(player);
-//     Color piece_color = piece_get_color(board_get_piece_at(board, src));
-//     if (player_color != piece_color) return false;
-// 
-//     board_piece_move_to(board, src, dst);
-//     ui->is_selected = false;
-//     update(ui);
-//     return true;
-// }
-
-// static bool try_upgrade(BoardUI* ui, Pos pos)
-// {
-//     Board* board = game_get_board(ui->game);
-//     Player* player = game_get_active_player(ui->game);
-// 
-//     if (queue_get_size(ui->upgrades) <= 0)
-//     {
-//         return false;
-//     }
-// 
-//     UpgradeType* type = (UpgradeType*)queue_peek(ui->upgrades);
-//     if (!upgrade_pos_is_valid(*type, board, pos, player))
-//     {
-//         return false;
-//     }
-// 
-//     upgrade(*type, board, pos, player);
-//     SDL_free(queue_pop(ui->upgrades));
-//     ui->is_selected = false;
-//     update(ui);
-//     return true;
-// }
-
-static BoardResult select_pos(BoardUI* ui, Pos pos)
+static void select_pos(BoardUI* ui, Pos pos)
 {
     Board* board = game_get_board(ui->game);
     Player* player = game_get_active_player(ui->game);
@@ -386,39 +301,33 @@ static BoardResult select_pos(BoardUI* ui, Pos pos)
     if (game_try_upgrade(ui->game, new_pos)) 
     {
         game_advance_turn(ui->game);
-        update(ui);
-        return BOARD_RESULT_CONTINUE;
+        board_ui_update_objects(ui);
+        return;
     }
     if (game_try_capture(ui->game, old_pos, new_pos))
     {
-        if (is_check_mate(board, player_get_color(player)))
-        {
-            Color color = player_get_color(player);
-            update(ui);
-            return color == WHITE ? BOARD_RESULT_WIN_WHITE : BOARD_RESULT_WIN_BLACK;
-        }
         game_advance_turn(ui->game);
-        update(ui);
-        return BOARD_RESULT_CONTINUE;
+        board_ui_update_objects(ui);
+        return;
     }
     if (game_try_move(ui->game, old_pos, new_pos))
     {
         game_advance_turn(ui->game);
-        update(ui);
-        return BOARD_RESULT_CONTINUE;
+        board_ui_update_objects(ui);
+        return;
     }
 
     ui->selected_pos = new_pos;
     ui->is_selected = true;
-    update(ui);
-    return BOARD_RESULT_CONTINUE;
+    board_ui_update_objects(ui);
+    return;
 }
 
 static void deselect_pos(BoardUI* ui)
 {
     verify_board_ui(ui);
     ui->is_selected = false;
-    update(ui);
+    board_ui_update_objects(ui);
 }
 
 // const char* board_get_selected_properties(const BoardUI* ui)

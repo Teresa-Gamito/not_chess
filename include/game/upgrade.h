@@ -6,3 +6,4 @@
 bool upgrade_needs_select(UpgradeType type);
 bool upgrade_pos_is_valid(Game* game, UpgradeType type, Pos pos);
 void upgrade(Game* game, UpgradeType type, Pos pos);
+void purchase_upgrade(Game* game, int index);

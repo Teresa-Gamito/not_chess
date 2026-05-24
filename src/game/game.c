@@ -1,7 +1,5 @@
 #include "include/game/game.h"
-#include "data_structures/queue.h"
 #include "game/upgrade.h"
-#include <SDL3/SDL_log.h>
 
 struct Game
 {
