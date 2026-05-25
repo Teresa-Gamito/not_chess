@@ -342,8 +342,8 @@ void window_set_position(Window* window, float x, float y)
 
     window_set_anchor(
         window,
-        window->anchor_x + window->x - x,
-        window->anchor_y + window->y - y
+        window->anchor_x - (window->x - x),
+        window->anchor_y - (window->y - y)
     );
     window->x = x;
     window->y = y;

@@ -17,3 +17,5 @@ void tree_ui_destroy(TreeUI* ui);
 
 void tree_ui_render(SDL_Renderer* renderer, const TreeUI* ui);
 void tree_ui_update(InputState* input, TreeUI* ui);
+
+Window* tree_ui_get_window(TreeUI* ui);

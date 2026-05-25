@@ -1,7 +1,5 @@
 #include "include/ui/board_ui.h"
 
-static void board_ui_set_scale(BoardUI* ui);
-
 struct BoardUI
 {
     Game* game;
@@ -48,7 +46,7 @@ BoardUI* board_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, f
     return ui;
 }
 
-static void board_ui_set_scale(BoardUI* ui)
+void board_ui_set_scale(BoardUI* ui)
 {
     Window* window = ui->window;
     float window_width = window_get_width(window);

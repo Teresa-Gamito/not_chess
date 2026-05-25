@@ -1,4 +1,5 @@
 #include "include/game/upgrade.h"
+#include "game/upgrade_tree/tree.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);
@@ -111,7 +112,6 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
 
         case UPGRADE_PROMOTION:
             piece_set_type(board_get_piece_at(board, pos), QUEEN);
-            break;
 
         case UPGRADE_PRECIOUS:
             piece_set_color(board_get_piece_at(board, pos), color);
@@ -160,7 +160,6 @@ void purchase_upgrade(Game* game, int index)
         game_try_upgrade(game, (Pos){0, 0});
     }
 }
-
 
 static bool is_player_side(Board* board, Player* player, Pos pos)
 {

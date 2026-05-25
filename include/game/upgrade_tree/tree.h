@@ -35,6 +35,35 @@ typedef enum UpgradeType
     COUNT_UPGRADE,
 } UpgradeType;
 
+static char* upgrade_name[] =
+    {
+        "Peasant",
+        "Checkers?",
+        "Stonks?!",
+        "Shogi?",
+        "Expansion",
+        "More land!",
+        "There can only be one",
+        "Knighthood",
+        "Disguise",
+        "Disguise but reversed",
+        "Promotion",
+        "My precious",
+        "Deadtouch",
+        "Trample",
+        "Debuff",
+        "Temporary royalty",
+        "Let me do it again",
+        "Rise",
+        "Get out of my swamp!",
+        "Ruling",
+        "Gambling addiction",
+        "Hello there",
+        "Friendly fire",
+        "Tactical advantage",
+        "Ruuuun!",
+    };
+
 Tree* tree_create();
 void tree_destroy(Tree *tree);
 
@@ -45,3 +74,5 @@ UpgradeType tree_upgrade_purchase(Tree* tree, int index);
 int tree_get_upgrade_cost(const Tree* tree, int index);
 UpgradeType tree_get_upgrade_type(const Tree* tree, int index);
 bool tree_is_upgrade_available(const Tree* tree, int index);
+
+const char* upgrade_get_name(UpgradeType type);

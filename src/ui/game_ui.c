@@ -1,11 +1,13 @@
 #include "ui/game_ui.h"
+#include "helper_functions/global_variables.h"
+#include "ui/board_ui.h"
+#include "ui/tree_ui.h"
+#include "ui/ui_elements/window.h"
 
 typedef enum GameScreen
 {
     SCREEN_BOARD,
-    SCREEN_TREE,
-
-    SCREEN_COUNT,
+    SCREEN_TREE
 } GameScreen;
 
 typedef struct UIState
@@ -38,6 +40,8 @@ struct GameUI
 
     SDL_Color* ui_text_color;
 
+    float scale;
+
     GameScreen screen;
     UIState* state;
 };
@@ -54,6 +58,9 @@ static Window* create_ui_rules(SDL_Renderer* renderer);
 static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 static Window* create_ui_log(SDL_Renderer* renderer);
 static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui);
+
+static void window_set_minimap(GameUI* ui, Window* window);
+static void window_set_fullscreen(GameUI* ui, Window* window);
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 {
@@ -74,11 +81,13 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
     ui->tree_ui = tree_ui_create(
         renderer, 
         game,
-        0, 
-        0, 
-        g_app_window_width, 
+        0,
+        0,
+        g_app_window_width,
         g_app_window_height
     );
+
+    window_set_minimap(ui, tree_ui_get_window(ui->tree_ui));
 
     ui->screen = SCREEN_BOARD;
     ui->state = SDL_malloc(sizeof(UIState));
@@ -130,33 +139,34 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
     if (ui->screen == SCREEN_BOARD)
     {
         board_ui_render(renderer, ui->board_ui);
-
-        window_render(renderer, ui->ui_buttons);
-
-        update_ui_player_info(renderer, ui->ui_player_info, ui);
-        window_render(renderer, ui->ui_player_info);
-
+        tree_ui_render(renderer, ui->tree_ui);
         update_ui_properties(renderer, ui->ui_properties, ui);
         if (ui->state->show_properties)
         {
             window_render(renderer, ui->ui_properties);
         }
-
-        if (ui->state->show_rules)
-        {
-            update_ui_rules(renderer, ui->ui_rules, ui);
-            window_render(renderer, ui->ui_rules);
-        }
-
-        if (ui->state->show_log)
-        {
-            update_ui_log(renderer, ui->ui_log, ui);
-            window_render(renderer, ui->ui_log);
-        }
     }
     if (ui->screen == SCREEN_TREE)
     {
         tree_ui_render(renderer, ui->tree_ui);
+        board_ui_render(renderer, ui->board_ui);
+    }
+
+    window_render(renderer, ui->ui_buttons);
+
+    update_ui_player_info(renderer, ui->ui_player_info, ui);
+    window_render(renderer, ui->ui_player_info);
+
+    if (ui->state->show_rules)
+    {
+        update_ui_rules(renderer, ui->ui_rules, ui);
+        window_render(renderer, ui->ui_rules);
+    }
+
+    if (ui->state->show_log)
+    {
+        update_ui_log(renderer, ui->ui_log, ui);
+        window_render(renderer, ui->ui_log);
     }
 }
 
@@ -231,11 +241,52 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
 
 static void toggle_screen(GameUI* ui)
 {
-    ui->screen++;
-    if (ui->screen >= SCREEN_COUNT) ui->screen = 0;
-    board_ui_update_objects(ui->board_ui);
+    // TODO: fix centering
+    if (ui->screen == SCREEN_BOARD)
+    {
+        ui->screen = SCREEN_TREE;
+        Window* tree = tree_ui_get_window(ui->tree_ui);
+        window_set_fullscreen(ui, tree);
+
+        Window* board = board_ui_get_window(ui->board_ui);
+        window_set_minimap(ui, board);
+        return;
+    }
+    if (ui->screen == SCREEN_TREE)
+    {
+        ui->screen = SCREEN_BOARD;
+        Window* board = board_ui_get_window(ui->board_ui);
+        window_set_fullscreen(ui, board);
+
+        Window* tree = tree_ui_get_window(ui->tree_ui);
+        window_set_minimap(ui, tree);
+        board_ui_update_objects(ui->board_ui);
+        return;
+    }
 }
 
+static void window_set_minimap(GameUI* ui, Window* window)
+{
+    ui->scale = window_get_scale(window);
+    window_set_size(
+        window,
+        UI_MINI_MAP_WIDTH,
+        UI_MINI_MAP_HEIGHT
+    );
+    window_set_position(
+        window,
+        screen_width - UI_MINI_MAP_WIDTH - UI_BUFFER,
+        screen_height - UI_MINI_MAP_HEIGHT - UI_BUFFER
+    );
+    window_set_scale(window, g_app_scale * 2);
+}
+
+static void window_set_fullscreen(GameUI* ui, Window* window)
+{
+    window_set_scale(window, ui->scale);
+    window_set_size(window, screen_width, screen_height);
+    window_set_position(window, 0, 0);
+}
 
 static void toggle_pause(void* game_ui, void* null)
 {

@@ -66,7 +66,7 @@ static void tree_ui_set(TreeUI* ui)
     {
         SDL_Texture* texture = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
         Button* button = button_create(texture, NULL, texture);
-        button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
+        button_set_size(button, TEXTURE_DEFAULT_SIZE_PX * 2, TEXTURE_DEFAULT_SIZE_PX * 2);
         int* index = SDL_malloc(sizeof(int));
         *index = i;
         Function* func = function_create(purchase_upgrade, ui->game, index);
@@ -137,6 +137,11 @@ static void tree_ui_set(TreeUI* ui)
 
         window_add_button(ui->window, button, x, y);
     }
+}
+
+Window* tree_ui_get_window(TreeUI* ui)
+{
+    return ui->window;
 }
 
 static void purchase_upgrade(void* game, void* index)

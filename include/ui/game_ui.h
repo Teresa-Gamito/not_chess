@@ -30,6 +30,9 @@
 #define UI_LOG_WIDTH screen_width / 5
 #define UI_LOG_HEIGHT screen_height / 2
 
+#define UI_MINI_MAP_WIDTH screen_width / 5
+#define UI_MINI_MAP_HEIGHT screen_width / 5
+
 typedef struct GameUI GameUI;
 
 typedef enum GameResult

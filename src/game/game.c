@@ -5,6 +5,7 @@
 #include "game/log/log.h"
 #include "game/player/player.h"
 #include "game/upgrade.h"
+#include "game/upgrade_tree/tree.h"
 
 struct Game
 {
@@ -82,8 +83,16 @@ bool game_try_upgrade(Game* game, Pos pos)
         return false;
     }
 
+    gamelog_add(
+        game->log, 
+        "%s purchased '%s'",
+        color_get_name(player_get_color(game->active_player)),
+        upgrade_get_name(*type)
+    );
+
     upgrade(game, *type, pos);
     SDL_free(queue_pop(game->upgrades));
+
     return true;
 }
 
@@ -182,7 +191,11 @@ void game_purchase_upgrade(Game* game, int index)
     queue_push(game->upgrades, upgrade);
     if (!upgrade_needs_select(type))
     {
-        game_try_upgrade(game, (Pos){0, 0});
+        if (game_try_upgrade(game, (Pos){0, 0}))
+        {
+            game_advance_turn(game);
+        }
+
     }
 }
 

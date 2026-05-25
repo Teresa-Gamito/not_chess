@@ -135,3 +135,7 @@ bool tree_is_upgrade_available(const Tree* tree, int index)
     return upgrade->state == UNLOCKED;
 }
 
+const char* upgrade_get_name(UpgradeType type)
+{
+    return upgrade_name[type];
+}
