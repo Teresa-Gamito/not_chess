@@ -50,6 +50,22 @@ Color tile_get_default_color(Pos pos)
     return ((pos.col + pos.row) % 2 == 0) ? WHITE : BLACK;
 }
 
+const char* tile_type_get_name(TileType type)
+{
+    switch (type) 
+    {
+        case TILE_NONE:
+            return "Regular";
+        case TILE_WALL:
+            return "Wall";
+        case TILE_POISON:
+            return "POISON";
+
+        default:
+            return "Invalid TileType";
+    }
+}
+
 void verify_tile(const Tile* tile)
 {
     verify(tile == NULL, "Tile does not exist");

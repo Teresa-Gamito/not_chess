@@ -35,18 +35,6 @@ const char* get_piece_properties(const Piece* piece)
     return properties;
 }
 
-
-static const char* tile_type_get_name(TileType type)
-{
-    switch (type) 
-    {
-        case TILE_NONE:
-            return "Regular";
-
-        default:
-            return "Invalid TileType";
-    }
-}
 const char* get_tile_properties(const Tile* tile)
 {
     char* properties = "";

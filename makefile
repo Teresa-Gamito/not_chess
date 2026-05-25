@@ -63,7 +63,7 @@ SRC := $(wildcard src/*.c) $(wildcard src/**/*.c) $(wildcard src/**/**/*.c) $(wi
 OBJ := $(SRC:.c=.o)
 DEP := $(OBJ:.o=.d)
 
-BIN := app
+BIN := not_chess
 
 # Add .exe on MSYS2 builds if you want:
 ifdef IS_MSYS2

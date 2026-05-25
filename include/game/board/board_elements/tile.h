@@ -24,12 +24,13 @@ Tile* tile_create(TileType type, Color color);
 void tile_destroy(Tile* tile);
 
 // ========== set ==========
-void tile_set_type(Tile* tile, TileType type); // TODO:
+void tile_set_type(Tile* tile, TileType type);
 
 // ========== get ==========
 TileType tile_get_type(const Tile* tile);
 Color tile_get_color(const Tile* tile);
 Color tile_get_default_color(Pos pos);
+const char* tile_type_get_name(TileType type);
 
 // ========== verify ==========
 void verify_tile(const Tile* piece);

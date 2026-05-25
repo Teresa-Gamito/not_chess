@@ -14,6 +14,7 @@ typedef struct UIState
     bool show_properties;
     bool show_rules;
     bool show_log;
+    bool show_help;
 } UIState;
 
 struct GameUI 
@@ -51,6 +52,8 @@ static Window* create_ui_player_info(SDL_Renderer* renderer);
 static void update_ui_player_info(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 static Window* create_ui_rules(SDL_Renderer* renderer);
 static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui);
+static Window* create_ui_log(SDL_Renderer* renderer);
+static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 {
@@ -79,12 +82,13 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 
     ui->screen = SCREEN_BOARD;
     ui->state = SDL_malloc(sizeof(UIState));
-    *ui->state = (UIState){false, false, false, false};
+    *ui->state = (UIState){false, false, false, false, false};
 
     ui->ui_buttons = create_ui_buttons(renderer, ui);
     ui->ui_player_info = create_ui_player_info(renderer);
     ui->ui_properties = create_ui_properties(renderer);
     ui->ui_rules = create_ui_rules(renderer);
+    ui->ui_log = create_ui_log(renderer);
 
     ui->ui_font_small = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale - 0.4));
     ui->ui_font_medium = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale));
@@ -107,6 +111,7 @@ void game_ui_destroy(GameUI* ui)
     window_destroy(ui->ui_player_info);
     window_destroy(ui->ui_properties);
     window_destroy(ui->ui_rules);
+    window_destroy(ui->ui_log);
 
     TTF_CloseFont(ui->ui_font_small);
     TTF_CloseFont(ui->ui_font_medium);
@@ -141,6 +146,12 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
         {
             update_ui_rules(renderer, ui->ui_rules, ui);
             window_render(renderer, ui->ui_rules);
+        }
+
+        if (ui->state->show_log)
+        {
+            update_ui_log(renderer, ui->ui_log, ui);
+            window_render(renderer, ui->ui_log);
         }
     }
     if (ui->screen == SCREEN_TREE)
@@ -201,6 +212,14 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
         {
             window_update(input, ui->ui_properties);
         }
+        if (ui->state->show_rules)
+        {
+            window_update(input, ui->ui_rules);
+        }
+        if (ui->state->show_log)
+        {
+            window_update(input, ui->ui_log);
+        }
     }
     if (ui->screen == SCREEN_TREE)
     {
@@ -221,25 +240,35 @@ static void toggle_screen(GameUI* ui)
 static void toggle_pause(void* game_ui, void* null)
 {
     GameUI* ui = (GameUI*)game_ui;
+    ui->state->is_paused = !ui->state->is_paused;
     ui->state->show_rules = false;
     ui->state->show_log = false;
-    ui->state->is_paused = !ui->state->is_paused;
+    ui->state->show_help = false;
 }
 static void toggle_rules(void* game_ui, void* null)
 {
     GameUI* ui = (GameUI*)game_ui;
+    ui->state->is_paused = false;
     ui->state->show_rules = !ui->state->show_rules;
     ui->state->show_log = false;
-    ui->state->is_paused = false;
+    ui->state->show_help = false;
 }
 static void toggle_log(void* game_ui, void* null)
 {
     GameUI* ui = (GameUI*)game_ui;
+    ui->state->is_paused = false;
     ui->state->show_rules = false;
     ui->state->show_log = !ui->state->show_log;
-    ui->state->is_paused = false;
+    ui->state->show_help = false;
 }
-static void toggle_help(void* game_ui, void* null) {} // not implemented
+static void toggle_help(void* game_ui, void* null)
+{
+    GameUI* ui = (GameUI*)game_ui;
+    ui->state->is_paused = false;
+    ui->state->show_rules = false;
+    ui->state->show_log = false;
+    ui->state->show_help = !ui->state->show_help;
+}
 static Window* create_ui_buttons(SDL_Renderer* renderer, GameUI* ui)
 {
     int button_count = 4;
@@ -427,6 +456,39 @@ static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI
         TEXT_LEFT_ALIGNED
     );
     window_add_textbox(window, textbox, UI_BUFFER, UI_BUFFER);
+}
+
+static Window* create_ui_log(SDL_Renderer* renderer)
+{
+    Window* window = window_create(
+        screen_width - UI_LOG_WIDTH - UI_BUFFER,
+        UI_BUFFER * 2 + UI_BUTTON_SIZE,
+        UI_LOG_WIDTH,
+        UI_LOG_HEIGHT,
+        SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_LOG),
+        0
+    );
+    return window;
+}
+static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui)
+{
+    window_destroy_content(window);
+
+    const char* text = gamelog_get(game_get_log(ui->game));
+    Textbox* textbox = textbox_create(
+        renderer, 
+        ui->ui_font_small, 
+        ui->ui_text_color, 
+        text, 
+        UI_LOG_WIDTH - UI_BUFFER * 2, 
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(
+        window,
+        textbox,
+        UI_BUFFER,
+        UI_LOG_HEIGHT - textbox_get_height(textbox) - UI_BUFFER
+    );
 }
 
 Window* create_ui_mini_tree();

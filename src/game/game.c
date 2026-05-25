@@ -1,4 +1,9 @@
 #include "include/game/game.h"
+#include "game/board/board.h"
+#include "game/board/board_elements/piece.h"
+#include "game/color.h"
+#include "game/log/log.h"
+#include "game/player/player.h"
 #include "game/upgrade.h"
 
 struct Game
@@ -91,6 +96,7 @@ bool game_try_capture(Game* game, Pos src, Pos dst)
     if (!board_can_piece_capture(board, src, dst)) return false;
 
     Piece* piece = board_get_piece_at(board, src);
+    PieceType type = piece_get_type(board_get_piece_at(board, dst));
     Color player_color = player_get_color(game->active_player);
     Color piece_color = piece_get_color(piece);
     if (player_color != piece_color) return false;
@@ -98,7 +104,18 @@ bool game_try_capture(Game* game, Pos src, Pos dst)
     int points = board_piece_move_to(board, src, dst);
     player_add_points(game->active_player, points);
 
-    // TODO: Add to log
+    gamelog_add(
+        game->log, 
+        "%s moved %s from col:%d row:%d to col:%d row:%d and captured %s for %d points",
+        color_get_name(player_color),
+        piece_type_get_name(piece_get_type(piece)),
+        src.col,
+        src.row,
+        dst.col,
+        dst.row,
+        piece_type_get_name(type),
+        points
+    );
 
     return true;
 }
@@ -110,13 +127,23 @@ bool game_try_move(Game* game, Pos src, Pos dst)
     if (!board_has_piece_at(board, src)) return false;
     if (!board_can_piece_move_to(board, src, dst)) return false;
 
+    Piece* piece = board_get_piece_at(board, src);
     Color player_color = player_get_color(game->active_player);
-    Color piece_color = piece_get_color(board_get_piece_at(board, src));
+    Color piece_color = piece_get_color(piece);
     if (player_color != piece_color) return false;
 
     board_piece_move_to(board, src, dst);
 
-    // TODO: Add to log
+    gamelog_add(
+        game->log, 
+        "%s moved %s from col:%d row:%d to col:%d row:%d",
+        color_get_name(player_color),
+        piece_type_get_name(piece_get_type(piece)),
+        src.col,
+        src.row,
+        dst.col,
+        dst.row
+    );
 
     return true;
 }

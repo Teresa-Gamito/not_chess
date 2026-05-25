@@ -14,6 +14,7 @@ GameLog* gamelog_create()
 
     return log;
 }
+
 void gamelog_destroy(GameLog* log)
 {
     verify_gamelog(log);
@@ -44,15 +45,16 @@ const char* gamelog_get(const GameLog *log)
     verify_gamelog(log);
     if (vector_get_size(log->logs) <= 0)
     {
-        return NULL;
+        return " ";
     }
 
     char* full_log = "";
-    for (int i = vector_get_size(log->logs) - 1; i >= 0; i--)
+    for (int i = 0; i < vector_get_size(log->logs); i++)
     {
         char* curr_msg = vector_get_at(log->logs, i);
         SDL_asprintf(&full_log, "%s%s\n", full_log, curr_msg);
     }
+
     return full_log;
 }
 

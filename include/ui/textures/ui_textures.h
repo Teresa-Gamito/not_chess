@@ -10,7 +10,8 @@
 
 #define PATH_TEXTURE_WINDOW_PROPERTIES              "assets/sprites/tile/tile_black.png"
 #define PATH_TEXTURE_WINDOW_PLAYER_INFO             "assets/sprites/tile/tile_black.png"
-#define PATH_TEXTURE_WINDOW_RULES             "assets/sprites/tile/tile_black.png"
+#define PATH_TEXTURE_WINDOW_RULES                   "assets/sprites/tile/tile_black.png"
+#define PATH_TEXTURE_WINDOW_LOG                     "assets/sprites/tile/tile_black.png"
 
 typedef enum UIButtonsTextures
 {
