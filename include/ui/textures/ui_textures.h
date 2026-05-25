@@ -8,10 +8,13 @@
 #define PATH_TEXTURE_BUTTON_HELP                    "assets/sprites/tile/tile_selected.png"
 #define PATH_TEXTURE_BUTTON_PAUSE                   "assets/sprites/tile/tile_white.png"
 
+#define PATH_TEXTURE_PAUSE_BUTTON                   "assets/sprites/tile/tile_white.png"
+
 #define PATH_TEXTURE_WINDOW_PROPERTIES              "assets/sprites/tile/tile_black.png"
 #define PATH_TEXTURE_WINDOW_PLAYER_INFO             "assets/sprites/tile/tile_black.png"
 #define PATH_TEXTURE_WINDOW_RULES                   "assets/sprites/tile/tile_black.png"
 #define PATH_TEXTURE_WINDOW_LOG                     "assets/sprites/tile/tile_black.png"
+#define PATH_TEXTURE_WINDOW_PAUSE                   "assets/sprites/tile/tile_black.png"
 
 typedef enum UIButtonsTextures
 {
@@ -29,4 +32,16 @@ static const char* ui_buttons_textures[] =
     PATH_TEXTURE_BUTTON_LOG,
     PATH_TEXTURE_BUTTON_HELP,
     PATH_TEXTURE_BUTTON_PAUSE
+};
+
+typedef enum UIMenuPauseTextures
+{
+    TEXTURE_PAUSE_BUTTON,
+
+    UI_MENU_PAUSE_COUNT
+} UIMenuPauseTextures;
+
+static const char* ui_menu_pause_textures[] =
+{
+    PATH_TEXTURE_PAUSE_BUTTON,
 };

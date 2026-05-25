@@ -1,8 +1,12 @@
 #include "ui/game_ui.h"
-#include "helper_functions/global_variables.h"
-#include "ui/board_ui.h"
-#include "ui/tree_ui.h"
-#include "ui/ui_elements/window.h"
+#include "inputstate.h"
+
+typedef enum MenuPauseScreen
+{
+    MENU_PAUSE_MAIN,
+    MENU_PAUSE_OPTIONS,
+    MENU_PAUSE_EXIT
+} MenuPauseScreen;
 
 typedef enum GameScreen
 {
@@ -31,8 +35,12 @@ struct GameUI
     Window* ui_player_info;
     Window* ui_rules;
     Window* ui_mini_tree;
-    Window* ui_pause;
     Window* ui_log;
+
+    MenuPauseScreen screen_pause;
+    Menu* ui_pause_main;
+    Menu* ui_pause_options;
+    Menu* ui_pause_exit;
 
     TTF_Font* ui_font_small;
     TTF_Font* ui_font_medium;
@@ -58,6 +66,10 @@ static Window* create_ui_rules(SDL_Renderer* renderer);
 static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 static Window* create_ui_log(SDL_Renderer* renderer);
 static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui);
+
+static Menu* create_ui_pause_main(SDL_Renderer* renderer, GameUI* ui);
+static Menu* create_ui_pause_options(SDL_Renderer* renderer, GameUI* ui);
+static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui);
 
 static void window_set_minimap(GameUI* ui, Window* window);
 static void window_set_fullscreen(GameUI* ui, Window* window);
@@ -98,6 +110,10 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
     ui->ui_properties = create_ui_properties(renderer);
     ui->ui_rules = create_ui_rules(renderer);
     ui->ui_log = create_ui_log(renderer);
+
+    ui->ui_pause_main = create_ui_pause_main(renderer, ui);
+    ui->ui_pause_options = create_ui_pause_options(renderer, ui);
+    ui->ui_pause_exit = create_ui_pause_exit(renderer, ui);
 
     ui->ui_font_small = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale - 0.4));
     ui->ui_font_medium = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale));
@@ -168,9 +184,39 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
         update_ui_log(renderer, ui->ui_log, ui);
         window_render(renderer, ui->ui_log);
     }
+
+    if (ui->state->is_paused)
+    {
+        if (ui->screen_pause == MENU_PAUSE_MAIN)
+        {
+            menu_render(renderer, ui->ui_pause_main);
+        }
+        else if (ui->screen_pause == MENU_PAUSE_OPTIONS)
+        {
+            menu_render(renderer, ui->ui_pause_options);
+        }
+        else if (ui->screen_pause == MENU_PAUSE_EXIT)
+        {
+            menu_render(renderer, ui->ui_pause_exit);
+        }
+    }
 }
 
-static void update_keys(InputState* input, GameUI* ui)
+static void update_keys_minimap(const InputState* input, GameUI* ui)
+{
+    float mouse_x = mouse_get_x(input);
+    float mouse_y = mouse_get_y(input);
+    if (mouse_x < screen_width - UI_MINI_MAP_WIDTH - UI_BUFFER) return;
+    if (mouse_y < screen_height - UI_MINI_MAP_HEIGHT - UI_BUFFER) return;
+    if (mouse_x > screen_width - UI_BUFFER) return;
+    if (mouse_y > screen_height - UI_BUFFER) return;
+    if (mouse_get_released(input, MOUSE_LEFT))
+    {
+        toggle_screen(ui);
+    }
+}
+
+static void update_keys(const InputState* input, GameUI* ui)
 {
     if (keyboard_get_released(input, SDL_SCANCODE_ESCAPE))
     {
@@ -212,12 +258,31 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
     verify_input(input);
 
     update_keys(input, ui);
+    window_update(input, ui->ui_buttons);
+
+    if (ui->state->is_paused)
+    {
+        if (ui->screen_pause == MENU_PAUSE_MAIN)
+        {
+            menu_update(input, ui->ui_pause_main);
+        }
+        else if (ui->screen_pause == MENU_PAUSE_OPTIONS)
+        {
+            menu_update(input, ui->ui_pause_options);
+        }
+        else if (ui->screen_pause == MENU_PAUSE_EXIT)
+        {
+            menu_update(input, ui->ui_pause_exit);
+        }
+        return 0;
+    }
+
+    update_keys_minimap(input, ui);
 
     GameResult result = GAME_RESULT_CONTINUE;
     if (ui->screen == SCREEN_BOARD)
     {
         board_ui_update(input, ui->board_ui);
-        window_update(input, ui->ui_buttons);
         if (ui->state->show_properties)
         {
             window_update(input, ui->ui_properties);
@@ -295,6 +360,7 @@ static void toggle_pause(void* game_ui, void* null)
     ui->state->show_rules = false;
     ui->state->show_log = false;
     ui->state->show_help = false;
+
 }
 static void toggle_rules(void* game_ui, void* null)
 {
@@ -542,16 +608,89 @@ static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* 
     );
 }
 
-Window* create_ui_mini_tree();
-void update_ui_mini_tree(Window* window);
+static void menu_pause_set_main(void* game_ui, void* null)
+{
+    GameUI* ui = game_ui;
+    ui->screen_pause = MENU_PAUSE_MAIN;
+}
 
-Window* create_ui_pause();
+static void menu_pause_set_options(void* game_ui, void* null)
+{
+    GameUI* ui = game_ui;
+    ui->screen_pause = MENU_PAUSE_OPTIONS;
+}
 
+static void menu_pause_set_exit(void* game_ui, void* null)
+{
+    GameUI* ui = game_ui;
+    ui->screen_pause = MENU_PAUSE_EXIT;
+}
 
+static Menu* create_ui_pause_main(SDL_Renderer* renderer, GameUI* ui)
+{
+    Menu* menu = menu_create(
+        renderer,
+        screen_width - UI_PAUSE_WIDTH - UI_BUFFER,
+        UI_BUFFER * 2 + UI_BUTTON_SIZE,
+        UI_PAUSE_WIDTH,
+        UI_PAUSE_HEIGHT
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(toggle_pause, ui, NULL),
+        "CONTINUE"
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(menu_pause_set_options, ui, NULL),
+        "OPTIONS"
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(menu_pause_set_exit, ui, NULL),
+        "EXIT TO MAIN MENU"
+    );
+    return menu;
+}
 
+static Menu* create_ui_pause_options(SDL_Renderer* renderer, GameUI* ui)
+{
+    Menu* menu = menu_create(
+        renderer,
+        screen_width - UI_PAUSE_WIDTH - UI_BUFFER,
+        UI_BUFFER * 2 + UI_BUTTON_SIZE,
+        UI_PAUSE_WIDTH,
+        UI_PAUSE_HEIGHT
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(menu_pause_set_main, ui, NULL),
+        "BACK"
+    );
+    return menu;
+}
 
-
-
+static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui)
+{
+    Menu* menu = menu_create(
+        renderer,
+        screen_width - UI_PAUSE_WIDTH - UI_BUFFER,
+        UI_BUFFER * 2 + UI_BUTTON_SIZE,
+        UI_PAUSE_WIDTH,
+        UI_PAUSE_HEIGHT
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(menu_pause_set_main, ui, NULL),
+        "BACK"
+    );
+    return menu;
+}
 
 void verify_game_ui(const GameUI* ui)
 {

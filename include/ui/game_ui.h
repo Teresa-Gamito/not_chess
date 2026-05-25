@@ -7,6 +7,7 @@
 #include "game/game.h"
 #include "ui/board_ui.h"
 #include "ui/tree_ui.h"
+#include "ui/ui_elements/menu.h"
 #include "ui/textures/ui_textures.h"
 #include "game/properties/properties.h"
 #include "helper_functions/global_variables.h"
@@ -29,6 +30,9 @@
 
 #define UI_LOG_WIDTH screen_width / 5
 #define UI_LOG_HEIGHT screen_height / 2
+
+#define UI_PAUSE_WIDTH screen_width / 5
+#define UI_PAUSE_HEIGHT screen_height / 2
 
 #define UI_MINI_MAP_WIDTH screen_width / 5
 #define UI_MINI_MAP_HEIGHT screen_width / 5
