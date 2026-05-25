@@ -94,11 +94,11 @@ static void update_cheats(AppState* app)
 
     if (keyboard_get_pressed(input, SDL_SCANCODE_1))
     {
-        infinite_points = !infinite_points;
+        debug_infinite_points = !debug_infinite_points;
     }
     if (keyboard_get_pressed(input, SDL_SCANCODE_2))
     {
-        can_purchace_multiple_times = !can_purchace_multiple_times;
+        debug_can_purchace_multiple_times = !debug_can_purchace_multiple_times;
     }
 }
 

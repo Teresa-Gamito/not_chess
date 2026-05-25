@@ -39,14 +39,14 @@ bool rulelist_has(const RuleList* rulelist, Rule rule)
 
 const char* rulelist_get_rules(const RuleList* rulelist)
 {
-    char* rules = "";
+    char* rules = " ";
 
     for (int i = 0; i < vector_get_size(rulelist); i++)
     {
         char* rule_description;
 
-        Rule rule = *(Rule*)vector_get_at(rulelist, i);
-        switch (rule)
+        Rule* rule = vector_get_at(rulelist, i);
+        switch (*rule)
         {
             case RULE_PAWN_PROMOTION_CHANCE:
                 rule_description = RULE_DESCRIPTION_PAWN_PROMOTION_CHANCE;

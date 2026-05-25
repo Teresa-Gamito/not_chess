@@ -1,5 +1,4 @@
 #include "include/ui/ui_elements/window.h"
-#include "data_structures/vector.h"
 
 struct Window {
     float x;

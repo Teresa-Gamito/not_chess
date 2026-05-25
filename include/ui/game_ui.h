@@ -8,6 +8,7 @@
 #include "ui/board_ui.h"
 #include "ui/tree_ui.h"
 #include "ui/textures/ui_textures.h"
+#include "game/properties/properties.h"
 #include "helper_functions/global_variables.h"
 
 #define screen_width g_app_window_width
@@ -16,10 +17,15 @@
 #define UI_BUFFER screen_width / 128
 
 #define UI_BUTTON_SIZE screen_width / 32
-#define UI_BUTTON_BUFFER UI_BUTTON_SIZE / 8
 
 #define UI_PROPERTIES_WIDTH screen_width / 5
 #define UI_PROPERTIES_HEIGHT screen_height / 2
+
+#define UI_PLAYER_INFO_WIDTH screen_width / 5
+#define UI_PLAYER_INFO_HEIGHT screen_height / 8
+
+#define UI_RULES_WIDTH screen_width / 5
+#define UI_RULES_HEIGHT screen_height / 2
 
 typedef struct GameUI GameUI;
 

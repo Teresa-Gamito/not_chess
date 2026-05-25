@@ -183,6 +183,11 @@ Player* game_get_active_player(const Game* game)
     return game->active_player;
 }
 
+Player* game_get_opponent(const Game* game)
+{
+    return game->active_player == game->white ? game->black : game->white;
+}
+
 void verify_game(const Game* game)
 {
     verify(game == NULL, "game does not exist");

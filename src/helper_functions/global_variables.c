@@ -8,6 +8,6 @@ float g_app_scale = 1;
 float g_game_font_size = FONT_SIZE;
 float g_menu_font_size = FONT_SIZE_MENU;
 
-bool can_purchace_multiple_times = false;
-bool infinite_points = false;
+bool debug_can_purchace_multiple_times = false;
+bool debug_infinite_points = false;
 

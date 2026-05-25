@@ -2,9 +2,6 @@
 
 static void board_ui_set_scale(BoardUI* ui);
 
-static void select_pos(BoardUI* ui, Pos pos);
-static void deselect_pos(BoardUI* ui);
-
 struct BoardUI
 {
     Game* game;
@@ -95,17 +92,16 @@ static Pos get_board_pos_from_screen(const BoardUI* ui, Pos pos)
 static void press_board(InputState* input, BoardUI* ui)
 {
     Board* board = game_get_board(ui->game);
+    Window* window = ui->window;
     if (mouse_get_released(input, MOUSE_LEFT))
     {
         Pos mouse_pos = (Pos) {mouse_get_x(input), mouse_get_y(input)};
         Pos board_pos = get_board_pos_from_screen(ui, mouse_pos);
-        if (board_pos.col >= board_get_col_num(board)) return;
-        if (board_pos.row >= board_get_row_num(board)) return;
+        if (mouse_pos.x < window_get_x(window) + window_get_anchor_x(window)) return;
+        if (mouse_pos.y < window_get_y(window) + window_get_anchor_y(window)) return;
+        if (mouse_pos.x > window_get_x(window) + window_get_anchor_x(window) + board_get_col_num(board) * TEXTURE_DEFAULT_SIZE_PX * window_get_scale(window)) return;
+        if (mouse_pos.y > window_get_y(window) + window_get_anchor_y(window) + board_get_col_num(board) * TEXTURE_DEFAULT_SIZE_PX * window_get_scale(window)) return;
         select_pos(ui, board_pos);
-    }
-    if (mouse_get_released(input, MOUSE_RIGHT))
-    {
-        deselect_pos(ui);
     }
 }
 
@@ -182,7 +178,7 @@ static void add_highlight(BoardUI* ui, Pos pos)
     window_add_sprite(ui->window, sprite, x, y);
 }
 
-static SDL_Texture* tile_get_texture(BoardUI* ui, Pos pos)
+SDL_Texture* tile_get_texture(BoardUI* ui, Pos pos)
 {
     Window* window = ui->window;
     Board* board = game_get_board(ui->game);
@@ -217,7 +213,7 @@ static void add_tile(BoardUI* ui, Pos pos)
     window_add_sprite(ui->window, sprite, x, y);
 }
 
-static SDL_Texture* piece_get_texture(BoardUI* ui, Pos pos)
+SDL_Texture* piece_get_texture(BoardUI* ui, Pos pos)
 {
     Board* board = game_get_board(ui->game);
     Piece* piece = board_get_piece_at(board, pos);
@@ -287,10 +283,9 @@ void board_ui_update_objects(BoardUI* ui)
             add_piece(ui, pos);
         }
     }
-    board_ui_set_scale(ui);
 }
 
-static void select_pos(BoardUI* ui, Pos pos)
+void select_pos(BoardUI* ui, Pos pos)
 {
     Board* board = game_get_board(ui->game);
     Player* player = game_get_active_player(ui->game);
@@ -301,20 +296,14 @@ static void select_pos(BoardUI* ui, Pos pos)
     if (game_try_upgrade(ui->game, new_pos)) 
     {
         game_advance_turn(ui->game);
-        board_ui_update_objects(ui);
-        return;
     }
-    if (game_try_capture(ui->game, old_pos, new_pos))
+    else if (game_try_capture(ui->game, old_pos, new_pos))
     {
         game_advance_turn(ui->game);
-        board_ui_update_objects(ui);
-        return;
     }
-    if (game_try_move(ui->game, old_pos, new_pos))
+    else if (game_try_move(ui->game, old_pos, new_pos))
     {
         game_advance_turn(ui->game);
-        board_ui_update_objects(ui);
-        return;
     }
 
     ui->selected_pos = new_pos;
@@ -323,17 +312,27 @@ static void select_pos(BoardUI* ui, Pos pos)
     return;
 }
 
-static void deselect_pos(BoardUI* ui)
+void deselect_pos(BoardUI* ui)
 {
     verify_board_ui(ui);
     ui->is_selected = false;
     board_ui_update_objects(ui);
 }
 
-// const char* board_get_selected_properties(const BoardUI* ui)
-// {
-//     // TODO: RODRIGO
-// }
+bool board_ui_has_selected_pos(const BoardUI* ui)
+{
+    return ui->is_selected;
+}
+
+Pos board_ui_get_selected_pos(const BoardUI* ui)
+{
+    return ui->selected_pos;
+}
+
+Window* board_ui_get_window(const BoardUI* ui)
+{
+    return ui->window;
+}
 
 void verify_board_ui(const BoardUI* ui)
 {

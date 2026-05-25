@@ -29,8 +29,12 @@ void player_add_points(Player* player, int points)
     player->capturing_points += points;
 }
 
-int player_get_points(const Player* player)
+int player_get_points(Player* player)
 {
+    if (debug_infinite_points) 
+    {
+        player->capturing_points = 999;
+    }
     verify_player(player);
     return player->capturing_points;
 }

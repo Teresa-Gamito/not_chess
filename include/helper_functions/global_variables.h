@@ -36,6 +36,6 @@ extern float g_game_font_size;
 extern int g_app_volume;
 
 // cheats
-extern bool can_purchace_multiple_times;
-extern bool infinite_points;
+extern bool debug_can_purchace_multiple_times;
+extern bool debug_infinite_points;
 

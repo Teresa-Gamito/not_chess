@@ -31,6 +31,16 @@ void board_ui_update_objects(BoardUI* ui);
 
 void board_ui_add_upgrade(BoardUI* ui, UpgradeType upgrade);
 
+SDL_Texture* piece_get_texture(BoardUI* ui, Pos pos);
+SDL_Texture* tile_get_texture(BoardUI* ui, Pos pos);
+bool board_ui_has_selected_pos(const BoardUI* ui);
+Pos board_ui_get_selected_pos(const BoardUI* ui);
+Window* board_ui_get_window(const BoardUI* ui);
+
+void select_pos(BoardUI* ui, Pos pos);
+void deselect_pos(BoardUI* ui);
+
+
 void verify_board_ui(const BoardUI* ui);
 
 const char* board_selected_tile_get_properties(const BoardUI* ui);

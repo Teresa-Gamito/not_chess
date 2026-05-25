@@ -33,7 +33,7 @@ void gamelog_add(GameLog* log, const char* msg, ...)
     va_list args;
     va_start(args, msg);
     char* log_msg;
-    SDL_asprintf(&log_msg, msg, args);
+    SDL_vasprintf(&log_msg, msg, args);
     vector_add(log->logs, SDL_strdup(log_msg));
     va_end(args);
     SDL_free(log_msg);

@@ -2,10 +2,10 @@
 
 static void add_property(char** properties, const char* msg, ...)
 {
+    char* temp;
     va_list args;
     va_start(args, msg);
-    char* temp;
-    SDL_asprintf(&temp, msg, args);
+    SDL_vasprintf(&temp, msg, args);
     va_end(args);
     SDL_asprintf(properties, "%s%s\n", *properties, temp);
     SDL_free(temp);
@@ -23,8 +23,12 @@ const char* get_piece_properties(const Piece* piece)
 
     add_property(&properties, "");
 
-    char* has_moved = piece_has_moved(piece) ? "yes" : "no";
-    add_property(&properties, "Has moved: %s", has_moved);
+    // char* has_moved = piece_has_moved(piece) ? "yes" : "no";
+    // add_property(&properties, "Has moved: %s", has_moved);
+    if (piece_has_moved(piece))
+    {
+        add_property(&properties, "Has moved");
+    }
 
     // TODO: keep adding more properties
 
@@ -65,14 +69,15 @@ const char* get_player_properties(const Player* player)
     char* properties = "";
 
     Color color = player_get_color(player);
-    add_property(&properties, "Player: %s", color_get_name(color));
-
     int points = player_get_points(player);
-    add_property(&properties, "Points: %s", points);
-
-    add_property(&properties, "");
-
-    // TODO: keep adding more properties
+    if (points > 99)
+    {
+        add_property(&properties, "%s: %s points", color_get_name(color), "-");
+    }
+    else
+    {
+        add_property(&properties, "%s: %d points", color_get_name(color), points);
+    }
 
     return properties;
 }

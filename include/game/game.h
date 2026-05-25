@@ -11,7 +11,7 @@
 #include "helper_functions/error_handling.h"
 #include "helper_functions/global_variables.h"
 
-#define PLAYER_STARTING_POINTS 10
+#define PLAYER_STARTING_POINTS 0
 
 typedef struct Game Game;
 
@@ -34,5 +34,6 @@ GameLog* game_get_log(const Game* game);
 Queue* game_get_upgrade_queue(const Game* game);
 
 Player* game_get_active_player(const Game* game);
+Player* game_get_opponent(const Game* game);
 
 void verify_game(const Game* game);
