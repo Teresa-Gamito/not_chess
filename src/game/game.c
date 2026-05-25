@@ -152,6 +152,12 @@ void game_advance_turn(Game* game)
 {
     Player* player = game->active_player == game->white ? game->black : game->white;
     game->active_player = player;
+
+    gamelog_add(
+        game->log, 
+        "%s's turn",
+        color_get_name(player_get_color(game->active_player))
+    );
 }
 
 void game_purchase_upgrade(Game* game, int index)
