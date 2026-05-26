@@ -21,7 +21,7 @@ void game_destroy(Game* game);
 
 void game_start(Game* game);
 void game_advance_turn(Game* game);
-void game_purchase_upgrade(Game* game, int index);
+bool game_purchase_upgrade(Game* game, int index);
 
 bool game_try_upgrade(Game* game, Pos pos);
 bool game_try_capture(Game* game, Pos src, Pos dst);

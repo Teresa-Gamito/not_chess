@@ -165,17 +165,17 @@ void game_advance_turn(Game* game)
     );
 }
 
-void game_purchase_upgrade(Game* game, int index)
+bool game_purchase_upgrade(Game* game, int index)
 {
     Tree* tree = game->tree;
     int cost = tree_get_upgrade_cost(tree, index);
     if (player_get_points(game->active_player) < cost)
     {
-        return;
+        return false;
     }
     if (!tree_is_upgrade_available(tree, index))
     {
-        return;
+        return false;
     }
 
     player_add_points(game->active_player, -cost);
@@ -192,6 +192,7 @@ void game_purchase_upgrade(Game* game, int index)
             game_advance_turn(game);
         }
     }
+    return true;
 }
 
 Board* game_get_board(const Game* game)

@@ -1,4 +1,24 @@
 #include "include/appstate.h"
+#include "helper_functions/function.h"
+#include "helper_functions/global_variables.h"
+#include "ui/ui_elements/menu.h"
+
+typedef struct AppMenu
+{
+    Menu* main;
+    Menu* options;
+    Menu* credits;
+    Menu* exit;
+} AppMenu;
+
+typedef enum Screen
+{
+    SCREEN_GAME,
+    SCREEN_MENU_MAIN,
+    SCREEN_MENU_OPTIONS,
+    SCREEN_MENU_CREDITS,
+    SCREEN_MENU_EXIT
+} Screen;
 
 struct AppState
 {
@@ -7,8 +27,12 @@ struct AppState
 
     InputState* input;
 
+    AppMenu* menus;
+
     Game* game;
     GameUI* game_ui;
+
+    Screen screen;
 };
 
 AppState* app_create()
@@ -150,6 +174,27 @@ InputState* app_get_inputstate(const AppState* app)
     verify_app_state(app);
 
     return app->input;
+}
+
+static Menu* create_menu_main(SDL_Renderer* renderer)
+{
+    Menu* menu = menu_create(
+        renderer,
+        g_app_window_width / 2 - MENU_WIDTH / 2,
+        g_app_window_height / 2 - MENU_HEIGHT / 2,
+        MENU_WIDTH,
+        MENU_HEIGHT
+    );
+    Function* func;
+    // func = function_create();
+    // menu_add_button(renderer, menu, func, "START GAME");
+    // func = function_create();
+    // menu_add_button(renderer, menu, func, "OPTIONS");
+    // func = function_create();
+    // menu_add_button(renderer, menu, func, "CREDITS");
+    // func = function_create();
+    // menu_add_button(renderer, menu, func, "EXIT");
+    return menu;
 }
 
 void verify_app_state(const AppState* app)

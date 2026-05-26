@@ -1,13 +1,15 @@
-// responsible for processing, updating and rendering all of the aspects of the app
 #pragma once
 
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3/SDL_events.h>
-#include "helper_functions/global_variables.h"
 #include "inputstate.h"
 #include "ui/ui_elements/menu.h"
 #include "ui/game_ui.h"
+#include "helper_functions/global_variables.h"
+
+#define MENU_WIDTH g_app_window_width / 2
+#define MENU_HEIGHT g_app_window_height / 2
 
 typedef struct AppState AppState;
 

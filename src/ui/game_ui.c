@@ -1,7 +1,4 @@
 #include "ui/game_ui.h"
-#include "game/board/board.h"
-#include "game/color.h"
-#include "game/game.h"
 
 typedef enum MenuPauseScreen
 {
@@ -24,6 +21,7 @@ typedef struct UIState
     bool show_log;
     bool show_help;
     bool show_upgrade_description;
+    bool exit_game;
 } UIState;
 
 struct GameUI 
@@ -119,6 +117,7 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
             false, 
             false, 
             false, 
+            false,
             false,
             false
         };
@@ -304,6 +303,7 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
     {
         return player_color == WHITE ? GAME_RESULT_WIN_WHITE : GAME_RESULT_WIN_BLACK;
     }
+    if (ui->state->exit_game) return GAME_RESULT_EXIT;
     update_keys(input, ui);
     window_update(input, ui->ui_buttons);
 
@@ -678,6 +678,12 @@ static void menu_pause_set_exit(void* game_ui, void* null)
     ui->screen_pause = MENU_PAUSE_EXIT;
 }
 
+static void end_game(void* game_ui, void* null)
+{
+    GameUI* ui = game_ui;
+    ui->state->exit_game = true;
+}
+
 static Menu* create_ui_pause_main(SDL_Renderer* renderer, GameUI* ui)
 {
     Menu* menu = menu_create(
@@ -734,6 +740,12 @@ static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui)
         UI_BUFFER * 2 + UI_BUTTON_SIZE,
         UI_PAUSE_WIDTH,
         UI_PAUSE_HEIGHT
+    );
+    menu_add_button(
+        renderer,
+        menu,
+        function_create(end_game, ui, NULL),
+        "CONFIRM"
     );
     menu_add_button(
         renderer,
@@ -832,7 +844,10 @@ static void game_ui_purchase_upgrade(void* game_ui, void* index)
 {
     GameUI* ui = game_ui;
     int i = *(int*)index;
-    game_purchase_upgrade(ui->game, i);
+    if (!game_purchase_upgrade(ui->game, i))
+    {
+        return;
+    }
     board_ui_update_objects(ui->board_ui);
     toggle_screen(ui);
 }
