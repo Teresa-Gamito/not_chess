@@ -1,4 +1,6 @@
 #include "include/game/upgrade.h"
+#include "game/game.h"
+#include "game/rules/rules.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);
@@ -82,6 +84,7 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
     Player* player = game_get_active_player(game);
     Color color = player_get_color(player);
     Board* board = game_get_board(game);
+    RuleList* rules = game_get_rules(game);
     switch (type) 
     {
         case UPGRADE_PEASANT:
@@ -125,7 +128,7 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
             break;
 
         case UPGRADE_GAMBLING:
-            board_add_rule(board, RULE_PAWN_PROMOTION_CHANCE);
+            rulelist_add(rules, RULE_PAWN_PROMOTION_CHANCE);
             break;
 
         default:

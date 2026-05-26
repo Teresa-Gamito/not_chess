@@ -1,4 +1,6 @@
 #include "include/game/game.h"
+#include "game/board/board_elements/piece.h"
+#include "game/rules/rules.h"
 #include "game/upgrade.h"
 
 struct Game
@@ -55,7 +57,7 @@ void game_start(Game* game)
 {
     verify_game(game);
 
-    game->board = board_create(GAME_STARTING_COL_NUM, GAME_STARTING_ROW_NUM);
+    game->board = board_create(game->rules, GAME_STARTING_COL_NUM, GAME_STARTING_ROW_NUM);
     board_set_default(game->board);
 
     game->tree = tree_create();

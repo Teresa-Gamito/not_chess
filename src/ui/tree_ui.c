@@ -1,5 +1,4 @@
 #include "include/ui/tree_ui.h"
-#include <SDL3/SDL_log.h>
 
 static void tree_ui_set(TreeUI* ui);
 

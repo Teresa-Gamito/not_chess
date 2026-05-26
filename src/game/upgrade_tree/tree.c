@@ -55,7 +55,7 @@ void tree_set_default(Tree* tree)
     tree_upgrade_unlock(tree, 6);
     tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 7
     tree_add_upgrade_dependency(tree, 7, 6);
-    tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 8
+    tree_add_upgrade(tree, UPGRADE_GAMBLING, 1); // 8
     tree_add_upgrade_dependency(tree, 8, 7);
 
     tree_add_upgrade(tree, UPGRADE_RISE, 1); // 9

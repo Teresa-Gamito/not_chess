@@ -21,7 +21,7 @@ struct Board
     RuleList* rules;
 };
 
-Board* board_create(int col_num, int row_num)
+Board* board_create(RuleList* rules, int col_num, int row_num)
 {
     verify(col_num <= 0 || row_num <= 0, "Invalid board starting size");
 
@@ -48,7 +48,7 @@ Board* board_create(int col_num, int row_num)
         }
     }
 
-    board->rules = rulelist_create();
+    board->rules = rules;
 
     return board;
 }
@@ -71,8 +71,6 @@ void board_destroy(Board* board)
         piece_destroy(piece);
     }
     vector_destroy(board->pieces);
-
-    rulelist_destroy(board->rules);
 
     SDL_free(board);
 }

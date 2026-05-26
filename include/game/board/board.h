@@ -1,4 +1,3 @@
-// responsible for processing the board and interactions between pieces and tiles
 #pragma once
 
 #include <SDL3/SDL_stdinc.h>
@@ -14,7 +13,7 @@
 typedef struct Board Board;
 
 // ========== create ==========
-Board* board_create(int col_num, int row_num);
+Board* board_create(RuleList* rules, int col_num, int row_num);
 
 // ========== destroy ==========
 void board_destroy(Board* board);

@@ -22,7 +22,7 @@
 
 #define PATH_TEXTURE_TILE_WHITE                 "assets/sprites/tile/tile_white.png"
 #define PATH_TEXTURE_TILE_BLACK                 "assets/sprites/tile/tile_black.png"
-#define PATH_TEXTURE_TILE_WALL                  "assets/sprites/tile/tile_black.png"
+#define PATH_TEXTURE_TILE_WALL                  "assets/sprites/tile/tile_wall.png"
 #define PATH_TEXTURE_TILE_POISON                "assets/sprites/tile/tile_black.png"
 
 #define PATH_TEXTURE_TILE_SELECTED              "assets/sprites/tile/tile_selected.png"
