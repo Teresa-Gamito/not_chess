@@ -1,5 +1,4 @@
 #include "include/appstate.h"
-#include "helper_functions/global_variables.h"
 
 struct AppState
 {

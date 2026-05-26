@@ -64,6 +64,35 @@ static char* upgrade_name[] =
         "Ruuuun!",
     };
 
+static char* upgrade_description[] = 
+    {
+        "Add one pawn your side of the board",
+        "Add one checkers piece to your side of the board",
+        "Add one knight, your opponent adds one pawn",
+        "Add one lance to your side of the board",
+        "Expand the size of the board by one tile for each side",
+        "Expand the size of the board by two tiles for each side",
+        "Both players sacrifice one piece",
+        "Sacrifice two pawns and add a knight",
+        "Convert a rook into a bishop",
+        "Convert a bishop into a rook",
+        "Promote a pawn to a queen",
+        "Gain control of an opponent piece (except kings and queens)",
+        "Add trample to a piece",
+        "Add deathtouch to a piece",
+        "not added yet",
+        "Promote a pawn for three turns",
+        "Take a turn after this one",
+        "Create a wall tile",
+        "Create a poison tile",
+        "Add a rule: Pawns can move three tiles on their first move",
+        "Add a rule: Pawns have a 20% chance of being promoted when capturing a piece",
+        "Add a rule: Each turn a random piece is destroyed",
+        "Add a rule: Players can capture their own pieces",
+        "Add a rule: Pieces are worth one more point",
+        "Add a rule: Pieces have a 25% chance of being able to move again after capturing",
+    };
+
 Tree* tree_create();
 void tree_destroy(Tree *tree);
 
@@ -76,3 +105,4 @@ UpgradeType tree_get_upgrade_type(const Tree* tree, int index);
 bool tree_is_upgrade_available(const Tree* tree, int index);
 
 const char* upgrade_get_name(UpgradeType type);
+const char* upgrade_get_description(UpgradeType type);

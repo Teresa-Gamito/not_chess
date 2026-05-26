@@ -69,3 +69,26 @@ const char* get_player_properties(const Player* player)
 
     return properties;
 }
+
+const char* get_upgrade_properties(const Tree* tree, int index)
+{
+    UpgradeType type = tree_get_upgrade_type(tree, index);
+    int cost = tree_get_upgrade_cost(tree, index);
+    bool is_available = tree_is_upgrade_available(tree, index);
+
+    char* properties = "";
+
+    add_property(&properties, "%s", upgrade_get_name(type));
+
+    add_property(&properties, "");
+
+    add_property(&properties, "%s", upgrade_get_description(type));
+
+    add_property(&properties, "");
+
+    add_property(&properties, "Cost: %d", cost);
+    char* state = is_available ? "Available" : "Locked";
+    add_property(&properties, "State: %s", state);
+
+    return properties;
+}

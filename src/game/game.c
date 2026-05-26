@@ -1,11 +1,5 @@
 #include "include/game/game.h"
-#include "game/board/board.h"
-#include "game/board/board_elements/piece.h"
-#include "game/color.h"
-#include "game/log/log.h"
-#include "game/player/player.h"
 #include "game/upgrade.h"
-#include "game/upgrade_tree/tree.h"
 
 struct Game
 {
@@ -20,6 +14,8 @@ struct Game
     GameLog* log;
 
     Queue* upgrades;
+
+    bool is_check_mate;
 };
 
 Game* game_create()
@@ -195,7 +191,6 @@ void game_purchase_upgrade(Game* game, int index)
         {
             game_advance_turn(game);
         }
-
     }
 }
 

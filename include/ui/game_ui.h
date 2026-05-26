@@ -37,6 +37,11 @@
 #define UI_MINI_MAP_WIDTH screen_width / 5
 #define UI_MINI_MAP_HEIGHT screen_width / 5
 
+#define UI_UPGRADE_DESCRIPTION_WIDTH screen_width / 5
+#define UI_UPGRADE_DESCRIPTION_HEIGHT screen_height / 2
+#define UI_UPGRADE_DESCRIPTION_BUTTON_WIDTH UI_UPGRADE_DESCRIPTION_WIDTH - UI_BUFFER * 2
+#define UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT UI_UPGRADE_DESCRIPTION_HEIGHT / 5
+
 typedef struct GameUI GameUI;
 
 typedef enum GameResult
@@ -50,7 +55,7 @@ typedef enum GameResult
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer);
 void game_ui_destroy(GameUI* ui);
 
-void game_ui_render(SDL_Renderer* renderer, const GameUI* ui);
+void game_ui_render(SDL_Renderer* renderer, GameUI* ui);
 GameResult game_ui_update(InputState* input, GameUI* ui);
 
 void verify_game_ui(const GameUI* ui);

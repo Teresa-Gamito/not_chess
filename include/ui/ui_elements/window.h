@@ -69,8 +69,8 @@ float window_get_anchor_y(const Window* window);
 float window_get_scale(const Window* window);
 SDL_FRect window_get_frect(const Window* window);
 SDL_Texture* window_get_texture(const Window* window, int index);
-const Vector* window_get_sprites(const Window* window);
-const Vector* window_get_buttons(const Window* window);
-const Vector* window_get_textboxes(const Window* window);
+Vector* window_get_sprites(const Window* window);
+Vector* window_get_buttons(const Window* window);
+Vector* window_get_textboxes(const Window* window);
 
 void verify_window(const Window* window);

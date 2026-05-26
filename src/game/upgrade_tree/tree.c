@@ -139,3 +139,8 @@ const char* upgrade_get_name(UpgradeType type)
 {
     return upgrade_name[type];
 }
+
+const char* upgrade_get_description(UpgradeType type)
+{
+    return upgrade_description[type];
+}

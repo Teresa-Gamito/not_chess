@@ -1,5 +1,7 @@
 #include "ui/game_ui.h"
-#include "inputstate.h"
+#include "game/board/board.h"
+#include "game/color.h"
+#include "game/game.h"
 
 typedef enum MenuPauseScreen
 {
@@ -21,6 +23,7 @@ typedef struct UIState
     bool show_rules;
     bool show_log;
     bool show_help;
+    bool show_upgrade_description;
 } UIState;
 
 struct GameUI 
@@ -36,6 +39,8 @@ struct GameUI
     Window* ui_rules;
     Window* ui_mini_tree;
     Window* ui_log;
+
+    Window* ui_upgrade_description;
 
     MenuPauseScreen screen_pause;
     Menu* ui_pause_main;
@@ -67,12 +72,17 @@ static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI
 static Window* create_ui_log(SDL_Renderer* renderer);
 static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 
+static Window* create_ui_upgrade_description(SDL_Renderer* renderer, GameUI* ui);
+static void update_ui_upgrade_description(SDL_Renderer* renderer, Window* window, GameUI* ui);
+
 static Menu* create_ui_pause_main(SDL_Renderer* renderer, GameUI* ui);
 static Menu* create_ui_pause_options(SDL_Renderer* renderer, GameUI* ui);
 static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui);
 
 static void window_set_minimap(GameUI* ui, Window* window);
 static void window_set_fullscreen(GameUI* ui, Window* window);
+
+static void game_ui_purchase_upgrade(void* game_ui, void* index);
 
 GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 {
@@ -103,17 +113,15 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 
     ui->screen = SCREEN_BOARD;
     ui->state = SDL_malloc(sizeof(UIState));
-    *ui->state = (UIState){false, false, false, false, false};
-
-    ui->ui_buttons = create_ui_buttons(renderer, ui);
-    ui->ui_player_info = create_ui_player_info(renderer);
-    ui->ui_properties = create_ui_properties(renderer);
-    ui->ui_rules = create_ui_rules(renderer);
-    ui->ui_log = create_ui_log(renderer);
-
-    ui->ui_pause_main = create_ui_pause_main(renderer, ui);
-    ui->ui_pause_options = create_ui_pause_options(renderer, ui);
-    ui->ui_pause_exit = create_ui_pause_exit(renderer, ui);
+    *ui->state = (UIState)
+        {
+            false, 
+            false, 
+            false, 
+            false, 
+            false,
+            false
+        };
 
     ui->ui_font_small = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale - 0.4));
     ui->ui_font_medium = TTF_OpenFont(FONT_PATH, FONT_SIZE * (g_app_scale));
@@ -121,6 +129,18 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
 
     ui->ui_text_color = SDL_malloc(sizeof(SDL_Color));
     *ui->ui_text_color = color_white();
+
+    ui->ui_buttons = create_ui_buttons(renderer, ui);
+    ui->ui_player_info = create_ui_player_info(renderer);
+    ui->ui_properties = create_ui_properties(renderer);
+    ui->ui_rules = create_ui_rules(renderer);
+    ui->ui_log = create_ui_log(renderer);
+
+    ui->ui_upgrade_description = create_ui_upgrade_description(renderer, ui);
+
+    ui->ui_pause_main = create_ui_pause_main(renderer, ui);
+    ui->ui_pause_options = create_ui_pause_options(renderer, ui);
+    ui->ui_pause_exit = create_ui_pause_exit(renderer, ui);
 
     return ui;
 }
@@ -138,6 +158,12 @@ void game_ui_destroy(GameUI* ui)
     window_destroy(ui->ui_rules);
     window_destroy(ui->ui_log);
 
+    window_destroy(ui->ui_upgrade_description);
+
+    menu_destroy(ui->ui_pause_main);
+    menu_destroy(ui->ui_pause_options);
+    menu_destroy(ui->ui_pause_exit);
+
     TTF_CloseFont(ui->ui_font_small);
     TTF_CloseFont(ui->ui_font_medium);
     TTF_CloseFont(ui->ui_font_large);
@@ -147,7 +173,7 @@ void game_ui_destroy(GameUI* ui)
     SDL_free(ui);
 }
 
-void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
+void game_ui_render(SDL_Renderer* renderer, GameUI* ui)
 {
     verify_renderer(renderer);
     verify_game_ui(ui);
@@ -166,6 +192,11 @@ void game_ui_render(SDL_Renderer* renderer, const GameUI* ui)
     {
         tree_ui_render(renderer, ui->tree_ui);
         board_ui_render(renderer, ui->board_ui);
+        update_ui_upgrade_description(renderer, ui->ui_upgrade_description, ui);
+        if (ui->state->show_upgrade_description)
+        {
+            window_render(renderer, ui->ui_upgrade_description);
+        }
     }
 
     window_render(renderer, ui->ui_buttons);
@@ -243,11 +274,21 @@ static void update_keys(const InputState* input, GameUI* ui)
             ui->state->show_log = false;
             return;
         }
-        if (board_ui_has_selected_pos(ui->board_ui))
+        if (ui->screen == SCREEN_BOARD)
         {
-            ui->state->show_properties = false;
-            deselect_pos(ui->board_ui);
-            return;
+            if (board_ui_has_selected_pos(ui->board_ui))
+            {
+                ui->state->show_properties = false;
+                deselect_pos(ui->board_ui);
+            }
+        }
+        else if (ui->screen == SCREEN_TREE)
+        {
+            if (tree_ui_has_selected_upgrade(ui->tree_ui))
+            {
+                ui->state->show_upgrade_description = false;
+                tree_ui_deselect_upgrade(ui->tree_ui);
+            }
         }
     }
 }
@@ -257,6 +298,12 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
     verify_game_ui(ui);
     verify_input(input);
 
+    Board* board = game_get_board(ui->game);
+    Color player_color = player_get_color(game_get_opponent(ui->game));
+    if (is_check_mate(board, player_color))
+    {
+        return player_color == WHITE ? GAME_RESULT_WIN_WHITE : GAME_RESULT_WIN_BLACK;
+    }
     update_keys(input, ui);
     window_update(input, ui->ui_buttons);
 
@@ -274,12 +321,11 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
         {
             menu_update(input, ui->ui_pause_exit);
         }
-        return 0;
+        return GAME_RESULT_CONTINUE;
     }
 
     update_keys_minimap(input, ui);
 
-    GameResult result = GAME_RESULT_CONTINUE;
     if (ui->screen == SCREEN_BOARD)
     {
         board_ui_update(input, ui->board_ui);
@@ -295,13 +341,19 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
         {
             window_update(input, ui->ui_log);
         }
+        return GAME_RESULT_CONTINUE;
     }
     if (ui->screen == SCREEN_TREE)
     {
         tree_ui_update(input, ui->tree_ui);
+        if (ui->state->show_upgrade_description)
+        {
+            window_update(input, ui->ui_upgrade_description);
+        }
+        return GAME_RESULT_CONTINUE;
     }
 
-    return result;
+    return GAME_RESULT_CONTINUE;
 }
 
 static void toggle_screen(GameUI* ui)
@@ -690,6 +742,99 @@ static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui)
         "BACK"
     );
     return menu;
+}
+
+static Window* create_ui_upgrade_description(SDL_Renderer* renderer, GameUI* ui)
+{
+    Window* window = window_create(
+        UI_BUFFER,
+        screen_height - UI_UPGRADE_DESCRIPTION_HEIGHT - UI_BUFFER,
+        UI_UPGRADE_DESCRIPTION_WIDTH,
+        UI_UPGRADE_DESCRIPTION_HEIGHT,
+        SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_UPGRADE_DESCRIPTION),
+        WINDOW_SCROLLABLE
+    );
+    window_load_textures(renderer, window, ui_buttons_textures, UI_BUTTONS_TEXTURE_COUNT);
+
+    Textbox* textbox = textbox_create(
+        renderer,
+        ui->ui_font_small,
+        ui->ui_text_color,
+        " ",
+        window_get_width(window) - UI_BUFFER * 2,
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(window, textbox, UI_BUFFER, UI_BUFFER);
+
+    SDL_Texture* texture = window_get_texture(window, TEXTURE_BUTTON_PAUSE);
+    Button* button = button_create(texture, NULL, NULL);
+    button_set_size(
+        button,
+        UI_UPGRADE_DESCRIPTION_BUTTON_WIDTH,
+        UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT
+    );
+    window_add_button(
+        window, 
+        button,
+        UI_BUFFER,
+        window_get_height(window) - UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT - UI_BUFFER
+    );
+
+    Textbox* purchase = textbox_create(
+        renderer, 
+        ui->ui_font_small, 
+        ui->ui_text_color, 
+        "Purchase", 
+        window_get_width(window), 
+        TEXT_CENTERED
+    );
+    window_add_textbox(
+        window, 
+        purchase, 
+        window_get_width(window) / 2,
+        window_get_height(window) - UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT - UI_BUFFER + UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT / 2 - textbox_get_height(purchase) / 2
+    );
+
+    return window;
+}
+
+static void update_ui_upgrade_description(SDL_Renderer* renderer, Window* window, GameUI* ui)
+{
+    Tree* tree = game_get_tree(ui->game);
+
+    if (!tree_ui_has_selected_upgrade(ui->tree_ui))
+    {
+        ui->state->show_upgrade_description = false;
+        return;
+    }
+
+    ui->state->show_upgrade_description = true;
+
+    int index = tree_ui_get_selected_upgrade(ui->tree_ui);
+
+    Vector* textboxes = window_get_textboxes(window);
+    Textbox* description = vector_get_at(textboxes, 0);
+    const char* text = get_upgrade_properties(tree, index);
+    textbox_set_text(renderer, description, text);
+
+    Vector* buttons = window_get_buttons(window);
+    Button* button = vector_get_at(buttons, 0);
+    int* i = SDL_malloc(sizeof(int));
+    *i = index;
+    button_set_on_click_fn(
+        button,
+        MOUSE_LEFT,
+        function_create(game_ui_purchase_upgrade, ui, i)
+    );
+}
+
+static void game_ui_purchase_upgrade(void* game_ui, void* index)
+{
+    GameUI* ui = game_ui;
+    int i = *(int*)index;
+    game_purchase_upgrade(ui->game, i);
+    board_ui_update_objects(ui->board_ui);
+    toggle_screen(ui);
 }
 
 void verify_game_ui(const GameUI* ui)

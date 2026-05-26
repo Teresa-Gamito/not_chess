@@ -497,21 +497,21 @@ SDL_Texture* window_get_texture(const Window* window, int index)
     return vector_get_at(window->textures, index);
 }
 
-const Vector* window_get_sprites(const Window* window)
+Vector* window_get_sprites(const Window* window)
 {
     verify_window(window);
 
     return window->sprites;
 }
 
-const Vector* window_get_buttons(const Window* window)
+Vector* window_get_buttons(const Window* window)
 {
     verify_window(window);
 
     return window->buttons;
 }
 
-const Vector* window_get_textboxes(const Window* window)
+Vector* window_get_textboxes(const Window* window)
 {
     verify_window(window);
 

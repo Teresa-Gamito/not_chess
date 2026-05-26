@@ -1,7 +1,7 @@
 #include "include/ui/tree_ui.h"
+#include <SDL3/SDL_log.h>
 
 static void tree_ui_set(TreeUI* ui);
-static void purchase_upgrade(void* game, void* index);
 
 struct TreeUI
 {
@@ -11,6 +11,9 @@ struct TreeUI
 
     TTF_Font* font;
     SDL_Color white;
+
+    int selected_upgrade;
+    bool is_selected;
 };
 
 TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, float width, float height)
@@ -37,6 +40,9 @@ TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, flo
     window_set_scale(ui->window, g_app_scale * 5);
 
     tree_ui_set(ui);
+
+    ui->selected_upgrade = 0;
+    ui->is_selected = false;
 
     return ui;
 }
@@ -69,7 +75,7 @@ static void tree_ui_set(TreeUI* ui)
         button_set_size(button, TEXTURE_DEFAULT_SIZE_PX * 2, TEXTURE_DEFAULT_SIZE_PX * 2);
         int* index = SDL_malloc(sizeof(int));
         *index = i;
-        Function* func = function_create(purchase_upgrade, ui->game, index);
+        Function* func = function_create(tree_ui_select_upgrade, ui, index);
         button_set_on_click_fn(button, MOUSE_LEFT, func);
 
         float x = 0;
@@ -144,9 +150,25 @@ Window* tree_ui_get_window(TreeUI* ui)
     return ui->window;
 }
 
-static void purchase_upgrade(void* game, void* index)
+void tree_ui_select_upgrade(void* tree_ui, void* index)
 {
+    TreeUI* ui = tree_ui;
     int i = *(int*)index;
+    ui->selected_upgrade = i;
+    ui->is_selected = true;
+}
 
-    game_purchase_upgrade(game, i);
+void tree_ui_deselect_upgrade(TreeUI* ui)
+{
+    ui->is_selected = false;
+}
+
+int tree_ui_get_selected_upgrade(TreeUI* ui)
+{
+    return ui->selected_upgrade;
+}
+
+bool tree_ui_has_selected_upgrade(TreeUI* ui)
+{
+    return ui->is_selected;
 }
