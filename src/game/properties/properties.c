@@ -1,4 +1,5 @@
 #include "include/game/properties/properties.h"
+#include "game/upgrade_tree/tree.h"
 
 static void add_property(char** properties, const char* msg, ...)
 {
@@ -75,6 +76,7 @@ const char* get_upgrade_properties(const Tree* tree, int index)
     UpgradeType type = tree_get_upgrade_type(tree, index);
     int cost = tree_get_upgrade_cost(tree, index);
     bool is_available = tree_is_upgrade_available(tree, index);
+    bool is_purchased = tree_is_upgrade_purchased(tree, index);
 
     char* properties = "";
 
@@ -87,7 +89,11 @@ const char* get_upgrade_properties(const Tree* tree, int index)
     add_property(&properties, "");
 
     add_property(&properties, "Cost: %d", cost);
-    char* state = is_available ? "Available" : "Locked";
+
+    char* state;
+    if (is_purchased) state = "Purchased";
+    else if (is_available) state = "Available";
+    else state = "Locked";
     add_property(&properties, "State: %s", state);
 
     return properties;

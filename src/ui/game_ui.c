@@ -151,6 +151,8 @@ void game_ui_destroy(GameUI* ui)
     board_ui_destroy(ui->board_ui);
     tree_ui_destroy(ui->tree_ui);
 
+    SDL_free(ui->state);
+
     window_destroy(ui->ui_buttons);
     window_destroy(ui->ui_player_info);
     window_destroy(ui->ui_properties);
@@ -297,6 +299,8 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
     verify_game_ui(ui);
     verify_input(input);
 
+    window_update(input, ui->ui_buttons);
+
     Board* board = game_get_board(ui->game);
     Color player_color = player_get_color(game_get_opponent(ui->game));
     if (is_check_mate(board, player_color))
@@ -304,8 +308,8 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
         return player_color == WHITE ? GAME_RESULT_WIN_WHITE : GAME_RESULT_WIN_BLACK;
     }
     if (ui->state->exit_game) return GAME_RESULT_EXIT;
+
     update_keys(input, ui);
-    window_update(input, ui->ui_buttons);
 
     if (ui->state->is_paused)
     {
@@ -412,6 +416,7 @@ static void toggle_pause(void* game_ui, void* null)
     ui->state->show_rules = false;
     ui->state->show_log = false;
     ui->state->show_help = false;
+    ui->screen_pause = MENU_PAUSE_MAIN;
 
 }
 static void toggle_rules(void* game_ui, void* null)

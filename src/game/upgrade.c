@@ -1,5 +1,4 @@
 #include "include/game/upgrade.h"
-#include "game/upgrade_tree/tree.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);

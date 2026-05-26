@@ -25,13 +25,14 @@ typedef enum UpgradeType
     UPGRADE_TEMPORARY_ROYALTY,
     UPGRADE_AGAIN,
     UPGRADE_RISE, // done
-    UPGRADE_SWAMP, // done
+    UPGRADE_SWAMP,
     UPGRADE_RULING,
     UPGRADE_GAMBLING,
     UPGRADE_HELLO,
     UPGRADE_FRIENDLY_FIRE,
     UPGRADE_TACTICAL_ADVANTAGE,
     UPGRADE_RUN,
+
     COUNT_UPGRADE,
 } UpgradeType;
 
@@ -103,6 +104,7 @@ UpgradeType tree_upgrade_purchase(Tree* tree, int index);
 int tree_get_upgrade_cost(const Tree* tree, int index);
 UpgradeType tree_get_upgrade_type(const Tree* tree, int index);
 bool tree_is_upgrade_available(const Tree* tree, int index);
+bool tree_is_upgrade_purchased(const Tree* tree, int index);
 
 const char* upgrade_get_name(UpgradeType type);
 const char* upgrade_get_description(UpgradeType type);

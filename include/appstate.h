@@ -8,7 +8,7 @@
 #include "ui/game_ui.h"
 #include "helper_functions/global_variables.h"
 
-#define MENU_WIDTH g_app_window_width / 2
+#define MENU_WIDTH g_app_window_width / 4
 #define MENU_HEIGHT g_app_window_height / 2
 
 typedef struct AppState AppState;
@@ -18,7 +18,6 @@ AppState* app_create();
 void app_destroy(AppState* app);
 void app_update(AppState* app);
 void app_render(AppState* app);
-void app_init(AppState* app);
 
 InputState* app_get_inputstate(const AppState* app);
 

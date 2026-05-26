@@ -135,6 +135,12 @@ bool tree_is_upgrade_available(const Tree* tree, int index)
     return upgrade->state == UNLOCKED;
 }
 
+bool tree_is_upgrade_purchased(const Tree* tree, int index)
+{
+    Upgrade* upgrade = graph_get_data(tree, index);
+    return upgrade->state == PURCHASED;
+}
+
 const char* upgrade_get_name(UpgradeType type)
 {
     return upgrade_name[type];
