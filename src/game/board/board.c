@@ -204,6 +204,9 @@ Pos board_piece_get_pos(const Board* board, const Piece* piece)
     return (Pos){pos % board->col_num, pos / board->col_num};
 }
 
+static bool can_castle_right(const Board* board, Pos src, Pos dst)
+{
+}
 bool board_can_piece_move_to(const Board* board, Pos src, Pos dst)
 {
     verify_board(board);

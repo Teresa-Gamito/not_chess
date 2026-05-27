@@ -99,8 +99,11 @@ void app_destroy(AppState* app)
 
     input_destroy(app->input);
 
-    game_ui_destroy(app->game_ui);
-    game_destroy(app->game);
+    if (app->screen == SCREEN_GAME)
+    {
+        game_ui_destroy(app->game_ui);
+        game_destroy(app->game);
+    }
 
     TTF_Quit();
 
@@ -204,7 +207,7 @@ void app_render(AppState* app)
 
     SDL_Renderer* renderer = app->sdl_renderer;
 
-    SDL_SetRenderDrawColor(renderer, 12, 23, 34, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, 185, 217, 237, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
     switch (app->screen)
