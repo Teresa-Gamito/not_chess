@@ -2,6 +2,7 @@
 #include "helper_functions/function.h"
 #include "helper_functions/global_variables.h"
 #include "ui/ui_elements/sound.h"
+#include "ui/ui_elements/textbox.h"
 
 typedef enum MenuPauseScreen
 {
@@ -729,7 +730,7 @@ static Window* create_ui_log(SDL_Renderer* renderer, GameUI* ui)
         window,
         textbox,
         UI_BUFFER,
-        UI_LOG_HEIGHT - textbox_get_height(textbox) - UI_BUFFER
+        UI_BUFFER
     );
 
     return window;
@@ -742,6 +743,11 @@ static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* 
     Textbox* log = vector_get_at(textboxes, 1);
     const char* text = gamelog_get(game_get_log(ui->game));
     textbox_set_text(renderer, log, text);
+    textbox_set_position(
+        log,
+        UI_BUFFER,
+        UI_LOG_HEIGHT - textbox_get_height(log) - UI_BUFFER
+    );
 }
 
 static void menu_pause_set_main(void* game_ui, void* null)
