@@ -1,4 +1,5 @@
 #include "ui/game_ui.h"
+#include <SDL3/SDL_render.h>
 
 typedef enum MenuPauseScreen
 {
@@ -232,6 +233,24 @@ void game_ui_render(SDL_Renderer* renderer, GameUI* ui)
             menu_render(renderer, ui->ui_pause_exit);
         }
     }
+
+    SDL_FRect minimap_border = 
+        {
+            screen_width - UI_MINI_MAP_WIDTH - UI_BUFFER,
+            screen_height - UI_MINI_MAP_HEIGHT - UI_BUFFER,
+            UI_MINI_MAP_WIDTH,
+            UI_MINI_MAP_HEIGHT
+        };
+    SDL_Rect rect = 
+        {
+            minimap_border.x,
+            minimap_border.y,
+            minimap_border.w,
+            minimap_border.h,
+        };
+    SDL_SetRenderClipRect(renderer, &rect);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderRect(renderer, &minimap_border);
 }
 
 static void update_keys_minimap(const InputState* input, GameUI* ui)
