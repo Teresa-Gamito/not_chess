@@ -206,6 +206,17 @@ Pos board_piece_get_pos(const Board* board, const Piece* piece)
 
 static bool can_castle_right(const Board* board, Pos src, Pos dst)
 {
+    Piece* src_piece = board_get_piece_at(board, src);
+    if (piece_get_type(src_piece) != KING)
+    {
+        return false;
+    }
+    Piece* dst_piece  = board_get_piece_at(board, dst);
+    if (piece_get_type(dst_piece) != ROOK)
+    {
+        return false;
+    }
+    Color color = piece_get_color(src_piece);
 }
 bool board_can_piece_move_to(const Board* board, Pos src, Pos dst)
 {
