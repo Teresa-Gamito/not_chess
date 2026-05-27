@@ -47,7 +47,7 @@ void tree_set_default(Tree* tree)
     tree_add_upgrade_dependency(tree, 4, 0);
     tree_add_upgrade(tree, UPGRADE_EXPANSION, 1); // 5
     tree_add_upgrade_dependency(tree, 5, 1);
-    tree_add_upgrade(tree, UPGRADE_PRECIOUS, 1); // 6
+    tree_add_upgrade(tree, UPGRADE_CONTROL, 1); // 6
     tree_add_upgrade_dependency(tree, 6, 2);
     tree_add_upgrade(tree, UPGRADE_SHOGI, 1); // 7
     tree_add_upgrade_dependency(tree, 7, 3);
@@ -55,9 +55,9 @@ void tree_set_default(Tree* tree)
     tree_add_upgrade_dependency(tree, 8, 4);
     tree_add_upgrade(tree, UPGRADE_LANCER, 3); // 9
     tree_add_upgrade_dependency(tree, 9, 7);
-    tree_add_upgrade(tree, UPGRADE_DISGUISE, 3); // 10
+    tree_add_upgrade(tree, UPGRADE_SCHOLAR, 3); // 10
     tree_add_upgrade_dependency(tree, 10, 0);
-    tree_add_upgrade(tree, UPGRADE_REVERSE_DISGUISE, 3); // 11
+    tree_add_upgrade(tree, UPGRADE_ROCK_SOLID, 3); // 11
     tree_add_upgrade_dependency(tree, 11, 0);
     tree_add_upgrade(tree, UPGRADE_RISE, 3); // 12
     tree_add_upgrade_dependency(tree, 12, 5);
@@ -80,7 +80,7 @@ void tree_set_default(Tree* tree)
     tree_add_upgrade(tree, UPGRADE_ROYALTY, 7); // 21
     tree_add_upgrade_dependency(tree, 21, 18);
     tree_add_upgrade_dependency(tree, 21, 19);
-    tree_add_upgrade(tree, UPGRADE_PRECIOUS, 7); // 22
+    tree_add_upgrade(tree, UPGRADE_MINE, 7); // 22
     tree_add_upgrade_dependency(tree, 22, 20);
 }
 

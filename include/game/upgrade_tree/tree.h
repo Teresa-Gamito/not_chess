@@ -17,9 +17,13 @@ typedef enum UpgradeType
     UPGRADE_KNIGHTHOOD,
     UPGRADE_DISGUISE, // done
     UPGRADE_REVERSE_DISGUISE, // done
+    UPGRADE_SCHOLAR, // done
+    UPGRADE_ROCK_SOLID, // done
     UPGRADE_PROMOTION, // done
     UPGRADE_ROYALTY, // done
+    UPGRADE_CONTROL, // done
     UPGRADE_PRECIOUS, // done
+    UPGRADE_MINE, // done
     UPGRADE_DEADTOUCH,
     UPGRADE_TRAMPLE,
     UPGRADE_DEBUFF,
@@ -50,9 +54,13 @@ static char* upgrade_name[] =
         "Knighthood",
         "Disguise",
         "Disguise but reversed",
+        "Scholar",
+        "Rock solid",
         "Promotion",
         "Royalty",
+        "Control",
         "My precious",
+        "MINE!",
         "Deadtouch",
         "Trample",
         "Debuff",
@@ -81,9 +89,13 @@ static char* upgrade_description[] =
         "Sacrifice two pawns and add a knight",
         "Convert a rook into a bishop",
         "Convert a bishop into a rook",
+        "Promote a pawn to a bishop",
+        "Promote a pawn to a rook",
         "Promote a pawn to a queen",
         "Promote a queen to a king",
+        "Gain control of an opponent pawn",
         "Gain control of an opponent piece (except kings and queens)",
+        "Gain control of an opponent piece (except kings)",
         "Add trample to a piece",
         "Add deathtouch to a piece",
         "not added yet",
@@ -92,7 +104,7 @@ static char* upgrade_description[] =
         "Create a wall tile",
         "Create a poison tile",
         "Add a rule: Pawns can move three tiles on their first move",
-        "Add a rule: Pawns have a 20% chance of being promoted when capturing a piece",
+        "Add a rule: Pawns have a 30% chance of being promoted when capturing a piece",
         "Add a rule: Each turn a random piece is destroyed",
         "Add a rule: Players can capture their own pieces",
         "Add a rule: Pieces are worth one more point",

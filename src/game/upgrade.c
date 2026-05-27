@@ -1,5 +1,6 @@
 #include "include/game/upgrade.h"
 #include "game/board/board_elements/piece.h"
+#include "game/upgrade_tree/tree.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);
@@ -49,6 +50,8 @@ bool upgrade_pos_is_valid(Game* game, UpgradeType type, Pos pos)
             return true;
 
         case UPGRADE_PROMOTION:
+        case UPGRADE_ROCK_SOLID:
+        case UPGRADE_SCHOLAR:
             if (!board_has_piece_at(board, pos)) return false;
             if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) != PAWN) return false;
@@ -59,6 +62,18 @@ bool upgrade_pos_is_valid(Game* game, UpgradeType type, Pos pos)
             if (is_player_color(player, board_get_piece_at(board,  pos))) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) == QUEEN) return false;
             if (piece_get_type(board_get_piece_at(board, pos)) == KING) return false;
+            return true;
+
+        case UPGRADE_MINE:
+            if (!board_has_piece_at(board, pos)) return false;
+            if (is_player_color(player, board_get_piece_at(board,  pos))) return false;
+            if (piece_get_type(board_get_piece_at(board, pos)) == KING) return false;
+            return true;
+
+        case UPGRADE_CONTROL:
+            if (!board_has_piece_at(board, pos)) return false;
+            if (is_player_color(player, board_get_piece_at(board,  pos))) return false;
+            if (piece_get_type(board_get_piece_at(board, pos)) != PAWN) return false;
             return true;
 
         case UPGRADE_RISE:
@@ -123,11 +138,21 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
             piece_set_type(board_get_piece_at(board, pos), ROOK);
             break;
 
+        case UPGRADE_ROCK_SOLID:
+            piece_set_type(board_get_piece_at(board, pos), ROOK);
+            break;
+
+        case UPGRADE_SCHOLAR:
+            piece_set_type(board_get_piece_at(board, pos), BISHOP);
+            break;
+
         case UPGRADE_PROMOTION:
             piece_set_type(board_get_piece_at(board, pos), QUEEN);
             break;
 
+        case UPGRADE_CONTROL:
         case UPGRADE_PRECIOUS:
+        case UPGRADE_MINE:
             piece_set_color(board_get_piece_at(board, pos), color);
             break;
 
