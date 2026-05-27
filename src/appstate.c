@@ -2,6 +2,7 @@
 
 typedef struct AppMenu
 {
+    Menu* start;
     Menu* main;
     Menu* options;
     Menu* credits;
@@ -12,6 +13,7 @@ typedef struct AppMenu
 typedef enum Screen
 {
     SCREEN_GAME,
+    SCREEN_MENU_START,
     SCREEN_MENU_MAIN,
     SCREEN_MENU_OPTIONS,
     SCREEN_MENU_CREDITS,
@@ -34,6 +36,7 @@ struct AppState
     Screen screen;
 };
 
+static Menu* create_menu_start(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_main(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_credits(SDL_Renderer* renderer, AppState* app);
@@ -65,13 +68,14 @@ AppState* app_create()
     app->game_ui = NULL;
 
     app->menu = SDL_malloc(sizeof(AppMenu));
+    app->menu->start = create_menu_start(app->sdl_renderer, app);
     app->menu->main = create_menu_main(app->sdl_renderer, app);
     app->menu->options = create_menu_options(app->sdl_renderer, app);
     app->menu->credits = create_menu_credits(app->sdl_renderer, app);
     app->menu->instructions = create_menu_instructions(app->sdl_renderer, app);
     app->menu->exit = create_menu_exit(app->sdl_renderer, app);
 
-    app->screen = SCREEN_MENU_MAIN;
+    app->screen = SCREEN_MENU_START;
 
     app->input = input_create();
 
@@ -85,6 +89,7 @@ void app_destroy(AppState* app)
     SDL_DestroyWindow(app->sdl_window);
     SDL_DestroyRenderer(app->sdl_renderer);
 
+    menu_destroy(app->menu->start);
     menu_destroy(app->menu->main);
     menu_destroy(app->menu->options);
     menu_destroy(app->menu->credits);
@@ -144,6 +149,9 @@ void app_update(AppState* app)
 
     switch (app->screen)
     {
+        case SCREEN_MENU_START:
+            menu_update(input, app->menu->start);
+            return;
         case SCREEN_MENU_MAIN:
             menu_update(input, app->menu->main);
             return;
@@ -201,6 +209,9 @@ void app_render(AppState* app)
 
     switch (app->screen)
     {
+        case SCREEN_MENU_START:
+            menu_render(renderer, app->menu->start);
+            break;
         case SCREEN_MENU_MAIN:
             menu_render(renderer, app->menu->main);
             break;
@@ -270,6 +281,22 @@ static void menu_set_exit(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_EXIT;
+}
+
+static Menu* create_menu_start(SDL_Renderer* renderer, AppState* app)
+{
+    Menu* menu = menu_create(
+        renderer,
+        g_app_window_width / 2 - MENU_WIDTH / 4,
+        g_app_window_height / 2 - MENU_HEIGHT / 8,
+        MENU_WIDTH / 2,
+        MENU_HEIGHT / 4
+    );
+    Function* func;
+    func = function_create(menu_set_main, app, NULL);
+    menu_add_button(renderer, menu, func, "!CHESS");
+
+    return menu;
 }
 
 static Menu* create_menu_main(SDL_Renderer* renderer, AppState* app)

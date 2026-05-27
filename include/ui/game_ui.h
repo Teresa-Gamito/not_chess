@@ -42,6 +42,8 @@
 #define UI_UPGRADE_DESCRIPTION_BUTTON_WIDTH UI_UPGRADE_DESCRIPTION_WIDTH - UI_BUFFER * 2
 #define UI_UPGRADE_DESCRIPTION_BUTTON_HEIGHT UI_UPGRADE_DESCRIPTION_HEIGHT / 5
 
+#define DESCRIPTION_HELP "POINTS:\nPawn - 1\nRook - 3\nKnight - 2\nBishop - 2\nQueen - 5\nLance - 3"
+
 typedef struct GameUI GameUI;
 
 typedef enum GameResult

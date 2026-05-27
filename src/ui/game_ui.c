@@ -1,5 +1,5 @@
 #include "ui/game_ui.h"
-#include <SDL3/SDL_render.h>
+#include "ui/ui_elements/window.h"
 
 typedef enum MenuPauseScreen
 {
@@ -33,11 +33,12 @@ struct GameUI
     TreeUI* tree_ui;
 
     Window* ui_buttons;
+    Window* ui_rules;
+    Window* ui_log;
+    Window* ui_help;
     Window* ui_properties;
     Window* ui_player_info;
-    Window* ui_rules;
     Window* ui_mini_tree;
-    Window* ui_log;
 
     Window* ui_upgrade_description;
 
@@ -66,10 +67,11 @@ static Window* create_ui_properties(SDL_Renderer* renderer);
 static void update_ui_properties(SDL_Renderer* renderer, Window* window, const GameUI* ui);
 static Window* create_ui_player_info(SDL_Renderer* renderer);
 static void update_ui_player_info(SDL_Renderer* renderer, Window* window, const GameUI* ui);
-static Window* create_ui_rules(SDL_Renderer* renderer);
+static Window* create_ui_rules(SDL_Renderer* renderer, GameUI* ui);
 static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui);
-static Window* create_ui_log(SDL_Renderer* renderer);
+static Window* create_ui_log(SDL_Renderer* renderer, GameUI* ui);
 static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui);
+static Window* create_ui_help(SDL_Renderer* renderer, GameUI* ui);
 
 static Window* create_ui_upgrade_description(SDL_Renderer* renderer, GameUI* ui);
 static void update_ui_upgrade_description(SDL_Renderer* renderer, Window* window, GameUI* ui);
@@ -131,10 +133,11 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
     *ui->ui_text_color = color_white();
 
     ui->ui_buttons = create_ui_buttons(renderer, ui);
+    ui->ui_rules = create_ui_rules(renderer, ui);
+    ui->ui_log = create_ui_log(renderer, ui);
+    ui->ui_help = create_ui_help(renderer, ui);
     ui->ui_player_info = create_ui_player_info(renderer);
     ui->ui_properties = create_ui_properties(renderer);
-    ui->ui_rules = create_ui_rules(renderer);
-    ui->ui_log = create_ui_log(renderer);
 
     ui->ui_upgrade_description = create_ui_upgrade_description(renderer, ui);
 
@@ -155,10 +158,11 @@ void game_ui_destroy(GameUI* ui)
     SDL_free(ui->state);
 
     window_destroy(ui->ui_buttons);
-    window_destroy(ui->ui_player_info);
-    window_destroy(ui->ui_properties);
     window_destroy(ui->ui_rules);
     window_destroy(ui->ui_log);
+    window_destroy(ui->ui_help);
+    window_destroy(ui->ui_player_info);
+    window_destroy(ui->ui_properties);
 
     window_destroy(ui->ui_upgrade_description);
 
@@ -216,6 +220,11 @@ void game_ui_render(SDL_Renderer* renderer, GameUI* ui)
     {
         update_ui_log(renderer, ui->ui_log, ui);
         window_render(renderer, ui->ui_log);
+    }
+
+    if (ui->state->show_help)
+    {
+        window_render(renderer, ui->ui_help);
     }
 
     if (ui->state->is_paused)
@@ -363,6 +372,10 @@ GameResult game_ui_update(InputState* input, GameUI* ui)
         if (ui->state->show_log)
         {
             window_update(input, ui->ui_log);
+        }
+        if (ui->state->show_help)
+        {
+            window_update(input, ui->ui_help);
         }
         return GAME_RESULT_CONTINUE;
     }
@@ -623,7 +636,7 @@ static void update_ui_player_info(SDL_Renderer* renderer, Window* window, const 
     );
 }
 
-static Window* create_ui_rules(SDL_Renderer* renderer)
+static Window* create_ui_rules(SDL_Renderer* renderer, GameUI* ui)
 {
     Window* window = window_create(
         screen_width - UI_RULES_WIDTH - UI_BUFFER,
@@ -633,25 +646,40 @@ static Window* create_ui_rules(SDL_Renderer* renderer)
         SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_RULES),
         0
     );
-    return window;
-}
-static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui)
-{
-    window_destroy_content(window);
 
-    const char* text = rulelist_get_rules(game_get_rules(ui->game));
-    Textbox* textbox = textbox_create(
+    Textbox* title = textbox_create(
         renderer,
         ui->ui_font_small,
         ui->ui_text_color,
-        text,
+        "RULES",
         window_get_width(window) - UI_BUFFER * 2,
         TEXT_LEFT_ALIGNED
     );
-    window_add_textbox(window, textbox, UI_BUFFER, UI_BUFFER);
+    window_add_textbox(window, title, UI_BUFFER, UI_BUFFER);
+
+    Textbox* rules = textbox_create(
+        renderer,
+        ui->ui_font_small,
+        ui->ui_text_color,
+        " ",
+        window_get_width(window) - UI_BUFFER * 2,
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(window, rules, UI_BUFFER, UI_BUFFER * 2);
+
+    return window;
 }
 
-static Window* create_ui_log(SDL_Renderer* renderer)
+static void update_ui_rules(SDL_Renderer* renderer, Window* window, const GameUI* ui)
+{
+    Vector* textboxes = window_get_textboxes(window);
+
+    Textbox* rules = vector_get_at(textboxes, 1);
+    const char* text = rulelist_get_rules(game_get_rules(ui->game));
+    textbox_set_text(renderer, rules, text);
+}
+
+static Window* create_ui_log(SDL_Renderer* renderer, GameUI* ui)
 {
     Window* window = window_create(
         screen_width - UI_LOG_WIDTH - UI_BUFFER,
@@ -661,18 +689,22 @@ static Window* create_ui_log(SDL_Renderer* renderer)
         SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_LOG),
         0
     );
-    return window;
-}
-static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui)
-{
-    window_destroy_content(window);
 
-    const char* text = gamelog_get(game_get_log(ui->game));
+    Textbox* title = textbox_create(
+        renderer,
+        ui->ui_font_small,
+        ui->ui_text_color,
+        "HISTORY",
+        window_get_width(window) - UI_BUFFER * 2,
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(window, title, UI_BUFFER, UI_BUFFER);
+
     Textbox* textbox = textbox_create(
         renderer, 
         ui->ui_font_small, 
         ui->ui_text_color, 
-        text, 
+        " ", 
         UI_LOG_WIDTH - UI_BUFFER * 2, 
         TEXT_LEFT_ALIGNED
     );
@@ -682,6 +714,17 @@ static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* 
         UI_BUFFER,
         UI_LOG_HEIGHT - textbox_get_height(textbox) - UI_BUFFER
     );
+
+    return window;
+}
+
+static void update_ui_log(SDL_Renderer* renderer, Window* window, const GameUI* ui)
+{
+    Vector* textboxes = window_get_textboxes(window);
+
+    Textbox* log = vector_get_at(textboxes, 1);
+    const char* text = gamelog_get(game_get_log(ui->game));
+    textbox_set_text(renderer, log, text);
 }
 
 static void menu_pause_set_main(void* game_ui, void* null)
@@ -863,6 +906,41 @@ static void update_ui_upgrade_description(SDL_Renderer* renderer, Window* window
         function_create(game_ui_purchase_upgrade, ui, i)
     );
 }
+
+static Window* create_ui_help(SDL_Renderer* renderer, GameUI* ui)
+{
+    Window* window = window_create(
+        screen_width - UI_LOG_WIDTH - UI_BUFFER,
+        UI_BUFFER * 2 + UI_BUTTON_SIZE,
+        UI_LOG_WIDTH,
+        UI_LOG_HEIGHT,
+        SDL_CreateTextureFromPNG(renderer, PATH_TEXTURE_WINDOW_LOG),
+        0
+    );
+
+    Textbox* title = textbox_create(
+        renderer,
+        ui->ui_font_small,
+        ui->ui_text_color,
+        "HELP",
+        window_get_width(window) - UI_BUFFER * 2,
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(window, title, UI_BUFFER, UI_BUFFER);
+
+    Textbox* help = textbox_create(
+        renderer, 
+        ui->ui_font_small,
+        ui->ui_text_color,
+        DESCRIPTION_HELP,
+        window_get_width(window) - UI_BUFFER * 2,
+        TEXT_LEFT_ALIGNED
+    );
+    window_add_textbox(window, help, UI_BUFFER, UI_BUFFER * 2 + textbox_get_height(title));
+
+    return window;
+}
+
 
 static void game_ui_purchase_upgrade(void* game_ui, void* index)
 {
