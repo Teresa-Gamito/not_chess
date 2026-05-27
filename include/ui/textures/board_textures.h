@@ -29,7 +29,7 @@
 #define PATH_TEXTURE_TILE_VALID                 "assets/sprites/tile/tile_valid.png"
 #define PATH_TEXTURE_TILE_CAPTURE               "assets/sprites/tile/tile_capture.png"
 
-#define PATH_TEXTURE_WINDOW_BOARD_BACKGROUND    "assets/sprites/tile/tile_white.png"
+#define PATH_TEXTURE_WINDOW_BOARD_BACKGROUND    "assets/sprites/menus/background.png"
 
 #define PATH_SOUND_MOVE                         "assets/sounds/piece_move.wav"
 #define PATH_SOUND_CAPTURE                      "assets/sounds/piece_capture.wav"
