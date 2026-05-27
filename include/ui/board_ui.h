@@ -7,6 +7,7 @@
 #include "game/game.h"
 #include "game/upgrade.h"
 #include "ui_elements/window.h"
+#include "ui/ui_elements/sound.h"
 #include "ui/textures/board_textures.h"
 #include "helper_functions/error_handling.h"
 #include "helper_functions/helper_functions.h"

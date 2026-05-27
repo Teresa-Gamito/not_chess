@@ -13,6 +13,9 @@ struct TreeUI
 
     int selected_upgrade;
     bool is_selected;
+
+    Sound* sound_click;
+    Sound* sound_error;
 };
 
 typedef enum Arrow
@@ -52,6 +55,9 @@ TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, flo
 
     tree_ui_set(ui);
 
+    ui->sound_click = sound_load(PATH_SOUND_CLICK);
+    ui->sound_error = sound_load(PATH_SOUND_ERROR);
+
     ui->selected_upgrade = 0;
     ui->is_selected = false;
 
@@ -61,6 +67,8 @@ TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, flo
 void tree_ui_destroy(TreeUI* ui)
 {
     window_destroy(ui->window);
+    sound_unload(ui->sound_click);
+    sound_unload(ui->sound_error);
     TTF_CloseFont(ui->font);
     SDL_free(ui);
 }
@@ -93,6 +101,7 @@ static void tree_ui_add_button(TreeUI* ui, int index, float x, float y)
     y += 0.1 * button_get_height(button);
     window_add_button(ui->window, button, x, y);
 }
+
 static void tree_ui_draw_line(TreeUI* ui, float x, float y, Arrow arrow)
 {
     SDL_Texture* texture = window_get_texture(ui->window, arrow);
@@ -103,8 +112,8 @@ static void tree_ui_draw_line(TreeUI* ui, float x, float y, Arrow arrow)
     x += 0.1 * sprite_get_width(sprite);
     y += 0.1 * sprite_get_height(sprite);
     window_add_sprite(ui->window, sprite, x, y);
-
 }
+
 static void tree_ui_set(TreeUI* ui)
 {
     int map[27][21] = 
@@ -168,6 +177,7 @@ void tree_ui_select_upgrade(void* tree_ui, void* index)
     int i = *(int*)index;
     ui->selected_upgrade = i;
     ui->is_selected = true;
+    sound_play(ui->sound_click);
 }
 
 void tree_ui_deselect_upgrade(TreeUI* ui)

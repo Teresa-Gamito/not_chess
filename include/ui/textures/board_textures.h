@@ -31,6 +31,9 @@
 
 #define PATH_TEXTURE_WINDOW_BOARD_BACKGROUND    "assets/sprites/tile/tile_white.png"
 
+#define PATH_SOUND_MOVE                         "assets/sounds/piece_move.wav"
+#define PATH_SOUND_CAPTURE                      "assets/sounds/piece_capture.wav"
+
 typedef enum BoardTextures
 {
     TEXTURE_WHITE_PAWN,

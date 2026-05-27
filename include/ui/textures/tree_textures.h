@@ -22,6 +22,9 @@
 
 #define PATH_TEXTURE_WINDOW_TREE_BACKGROUND     "assets/sprites/tile/tile_white.png"
 
+#define PATH_SOUND_CLICK                        "assets/sounds/click.wav"
+#define PATH_SOUND_ERROR                        "assets/sounds/error.wav"
+
 typedef enum TreeTextures
 {
     TEXTURE_LINE_UD,

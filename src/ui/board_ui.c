@@ -6,6 +6,9 @@ struct BoardUI
 
     Window* window;
 
+    Sound* sound_move;
+    Sound* sound_capture;
+
     Pos selected_pos;
     bool is_selected;
 };
@@ -43,6 +46,9 @@ BoardUI* board_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, f
 
     board_ui_update_objects(ui);
 
+    ui->sound_move = sound_load(PATH_SOUND_MOVE);
+    ui->sound_capture = sound_load(PATH_SOUND_CAPTURE);
+
     return ui;
 }
 
@@ -72,6 +78,8 @@ void board_ui_set_scale(BoardUI* ui)
 void board_ui_destroy(BoardUI* ui)
 {
     window_destroy(ui->window);
+    sound_unload(ui->sound_move);
+    sound_unload(ui->sound_capture);
     SDL_free(ui);
 }
 
@@ -298,9 +306,11 @@ void select_pos(BoardUI* ui, Pos pos)
     else if (game_try_capture(ui->game, old_pos, new_pos))
     {
         game_advance_turn(ui->game);
+        sound_play(ui->sound_capture);
     }
     else if (game_try_move(ui->game, old_pos, new_pos))
     {
+        sound_play(ui->sound_move);
         game_advance_turn(ui->game);
     }
 

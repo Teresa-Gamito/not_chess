@@ -5,7 +5,7 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
     (void)argc;
     (void)argv;
 
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
 
     AppState* app = app_create();
     *appstate = app;

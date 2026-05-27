@@ -11,3 +11,5 @@ float g_menu_font_size = FONT_SIZE_MENU;
 bool debug_can_purchace_multiple_times = false;
 bool debug_infinite_points = false;
 
+SDL_AudioDeviceID g_audio_device = 0;
+bool g_volume_on = true;

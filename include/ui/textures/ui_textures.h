@@ -17,6 +17,9 @@
 #define PATH_TEXTURE_WINDOW_PAUSE                   "assets/sprites/tile/tile_black.png"
 #define PATH_TEXTURE_WINDOW_UPGRADE_DESCRIPTION     "assets/sprites/tile/tile_black.png"
 
+#define PATH_SOUND_CLICK                            "assets/sounds/click.wav"
+#define PATH_SOUND_ERROR                            "assets/sounds/error.wav"
+
 typedef enum UIButtonsTextures
 {
     TEXTURE_BUTTON_RULES,

@@ -1,5 +1,7 @@
 #include "ui/game_ui.h"
-#include <SDL3/SDL_rect.h>
+#include "helper_functions/function.h"
+#include "helper_functions/global_variables.h"
+#include "ui/ui_elements/sound.h"
 
 typedef enum MenuPauseScreen
 {
@@ -52,6 +54,9 @@ struct GameUI
     TTF_Font* ui_font_large;
 
     SDL_Color* ui_text_color;
+
+    Sound* sound_click;
+    Sound* sound_error;
 
     float scale;
 
@@ -132,6 +137,9 @@ GameUI* game_ui_create(Game* game, SDL_Renderer* renderer)
     ui->ui_text_color = SDL_malloc(sizeof(SDL_Color));
     *ui->ui_text_color = color_white();
 
+    ui->sound_click = sound_load(PATH_SOUND_CLICK);
+    ui->sound_error = sound_load(PATH_SOUND_ERROR);
+
     ui->ui_buttons = create_ui_buttons(renderer, ui);
     ui->ui_rules = create_ui_rules(renderer, ui);
     ui->ui_log = create_ui_log(renderer, ui);
@@ -169,6 +177,9 @@ void game_ui_destroy(GameUI* ui)
     menu_destroy(ui->ui_pause_main);
     menu_destroy(ui->ui_pause_options);
     menu_destroy(ui->ui_pause_exit);
+
+    sound_unload(ui->sound_click);
+    sound_unload(ui->sound_error);
 
     TTF_CloseFont(ui->ui_font_small);
     TTF_CloseFont(ui->ui_font_medium);
@@ -451,6 +462,7 @@ static void toggle_pause(void* game_ui, void* null)
     ui->state->show_log = false;
     ui->state->show_help = false;
     ui->screen_pause = MENU_PAUSE_MAIN;
+    sound_play(ui->sound_click);
 
 }
 static void toggle_rules(void* game_ui, void* null)
@@ -460,6 +472,7 @@ static void toggle_rules(void* game_ui, void* null)
     ui->state->show_rules = !ui->state->show_rules;
     ui->state->show_log = false;
     ui->state->show_help = false;
+    sound_play(ui->sound_click);
 }
 static void toggle_log(void* game_ui, void* null)
 {
@@ -468,6 +481,7 @@ static void toggle_log(void* game_ui, void* null)
     ui->state->show_rules = false;
     ui->state->show_log = !ui->state->show_log;
     ui->state->show_help = false;
+    sound_play(ui->sound_click);
 }
 static void toggle_help(void* game_ui, void* null)
 {
@@ -476,6 +490,7 @@ static void toggle_help(void* game_ui, void* null)
     ui->state->show_rules = false;
     ui->state->show_log = false;
     ui->state->show_help = !ui->state->show_help;
+    sound_play(ui->sound_click);
 }
 static Window* create_ui_buttons(SDL_Renderer* renderer, GameUI* ui)
 {
@@ -733,18 +748,21 @@ static void menu_pause_set_main(void* game_ui, void* null)
 {
     GameUI* ui = game_ui;
     ui->screen_pause = MENU_PAUSE_MAIN;
+    sound_play(ui->sound_click);
 }
 
 static void menu_pause_set_options(void* game_ui, void* null)
 {
     GameUI* ui = game_ui;
     ui->screen_pause = MENU_PAUSE_OPTIONS;
+    sound_play(ui->sound_click);
 }
 
 static void menu_pause_set_exit(void* game_ui, void* null)
 {
     GameUI* ui = game_ui;
     ui->screen_pause = MENU_PAUSE_EXIT;
+    sound_play(ui->sound_click);
 }
 
 static void end_game(void* game_ui, void* null)
@@ -762,25 +780,21 @@ static Menu* create_ui_pause_main(SDL_Renderer* renderer, GameUI* ui)
         UI_PAUSE_WIDTH,
         UI_PAUSE_HEIGHT
     );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(toggle_pause, ui, NULL),
-        "CONTINUE"
-    );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(menu_pause_set_options, ui, NULL),
-        "OPTIONS"
-    );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(menu_pause_set_exit, ui, NULL),
-        "EXIT TO MAIN MENU"
-    );
+    Function* func;
+    func = function_create(toggle_pause, ui, NULL);
+    menu_add_button(renderer, menu, func, "CONTINUE");
+    func = function_create(menu_pause_set_options, ui, NULL),
+    menu_add_button(renderer, menu, func, "OPTIONS");
+    func = function_create(menu_pause_set_exit, ui, NULL),
+    menu_add_button(renderer, menu, func, "EXIT TO MAIN MENU");
     return menu;
+}
+
+static void toggle_sound(void* game_ui, void* null2)
+{
+    GameUI* ui = game_ui;
+    g_volume_on = !g_volume_on;
+    sound_play(ui->sound_click);
 }
 
 static Menu* create_ui_pause_options(SDL_Renderer* renderer, GameUI* ui)
@@ -792,12 +806,11 @@ static Menu* create_ui_pause_options(SDL_Renderer* renderer, GameUI* ui)
         UI_PAUSE_WIDTH,
         UI_PAUSE_HEIGHT
     );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(menu_pause_set_main, ui, NULL),
-        "BACK"
-    );
+    Function* func;
+    func = function_create(toggle_sound, ui, NULL);
+    menu_add_button(renderer, menu, func,"SOUND");
+    func = function_create(menu_pause_set_main, ui, NULL);
+    menu_add_button(renderer, menu, func,"BACK");
     return menu;
 }
 
@@ -810,18 +823,11 @@ static Menu* create_ui_pause_exit(SDL_Renderer* renderer, GameUI* ui)
         UI_PAUSE_WIDTH,
         UI_PAUSE_HEIGHT
     );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(end_game, ui, NULL),
-        "CONFIRM"
-    );
-    menu_add_button(
-        renderer,
-        menu,
-        function_create(menu_pause_set_main, ui, NULL),
-        "BACK"
-    );
+    Function* func;
+    func = function_create(end_game, ui, NULL);
+    menu_add_button(renderer, menu, func, "CONFIRM");
+    func = function_create(menu_pause_set_main, ui, NULL);
+    menu_add_button(renderer, menu, func, "BACK");
     return menu;
 }
 
@@ -950,10 +956,12 @@ static void game_ui_purchase_upgrade(void* game_ui, void* index)
     int i = *(int*)index;
     if (!game_purchase_upgrade(ui->game, i))
     {
+        sound_play(ui->sound_error);
         return;
     }
     board_ui_update_objects(ui->board_ui);
     toggle_screen(ui);
+    sound_play(ui->sound_click);
 }
 
 void verify_game_ui(const GameUI* ui)

@@ -8,6 +8,7 @@ typedef struct AppMenu
     Menu* credits;
     Menu* instructions;
     Menu* exit;
+    Sound* sound_click;
 } AppMenu;
 
 typedef enum Screen
@@ -64,6 +65,8 @@ AppState* app_create()
 
     SDL_SetDefaultTextureScaleMode(app->sdl_renderer, SDL_SCALEMODE_PIXELART);
 
+    g_audio_device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
+
     app->game = NULL;
     app->game_ui = NULL;
 
@@ -74,6 +77,8 @@ AppState* app_create()
     app->menu->credits = create_menu_credits(app->sdl_renderer, app);
     app->menu->instructions = create_menu_instructions(app->sdl_renderer, app);
     app->menu->exit = create_menu_exit(app->sdl_renderer, app);
+
+    app->menu->sound_click = sound_load(PATH_SOUND_MENU_CLICK);
 
     app->screen = SCREEN_MENU_START;
 
@@ -95,6 +100,8 @@ void app_destroy(AppState* app)
     menu_destroy(app->menu->credits);
     menu_destroy(app->menu->instructions);
     menu_destroy(app->menu->exit);
+    sound_unload(app->menu->sound_click);
+
     SDL_free(app->menu);
 
     input_destroy(app->input);
@@ -254,36 +261,43 @@ static void start_game(void* app_state, void* null)
     game_start(app->game);
 
     app->game_ui = game_ui_create(app->game, app->sdl_renderer);
+
+    sound_play(app->menu->sound_click);
 }
 
 static void menu_set_main(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_MAIN;
+    sound_play(app->menu->sound_click);
 }
 
 static void menu_set_options(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_OPTIONS;
+    sound_play(app->menu->sound_click);
 }
 
 static void menu_set_credits(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_CREDITS;
+    sound_play(app->menu->sound_click);
 }
 
 static void menu_set_instructions(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_INSTRUCTIONS;
+    sound_play(app->menu->sound_click);
 }
 
 static void menu_set_exit(void* app_state, void* null)
 {
     AppState* app = app_state;
     app->screen = SCREEN_MENU_EXIT;
+    sound_play(app->menu->sound_click);
 }
 
 static Menu* create_menu_start(SDL_Renderer* renderer, AppState* app)
@@ -325,6 +339,13 @@ static Menu* create_menu_main(SDL_Renderer* renderer, AppState* app)
     return menu;
 }
 
+// crunch function
+static void toggle_volume(void* app_state, void* null2)
+{
+    g_volume_on = !g_volume_on;
+    AppState* app = app_state;
+    sound_play(app->menu->sound_click);
+}
 static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app)
 {
     Menu* menu = menu_create(
@@ -335,6 +356,8 @@ static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app)
         MENU_HEIGHT / 4
     );
     Function* func;
+    func = function_create(toggle_volume, app, NULL);
+    menu_add_button(renderer, menu, func, "SOUND");
     func = function_create(menu_set_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
 

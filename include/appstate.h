@@ -11,6 +11,8 @@
 #define MENU_WIDTH g_app_window_width / 4
 #define MENU_HEIGHT g_app_window_height / 2
 
+#define PATH_SOUND_MENU_CLICK "assets/sounds/click.wav"
+
 typedef struct AppState AppState;
 
 // ========== create ==========

@@ -5,6 +5,7 @@
 #include "game/game.h"
 #include "inputstate.h"
 #include "ui/ui_elements/window.h"
+#include "ui/ui_elements/sound.h"
 #include "helper_functions/color.h"
 #include "ui/textures/tree_textures.h"
 #include "helper_functions/helper_functions.h"

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL3/SDL_audio.h>
 #include <stdbool.h>
 
 // app
@@ -26,6 +27,10 @@
 extern float g_app_window_width;
 extern float g_app_window_height;
 
+// audio
+extern SDL_AudioDeviceID g_audio_device;
+extern bool g_volume_on;
+
 extern float g_app_scale;
 
 extern float g_menu_font_size;
@@ -37,4 +42,3 @@ extern int g_app_volume;
 // cheats
 extern bool debug_can_purchace_multiple_times;
 extern bool debug_infinite_points;
-
