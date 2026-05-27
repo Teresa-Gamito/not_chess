@@ -1,4 +1,5 @@
 #include "include/game/board/board_elements/piece.h"
+#include "helper_functions/position.h"
 
 struct Piece 
 {
@@ -177,6 +178,7 @@ bool piece_can_move_to(const Piece* piece, Pos src, Pos dst)
     PieceType type = piece_get_type(piece);
     Color color = piece_get_color(piece);
     bool has_moved = piece_has_moved(piece);
+    if (pos_equals(src, dst)) return false;
     switch(type)
     {
         case PAWN:
@@ -302,10 +304,8 @@ bool piece_can_capture(const Piece* src_piece, const Piece* dst_piece, Pos src, 
     verify_piece(src_piece);
     verify_piece(dst_piece);
 
-    if (piece_get_color(src_piece) == piece_get_color(dst_piece))
-    {
-        return false;
-    }
+    if (pos_equals(src, dst)) return false;
+
     if (!can_piece_type_capture(src_piece, src, dst))
     {
         return false;

@@ -1,6 +1,5 @@
 #include "include/game/upgrade.h"
-#include "game/game.h"
-#include "game/rules/rules.h"
+#include "game/board/board_elements/piece.h"
 
 static bool is_player_side(Board* board, Player* player, Pos pos);
 static bool is_player_color(Player* player, Piece* piece);
@@ -73,6 +72,18 @@ bool upgrade_pos_is_valid(Game* game, UpgradeType type, Pos pos)
             if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
             return true;
 
+        case UPGRADE_ROYALTY:
+            if (!board_has_piece_at(board, pos)) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
+            if (piece_get_type(board_get_piece_at(board, pos)) != QUEEN) return false;
+            return true;
+
+        case UPGRADE_LANCER:
+            if (!board_has_piece_at(board, pos)) return false;
+            if (!is_player_color(player, board_get_piece_at(board,  pos))) return false;
+            if (piece_get_type(board_get_piece_at(board, pos)) != LANCE) return false;
+            return true;
+
         default:
             return true;
     }
@@ -114,6 +125,7 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
 
         case UPGRADE_PROMOTION:
             piece_set_type(board_get_piece_at(board, pos), QUEEN);
+            break;
 
         case UPGRADE_PRECIOUS:
             piece_set_color(board_get_piece_at(board, pos), color);
@@ -129,6 +141,22 @@ void upgrade(Game* game, UpgradeType type, Pos pos)
 
         case UPGRADE_GAMBLING:
             rulelist_add(rules, RULE_PAWN_PROMOTION_CHANCE);
+            break;
+
+        case UPGRADE_FRIENDLY_FIRE:
+            rulelist_add(rules, RULE_CAPTURE_OWN);
+            break;
+
+        case UPGRADE_TACTICAL_ADVANTAGE:
+            rulelist_add(rules, RULE_MORE_POINTS);
+            break;
+
+        case UPGRADE_ROYALTY:
+            piece_set_type(board_get_piece_at(board, pos), KING);
+            break;
+
+        case UPGRADE_LANCER:
+            piece_set_type(board_get_piece_at(board, pos), P_LANCE);
             break;
 
         default:

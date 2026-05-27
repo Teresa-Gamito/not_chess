@@ -18,6 +18,7 @@ typedef enum UpgradeType
     UPGRADE_DISGUISE, // done
     UPGRADE_REVERSE_DISGUISE, // done
     UPGRADE_PROMOTION, // done
+    UPGRADE_ROYALTY, // done
     UPGRADE_PRECIOUS, // done
     UPGRADE_DEADTOUCH,
     UPGRADE_TRAMPLE,
@@ -27,11 +28,12 @@ typedef enum UpgradeType
     UPGRADE_RISE, // done
     UPGRADE_SWAMP,
     UPGRADE_RULING,
-    UPGRADE_GAMBLING,
+    UPGRADE_GAMBLING, // done
     UPGRADE_HELLO,
-    UPGRADE_FRIENDLY_FIRE,
+    UPGRADE_FRIENDLY_FIRE, // done
     UPGRADE_TACTICAL_ADVANTAGE,
     UPGRADE_RUN,
+    UPGRADE_LANCER,
 
     COUNT_UPGRADE,
 } UpgradeType;
@@ -49,6 +51,7 @@ static char* upgrade_name[] =
         "Disguise",
         "Disguise but reversed",
         "Promotion",
+        "Royalty",
         "My precious",
         "Deadtouch",
         "Trample",
@@ -63,6 +66,7 @@ static char* upgrade_name[] =
         "Friendly fire",
         "Tactical advantage",
         "Ruuuun!",
+        "Lancer",
     };
 
 static char* upgrade_description[] = 
@@ -78,6 +82,7 @@ static char* upgrade_description[] =
         "Convert a rook into a bishop",
         "Convert a bishop into a rook",
         "Promote a pawn to a queen",
+        "Promote a queen to a king",
         "Gain control of an opponent piece (except kings and queens)",
         "Add trample to a piece",
         "Add deathtouch to a piece",
@@ -92,6 +97,7 @@ static char* upgrade_description[] =
         "Add a rule: Players can capture their own pieces",
         "Add a rule: Pieces are worth one more point",
         "Add a rule: Pieces have a 25% chance of being able to move again after capturing",
+        "Promote a lance",
     };
 
 Tree* tree_create();

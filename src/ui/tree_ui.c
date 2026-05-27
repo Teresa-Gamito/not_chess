@@ -15,6 +15,18 @@ struct TreeUI
     bool is_selected;
 };
 
+typedef enum Arrow
+{
+    LINE_UD,
+    LINE_LR,
+    LINE_DL,
+    LINE_DR,
+    LINE_UL,
+    LINE_UR,
+    LINE_A,
+    ARROW_UD
+} Arrow;
+
 TreeUI* tree_ui_create(SDL_Renderer* renderer, Game* game, float x, float y, float width, float height)
 {
     TreeUI* ui = SDL_malloc(sizeof(TreeUI));
@@ -64,83 +76,84 @@ void tree_ui_update(InputState* input, TreeUI* ui)
     window_update(input, ui->window);
 }
 
-static void tree_ui_set(TreeUI* ui)
+static void tree_ui_add_button(TreeUI* ui, int index, float x, float y)
 {
     Tree* tree = game_get_tree(ui->game);
-    for (int i = 0; i < graph_get_size(tree); i++)
-    {
-        SDL_Texture* texture = window_get_texture(ui->window, TEXTURE_NODE_ADD_PAWN);
-        Button* button = button_create(texture, NULL, texture);
-        button_set_size(button, TEXTURE_DEFAULT_SIZE_PX * 2, TEXTURE_DEFAULT_SIZE_PX * 2);
-        int* index = SDL_malloc(sizeof(int));
-        *index = i;
-        Function* func = function_create(tree_ui_select_upgrade, ui, index);
-        button_set_on_click_fn(button, MOUSE_LEFT, func);
+    SDL_Texture* texture = window_get_texture(ui->window, TEXTURE_UPGRADE_ADD_PAWN);
+    Button* button = button_create(texture, NULL, texture);
+    button_set_size(button, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
+    int* i = SDL_malloc(sizeof(int));
+    *i = index;
+    Function* func = function_create(tree_ui_select_upgrade, ui, i);
+    button_set_on_click_fn(button, MOUSE_LEFT, func);
 
-        float x = 0;
-        float y = 0;
-        switch (i)
+    x *= button_get_width(button);
+    y *= button_get_height(button);
+    x += 0.1 * button_get_width(button);
+    y += 0.1 * button_get_height(button);
+    window_add_button(ui->window, button, x, y);
+}
+static void tree_ui_draw_line(TreeUI* ui, float x, float y, Arrow arrow)
+{
+    SDL_Texture* texture = window_get_texture(ui->window, arrow);
+    Sprite* sprite = sprite_create(texture);
+    sprite_set_size(sprite, TEXTURE_DEFAULT_SIZE_PX, TEXTURE_DEFAULT_SIZE_PX);
+    x *= sprite_get_width(sprite);
+    y *= sprite_get_height(sprite);
+    x += 0.1 * sprite_get_width(sprite);
+    y += 0.1 * sprite_get_height(sprite);
+    window_add_sprite(ui->window, sprite, x, y);
+
+}
+static void tree_ui_set(TreeUI* ui)
+{
+    int map[27][21] = 
         {
-            case 0:
-                x = 2;
-                y = 0;
-                break;
-            case 1:
-                x = 2;
-                y = 1;
-                break;
-            case 2:
-                x = 1;
-                y = 2;
-                break;
-            case 3:
-                x = 1;
-                y = 3;
-                break;
-            case 4:
-                x = 3;
-                y = 2;
-                break;
-            case 5:
-                x = 3;
-                y = 3;
-                break;
-            case 6:
-                x = 6;
-                y = 0;
-                break;
-            case 7:
-                x = 5;
-                y = 1;
-                break;
-            case 8:
-                x = 5;
-                y = 2;
-                break;
-            case 9:
-                x = 8;
-                y = 1;
-                break;
-            case 10:
-                x = 7;
-                y = 2;
-                break;
-            case 11:
-                x = 9;
-                y = 2;
-                break;
-            case 12:
-                x = 9;
-                y = 3;
-                break;
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0},
+            {0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0},
+            {0,-4,-2,-2,-7,-2,-2,-3, 0, 0,-1, 0, 0,-4,-2,-2,-7,-2,-2,-3, 0},
+            {0,-8, 0, 0,-8, 0, 0,-1, 0, 0,-8, 0, 0,-8, 0, 0,-1, 0, 0,-1, 0},
+            {0, 4, 0, 0, 5, 0, 0,-1, 0, 0, 6, 0, 0, 7, 0, 0,-1, 0, 0,-1, 0},
+            {0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0,-8, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0, 8, 0, 0, 9, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0,-1, 0, 0, 0, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0,-1, 0, 0,-4,-2,-2,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0},
+            {0,-8, 0, 0,-8, 0, 0,-8, 0, 0,-8, 0, 0,-8, 0, 0,-8, 0, 0,-1, 0},
+            {0,10, 0, 0,11, 0, 0,12, 0, 0,13, 0, 0,14, 0, 0,15, 0, 0,-1, 0},
+            {0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0,-8, 0, 0,-1, 0, 0,-1, 0, 0,-8, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0,16, 0, 0,-1, 0, 0,-1, 0, 0,17, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0, 0, 0, 0,-1, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0, 0, 0, 0,-1, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0},
+            {0, 0, 0, 0,-8, 0, 0,-8, 0, 0, 0, 0, 0,-8, 0, 0, 0, 0, 0,-8, 0},
+            {0, 0, 0, 0,18, 0, 0,19, 0, 0, 0, 0, 0,20, 0, 0, 0, 0, 0,21, 0},
+            {0, 0, 0, 0,-1, 0, 0,-1, 0, 0, 0, 0, 0,-1, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0,-6,-2,-2,-2,-2,-2,-3, 0, 0,-1, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,-8, 0, 0,-8, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0,22, 0, 0,23, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        };
+
+    for (int col = 0; col < 21; col++)
+    {
+        for (int row = 0; row < 27; row++)
+        {
+            int curr = map[row][col];
+            if (curr == 0) continue;
+            if (curr > 0)
+            {
+                tree_ui_add_button(ui, curr - 1, col, row);
+                continue;
+            }
+            if (curr < 0) 
+            {
+                tree_ui_draw_line(ui, col, row, SDL_abs(curr) - 1);
+            }
         }
-        x *= button_get_width(button);
-        y *= button_get_height(button);
-
-        x += 0.1 * button_get_width(button);
-        y += 0.1 * button_get_height(button);
-
-        window_add_button(ui->window, button, x, y);
     }
 }
 

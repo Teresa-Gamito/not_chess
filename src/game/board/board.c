@@ -1,4 +1,5 @@
 #include "include/game/board/board.h"
+#include "game/board/board_elements/piece.h"
 
 static const char board_default_layout[] = "RNBQKBNRPPPPPPPP00000000000000000000000000000000pppppppprnbqkbnr";
 
@@ -237,6 +238,13 @@ bool board_can_piece_capture(const Board* board, Pos src, Pos dst)
 
     Piece* src_piece = board_get_piece_at(board, src);
     Piece* dst_piece = board_get_piece_at(board, dst);
+    if (piece_get_color(src_piece) == piece_get_color(dst_piece))
+    {
+        if (!board_has_rule(board, RULE_CAPTURE_OWN))
+        {
+            return false;
+        }
+    }
     if (!piece_can_capture(src_piece, dst_piece, src, dst))
     {
         return false;

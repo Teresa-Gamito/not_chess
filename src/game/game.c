@@ -109,6 +109,7 @@ bool game_try_capture(Game* game, Pos src, Pos dst)
     if (player_color != piece_color) return false;
 
     int points = board_piece_move_to(board, src, dst);
+    if (rulelist_has(game->rules, RULE_MORE_POINTS)) points++;
     player_add_points(game->active_player, points);
 
     gamelog_add(
