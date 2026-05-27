@@ -1,4 +1,5 @@
 #include "include/game/game.h"
+#include "data_structures/queue.h"
 #include "game/board/board_elements/piece.h"
 #include "game/rules/rules.h"
 #include "game/upgrade.h"
@@ -177,6 +178,11 @@ bool game_purchase_upgrade(Game* game, int index)
         return false;
     }
     if (!tree_is_upgrade_available(tree, index))
+    {
+        return false;
+    }
+    // temp
+    if (queue_get_size(game->upgrades) > 0)
     {
         return false;
     }

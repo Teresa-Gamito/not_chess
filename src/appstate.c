@@ -5,6 +5,7 @@ typedef struct AppMenu
     Menu* main;
     Menu* options;
     Menu* credits;
+    Menu* instructions;
     Menu* exit;
 } AppMenu;
 
@@ -14,6 +15,7 @@ typedef enum Screen
     SCREEN_MENU_MAIN,
     SCREEN_MENU_OPTIONS,
     SCREEN_MENU_CREDITS,
+    SCREEN_MENU_INSTRUCTIONS,
     SCREEN_MENU_EXIT
 } Screen;
 
@@ -36,6 +38,7 @@ static Menu* create_menu_main(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_credits(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_exit(SDL_Renderer* renderer, AppState* app);
+static Menu* create_menu_instructions(SDL_Renderer* renderer, AppState* app);
 static void start_game(void* app_state, void* null);
 
 AppState* app_create()
@@ -65,6 +68,7 @@ AppState* app_create()
     app->menu->main = create_menu_main(app->sdl_renderer, app);
     app->menu->options = create_menu_options(app->sdl_renderer, app);
     app->menu->credits = create_menu_credits(app->sdl_renderer, app);
+    app->menu->instructions = create_menu_instructions(app->sdl_renderer, app);
     app->menu->exit = create_menu_exit(app->sdl_renderer, app);
 
     app->screen = SCREEN_MENU_MAIN;
@@ -84,6 +88,7 @@ void app_destroy(AppState* app)
     menu_destroy(app->menu->main);
     menu_destroy(app->menu->options);
     menu_destroy(app->menu->credits);
+    menu_destroy(app->menu->instructions);
     menu_destroy(app->menu->exit);
     SDL_free(app->menu);
 
@@ -151,6 +156,9 @@ void app_update(AppState* app)
         case SCREEN_MENU_EXIT:
             menu_update(input, app->menu->exit);
             return;
+        case SCREEN_MENU_INSTRUCTIONS:
+            menu_update(input, app->menu->instructions);
+            return;
         case SCREEN_GAME:
             result = game_ui_update(input, app->game_ui);
             break;
@@ -205,6 +213,9 @@ void app_render(AppState* app)
         case SCREEN_MENU_EXIT:
             menu_render(renderer, app->menu->exit);
             break;
+        case SCREEN_MENU_INSTRUCTIONS:
+            menu_render(renderer, app->menu->instructions);
+            break;
         case SCREEN_GAME:
             game_ui_render(renderer, app->game_ui);
             break;
@@ -249,6 +260,12 @@ static void menu_set_credits(void* app_state, void* null)
     app->screen = SCREEN_MENU_CREDITS;
 }
 
+static void menu_set_instructions(void* app_state, void* null)
+{
+    AppState* app = app_state;
+    app->screen = SCREEN_MENU_INSTRUCTIONS;
+}
+
 static void menu_set_exit(void* app_state, void* null)
 {
     AppState* app = app_state;
@@ -271,6 +288,8 @@ static Menu* create_menu_main(SDL_Renderer* renderer, AppState* app)
     menu_add_button(renderer, menu, func, "OPTIONS");
     func = function_create(menu_set_credits, app, NULL);
     menu_add_button(renderer, menu, func, "CREDITS");
+    func = function_create(menu_set_instructions, app, NULL);
+    menu_add_button(renderer, menu, func, "INSTRUCTIONS");
     func = function_create(menu_set_exit, app, NULL);
     menu_add_button(renderer, menu, func, "EXIT");
     return menu;
@@ -280,10 +299,10 @@ static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app)
 {
     Menu* menu = menu_create(
         renderer,
-        g_app_window_width / 2 - MENU_WIDTH / 2,
-        g_app_window_height / 2 - MENU_HEIGHT / 2,
-        MENU_WIDTH,
-        MENU_HEIGHT
+        g_app_window_width / 2 - MENU_WIDTH / 4,
+        g_app_window_height / 2 - MENU_HEIGHT / 8,
+        MENU_WIDTH / 2,
+        MENU_HEIGHT / 4
     );
     Function* func;
     func = function_create(menu_set_main, app, NULL);
@@ -296,10 +315,10 @@ static Menu* create_menu_credits(SDL_Renderer* renderer, AppState* app)
 {
     Menu* menu = menu_create(
         renderer,
-        g_app_window_width / 2 - MENU_WIDTH / 2,
-        g_app_window_height / 2 - MENU_HEIGHT / 2,
-        MENU_WIDTH,
-        MENU_HEIGHT
+        g_app_window_width / 2 - MENU_WIDTH / 3,
+        g_app_window_height / 2 - MENU_HEIGHT / 4,
+        MENU_WIDTH / 1.5,
+        MENU_HEIGHT / 2
     );
     Function* func;
     func = function_create(NULL, NULL, NULL);
@@ -316,14 +335,42 @@ static Menu* create_menu_exit(SDL_Renderer* renderer, AppState* app)
 {
     Menu* menu = menu_create(
         renderer,
-        g_app_window_width / 2 - MENU_WIDTH / 2,
-        g_app_window_height / 2 - MENU_HEIGHT / 2,
-        MENU_WIDTH,
-        MENU_HEIGHT
+        g_app_window_width / 2 - MENU_WIDTH / 4,
+        g_app_window_height / 2 - MENU_HEIGHT / 4,
+        MENU_WIDTH / 2,
+        MENU_HEIGHT / 2
     );
     Function* func;
     func = function_create(app_quit, NULL, NULL);
     menu_add_button(renderer, menu, func, "CONFIRM");
+    func = function_create(menu_set_main, app, NULL);
+    menu_add_button(renderer, menu, func, "BACK");
+
+    return menu;
+}
+
+static Menu* create_menu_instructions(SDL_Renderer* renderer, AppState* app)
+{
+    Menu* menu = menu_create(
+        renderer,
+        g_app_window_width / 2 - MENU_WIDTH,
+        g_app_window_height / 2 - MENU_HEIGHT / 2,
+        MENU_WIDTH * 2,
+        MENU_HEIGHT
+    );
+    Function* func;
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Left mouse button - Interact");
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Tab - toggle between the Board and the Upgrade Tree");
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Esc - pause");
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Capture pieces to get points");
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Spend points on upgrades for the game");
+    func = function_create(NULL, NULL, NULL);
+    menu_add_button(renderer, menu, func, "Each turn move a piece or purchase an upgrade");
     func = function_create(menu_set_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
 
