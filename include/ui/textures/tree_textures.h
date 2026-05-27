@@ -20,7 +20,7 @@
 #define PATH_TEXTURE_TREE_BUTTON_HOVERED        "assets/sprites/tile/tile_valid.png"
 #define PATH_TEXTURE_TREE_BUTTON_PRESSED        "assets/sprites/tile/tile_capture.png"
 
-#define PATH_TEXTURE_WINDOW_TREE_BACKGROUND     "assets/sprites/menus/window.png"
+#define PATH_TEXTURE_WINDOW_TREE_BACKGROUND     "assets/sprites/tile/tile_black.png"
 
 #define PATH_SOUND_CLICK                        "assets/sounds/click.wav"
 #define PATH_SOUND_ERROR                        "assets/sounds/error.wav"

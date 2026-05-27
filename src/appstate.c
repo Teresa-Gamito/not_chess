@@ -8,6 +8,8 @@ typedef struct AppMenu
     Menu* credits;
     Menu* instructions;
     Menu* exit;
+    Menu* win_white;
+    Menu* win_black;
     Sound* sound_click;
 } AppMenu;
 
@@ -19,7 +21,9 @@ typedef enum Screen
     SCREEN_MENU_OPTIONS,
     SCREEN_MENU_CREDITS,
     SCREEN_MENU_INSTRUCTIONS,
-    SCREEN_MENU_EXIT
+    SCREEN_MENU_EXIT,
+    SCREEN_MENU_WIN_WHITE,
+    SCREEN_MENU_WIN_BLACK,
 } Screen;
 
 struct AppState
@@ -43,6 +47,7 @@ static Menu* create_menu_options(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_credits(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_exit(SDL_Renderer* renderer, AppState* app);
 static Menu* create_menu_instructions(SDL_Renderer* renderer, AppState* app);
+static Menu* create_menu_win(SDL_Renderer* renderer, AppState* app, Color win_color);
 static void start_game(void* app_state, void* null);
 
 AppState* app_create()
@@ -77,6 +82,8 @@ AppState* app_create()
     app->menu->credits = create_menu_credits(app->sdl_renderer, app);
     app->menu->instructions = create_menu_instructions(app->sdl_renderer, app);
     app->menu->exit = create_menu_exit(app->sdl_renderer, app);
+    app->menu->win_white = create_menu_win(app->sdl_renderer, app, WHITE);
+    app->menu->win_black = create_menu_win(app->sdl_renderer, app, BLACK);
 
     app->menu->sound_click = sound_load(PATH_SOUND_MENU_CLICK);
 
@@ -100,6 +107,8 @@ void app_destroy(AppState* app)
     menu_destroy(app->menu->credits);
     menu_destroy(app->menu->instructions);
     menu_destroy(app->menu->exit);
+    menu_destroy(app->menu->win_white);
+    menu_destroy(app->menu->win_black);
     sound_unload(app->menu->sound_click);
 
     SDL_free(app->menu);
@@ -177,6 +186,12 @@ void app_update(AppState* app)
         case SCREEN_MENU_INSTRUCTIONS:
             menu_update(input, app->menu->instructions);
             return;
+        case SCREEN_MENU_WIN_WHITE:
+            menu_update(input, app->menu->win_white);
+            return;
+        case SCREEN_MENU_WIN_BLACK:
+            menu_update(input, app->menu->win_black);
+            return;
         case SCREEN_GAME:
             result = game_ui_update(input, app->game_ui);
             break;
@@ -188,13 +203,16 @@ void app_update(AppState* app)
             break;
 
         case GAME_RESULT_WIN_WHITE:
-            SDL_Log("WHITE WINS!");
-            app_quit(NULL, NULL);
+            app->screen = SCREEN_MENU_WIN_WHITE;
+            game_ui_destroy(app->game_ui);
+            game_destroy(app->game);
+
             break;
 
         case GAME_RESULT_WIN_BLACK:
-            SDL_Log("BLACK WINS!");
-            app_quit(NULL, NULL);
+            app->screen = SCREEN_MENU_WIN_BLACK;
+            game_ui_destroy(app->game_ui);
+            game_destroy(app->game);
             break;
 
         case GAME_RESULT_EXIT:
@@ -236,6 +254,12 @@ void app_render(AppState* app)
             break;
         case SCREEN_MENU_INSTRUCTIONS:
             menu_render(renderer, app->menu->instructions);
+            break;
+        case SCREEN_MENU_WIN_WHITE:
+            menu_render(renderer, app->menu->win_white);
+            break;
+        case SCREEN_MENU_WIN_BLACK:
+            menu_render(renderer, app->menu->win_black);
             break;
         case SCREEN_GAME:
             game_ui_render(renderer, app->game_ui);
@@ -424,6 +448,25 @@ static Menu* create_menu_instructions(SDL_Renderer* renderer, AppState* app)
     menu_add_button(renderer, menu, func, "Spend points on upgrades for the game");
     func = function_create(NULL, NULL, NULL);
     menu_add_button(renderer, menu, func, "Each turn move a piece or purchase an upgrade");
+    func = function_create(menu_set_main, app, NULL);
+    menu_add_button(renderer, menu, func, "BACK");
+
+    return menu;
+}
+
+static Menu* create_menu_win(SDL_Renderer* renderer, AppState* app, Color win_color)
+{
+    Menu* menu = menu_create(
+        renderer,
+        g_app_window_width / 2 - MENU_WIDTH / 4,
+        g_app_window_height / 2 - MENU_HEIGHT / 4,
+        MENU_WIDTH / 2,
+        MENU_HEIGHT / 2
+    );
+    Function* func;
+    func = function_create(NULL, NULL, NULL);
+    char* text = win_color == WHITE ? "White Wins!" : "Black Wins!";
+    menu_add_button(renderer, menu, func, text);
     func = function_create(menu_set_main, app, NULL);
     menu_add_button(renderer, menu, func, "BACK");
 
